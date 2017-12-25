@@ -28,10 +28,18 @@ def test_viergewinnt_insert(viergewinnt_board):
 
 
 def test_viergewinnt_win(viergewinnt_board):
-    viergewinnt_board.state[2, 0] = 1
-    viergewinnt_board.state[2, 1] = 1
-    viergewinnt_board.state[2, 2] = 1
-    viergewinnt_board.state[2, 3] = 1
+    viergewinnt_board.insert(player=Player.X, column=2)
+    viergewinnt_board.insert(player=Player.O, column=3)
+    viergewinnt_board.insert(player=Player.X, column=3)
+    viergewinnt_board.insert(player=Player.O, column=4)
+    viergewinnt_board.insert(player=Player.O, column=4)
+    viergewinnt_board.insert(player=Player.X, column=4)
+    viergewinnt_board.insert(player=Player.O, column=5)
+    viergewinnt_board.insert(player=Player.O, column=5)
+    viergewinnt_board.insert(player=Player.O, column=5)
+    print(viergewinnt_board)
+    assert viergewinnt_board.check_win(Player.X) == False
 
-    # TODO
-    assert False
+    viergewinnt_board.insert(player=Player.X, column=5)
+    print(viergewinnt_board)
+    assert viergewinnt_board.check_win(Player.X) == True
