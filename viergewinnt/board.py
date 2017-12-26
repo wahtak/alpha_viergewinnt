@@ -15,7 +15,7 @@ CHARACTER_MAPPING = {0: '.', Player.X.value: Player.X.name, Player.O.value: Play
 
 class Board(object):
     '''
-    Generic playing board with string representation.
+    Generic playing board with string representation and hash (of current state).
 
     Use numpy arrays for speed during state transitions and winning condition checking.
     '''
@@ -31,3 +31,7 @@ class Board(object):
             output_chars.extend([CHARACTER_MAPPING[cell] for cell in row])
             output_chars.append(LINE_TERMINATE)
         return SEPERATOR + SEPERATOR.join(output_chars)
+
+    def __hash__(self):
+        # only consider state for hash
+        return hash(self.state.tobytes())

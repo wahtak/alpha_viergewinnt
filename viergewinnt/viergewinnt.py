@@ -1,4 +1,5 @@
 import enum
+from copy import deepcopy
 
 import numpy as np
 
@@ -16,44 +17,55 @@ class ColumnFullException(Exception):
 class DropdownBoard(Board):
     '''Board with dropping stones.'''
 
-    def __init__(self, **kwargs):
-        super(DropdownBoard, self).__init__(**kwargs)
-
-    def insert(self, player, column):
+    def play_move(self, player, move):
         try:
-            column_vector = self.state.T[column]
+            column_vector = self.state.T[move]
         except IndexError:
-            raise IllegalMoveException('column %d does not exist.' % column)
+            raise IllegalMoveException('column %d does not exist.' % move)
 
         for index, element in enumerate(column_vector):
             if element == 0:
                 column_vector[index] = player.value
                 break
         else:
-            raise ColumnFullException('column %d is full' % column)
+            raise ColumnFullException('column %d is full' % move)
+
+    def get_possible_moves(self):
+        return [column for column, column_vector in enumerate(self.state.T) if (column_vector == 0).any()]
 
 
-class NStonessInRowWinningCondition(Board):
-    '''Winning condition checker for n stones in a row'''
+class ConditionChecker(Board):
+    '''Board for checking state conditions.'''
 
-    def __init__(self, num_stones_in_row, **kwargs):
-        super(NStonessInRowWinningCondition, self).__init__(**kwargs)
+    def check(self, condition):
+        return condition.check(self.state)
+
+
+class NStonessInRowCondition(object):
+    '''Condition checker for n stones in a row'''
+
+    def __init__(self, num_stones_in_row, player, **kwargs):
+        super(NStonessInRowCondition, self).__init__(**kwargs)
+        self.player = player
 
         horizontal_layout = np.ones(num_stones_in_row)
         vertical_layout = np.ones(num_stones_in_row).T
-        diagonal_positive_layout = np.diag(np.ones(num_stones_in_row))
-        diagonal_negative_layout = np.flip(np.diag(np.ones(num_stones_in_row)), axis=0)
-        self.winning_layouts = [horizontal_layout, vertical_layout, diagonal_positive_layout, diagonal_negative_layout]
+        regular_diagonal_layout = np.diag(np.ones(num_stones_in_row))
+        flipped_diagonal_layout = np.flip(np.diag(np.ones(num_stones_in_row)), axis=0)
+        self.winning_layouts = [horizontal_layout, vertical_layout, regular_diagonal_layout, flipped_diagonal_layout]
 
-    def check_win(self, player):
+    def check(self, state):
         for layout in self.winning_layouts:
             # todo 2d convolution with state
             pass
         return False
 
 
-class ViergewinntGame(DropdownBoard, NStonessInRowWinningCondition):
-    '''Combination of board and winning condition with parameters of the game Viergewinnt'''
+class ViergewinntGame(DropdownBoard, ConditionChecker):
+    '''Combination of board and winning condition checkers with parameters of the game Viergewinnt.'''
 
     def __init__(self):
-        super(ViergewinntGame, self).__init__(num_stones_in_row=4, size=(6, 7))
+        super(ViergewinntGame, self).__init__(size=(6, 7))
+
+    def __hash__(self):
+        return Board.__hash__(self)
