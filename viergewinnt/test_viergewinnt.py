@@ -26,11 +26,12 @@ def test_viergewinnt_play_move(viergewinnt_game):
 
     # column does not exist
     with pytest.raises(IllegalMoveException):
-        viergewinnt_game.play_move(player=Player.X, move=7)
+        viergewinnt_game.play_move(player=Player.O, move=7)
 
     # column full
     for _ in range(6):
         viergewinnt_game.play_move(player=Player.X, move=2)
+        viergewinnt_game.play_move(player=Player.O, move=3)
     with pytest.raises(ColumnFullException):
         viergewinnt_game.play_move(player=Player.X, move=2)
 
@@ -40,10 +41,13 @@ def test_viergewinnt_win(viergewinnt_game, player_x_win_condition):
     viergewinnt_game.play_move(player=Player.O, move=3)
     viergewinnt_game.play_move(player=Player.X, move=3)
     viergewinnt_game.play_move(player=Player.O, move=4)
+    viergewinnt_game.play_move(player=Player.X, move=0)
     viergewinnt_game.play_move(player=Player.O, move=4)
     viergewinnt_game.play_move(player=Player.X, move=4)
     viergewinnt_game.play_move(player=Player.O, move=5)
+    viergewinnt_game.play_move(player=Player.X, move=0)
     viergewinnt_game.play_move(player=Player.O, move=5)
+    viergewinnt_game.play_move(player=Player.X, move=0)
     viergewinnt_game.play_move(player=Player.O, move=5)
     print(viergewinnt_game)
     assert viergewinnt_game.check(player_x_win_condition) == False
@@ -51,3 +55,9 @@ def test_viergewinnt_win(viergewinnt_game, player_x_win_condition):
     viergewinnt_game.play_move(player=Player.X, move=5)
     print(viergewinnt_game)
     assert viergewinnt_game.check(player_x_win_condition) == True
+
+
+def test_viergewinnt_alternating_turn(viergewinnt_game):
+    viergewinnt_game.play_move(player=Player.X, move=0)
+    with pytest.raises(NotPlayersTurnException):
+        viergewinnt_game.play_move(player=Player.X, move=1)

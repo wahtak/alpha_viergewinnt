@@ -3,7 +3,7 @@ from copy import deepcopy
 
 import numpy as np
 
-from .board import Board
+from .board import Board, Player
 
 
 class IllegalMoveException(Exception):
@@ -14,8 +14,8 @@ class ColumnFullException(Exception):
     pass
 
 
-class DropdownBoard(Board):
-    '''Board with dropping stones.'''
+class DropdownBoard(object):
+    '''Functionality for dropping stones.'''
 
     def play_move(self, player, move):
         try:
@@ -34,8 +34,8 @@ class DropdownBoard(Board):
         return [column for column, column_vector in enumerate(self.state.T) if (column_vector == 0).any()]
 
 
-class ConditionChecker(Board):
-    '''Board for checking state conditions.'''
+class ConditionChecker(object):
+    '''Functionality for checking state conditions.'''
 
     def check(self, condition):
         return condition.check(self.state)
@@ -44,10 +44,8 @@ class ConditionChecker(Board):
 class NStonessInRowCondition(object):
     '''Condition checker for n stones in a row'''
 
-    def __init__(self, num_stones_in_row, player, **kwargs):
-        super(NStonessInRowCondition, self).__init__(**kwargs)
+    def __init__(self, num_stones_in_row, player):
         self.player = player
-
         horizontal_layout = np.ones(num_stones_in_row)
         vertical_layout = np.ones(num_stones_in_row).T
         regular_diagonal_layout = np.diag(np.ones(num_stones_in_row))
@@ -61,11 +59,32 @@ class NStonessInRowCondition(object):
         return False
 
 
-class ViergewinntGame(DropdownBoard, ConditionChecker):
-    '''Combination of board and winning condition checkers with parameters of the game Viergewinnt.'''
+class NotPlayersTurnException(Exception):
+    pass
+
+
+class AlternatingPlayer(object):
+    '''Functionality for checking alternating player turns'''
+
+    def __init__(self, starting_player):
+        self.current_player = starting_player
+
+    def register_player_turn(self, player):
+        if player != self.current_player:
+            raise NotPlayersTurnException('not player %s\'s turn' % player)
+        self.current_player = Player.O if self.current_player == Player.X else Player.X
+
+
+class ViergewinntGame(Board, DropdownBoard, AlternatingPlayer, ConditionChecker):
+    '''Combination of board, winning condition checker and alternating player with parameters of the game Viergewinnt.'''
 
     def __init__(self):
-        super(ViergewinntGame, self).__init__(size=(6, 7))
+        Board.__init__(self, size=(6, 7))
+        AlternatingPlayer.__init__(self, starting_player=Player.X)
 
     def __hash__(self):
         return Board.__hash__(self)
+
+    def play_move(self, player, move):
+        AlternatingPlayer.register_player_turn(self, player)
+        DropdownBoard.play_move(self, player, move)
