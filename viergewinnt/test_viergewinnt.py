@@ -32,6 +32,7 @@ def test_viergewinnt_play_move(viergewinnt_game):
     for _ in range(6):
         viergewinnt_game.play_move(player=Player.X, move=2)
         viergewinnt_game.play_move(player=Player.O, move=3)
+    assert 2 not in viergewinnt_game.get_possible_moves()
     with pytest.raises(ColumnFullException):
         viergewinnt_game.play_move(player=Player.X, move=2)
 
