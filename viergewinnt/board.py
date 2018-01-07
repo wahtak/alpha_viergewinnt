@@ -25,7 +25,7 @@ class Board(object):
 
     def __str__(self):
         output_chars = []
-        output_chars.extend([str(index + 1) for index in range(self.state.shape[1])])
+        output_chars.extend([str(index) for index in range(self.state.shape[1])])
         output_chars.append(LINE_TERMINATE)
         for row in np.flip(self.state, axis=0):
             output_chars.extend([CHARACTER_MAPPING[cell] for cell in row])
