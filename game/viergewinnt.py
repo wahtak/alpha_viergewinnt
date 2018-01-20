@@ -2,6 +2,7 @@ import enum
 from copy import deepcopy
 
 import numpy as np
+from scipy.signal import convolve2d
 
 from .board import Board, Player
 
@@ -35,10 +36,10 @@ class DropdownBoard(object):
 
 
 class ConditionChecker(object):
-    '''Functionality for checking state conditions.'''
+    '''Functionality for checking board conditions.'''
 
     def check(self, condition):
-        return condition.check(self.state)
+        return condition.check(self)
 
 
 class NStonessInRowCondition(object):
@@ -46,16 +47,19 @@ class NStonessInRowCondition(object):
 
     def __init__(self, num_stones_in_row, player):
         self.player = player
-        horizontal_layout = np.ones(num_stones_in_row)
-        vertical_layout = np.ones(num_stones_in_row).T
+        self.num_stones_in_row = num_stones_in_row
+        horizontal_layout = np.ones((num_stones_in_row, 1))
+        vertical_layout = np.ones((1, num_stones_in_row))
         regular_diagonal_layout = np.diag(np.ones(num_stones_in_row))
         flipped_diagonal_layout = np.flip(np.diag(np.ones(num_stones_in_row)), axis=0)
         self.winning_layouts = [horizontal_layout, vertical_layout, regular_diagonal_layout, flipped_diagonal_layout]
 
-    def check(self, state):
+    def check(self, board):
+        player_state = board.get_player_state(self.player)
         for layout in self.winning_layouts:
-            # todo 2d convolution with state
-            pass
+            convolution = convolve2d(player_state, layout, mode='valid')
+            if (convolution == self.num_stones_in_row).any():
+                return True
         return False
 
 
@@ -88,3 +92,10 @@ class ViergewinntGame(Board, DropdownBoard, AlternatingPlayer, ConditionChecker)
     def play_move(self, player, move):
         AlternatingPlayer.register_player_turn(self, player)
         DropdownBoard.play_move(self, player, move)
+
+
+class ViergewinntWinCondition(NStonessInRowCondition):
+    '''Winning condition for the game Viergewinnt.'''
+
+    def __init__(self, player):
+        super().__init__(num_stones_in_row=4, player=player)

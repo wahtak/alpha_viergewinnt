@@ -11,12 +11,12 @@ def viergewinnt_game():
 
 @pytest.fixture
 def player_x_win_condition():
-    return NStonessInRowCondition(num_stones_in_row=4, player=Player.X)
+    return ViergewinntWinCondition(Player.X)
 
 
 @pytest.fixture
 def player_o_win_condition():
-    return NStonessInRowCondition(num_stones_in_row=4, player=Player.O)
+    return ViergewinntWinCondition(Player.O)
 
 
 def test_viergewinnt_play_move(viergewinnt_game):
@@ -37,7 +37,7 @@ def test_viergewinnt_play_move(viergewinnt_game):
         viergewinnt_game.play_move(player=Player.X, move=2)
 
 
-def test_viergewinnt_win(viergewinnt_game, player_x_win_condition):
+def test_viergewinnt_win(viergewinnt_game, player_x_win_condition, player_o_win_condition):
     viergewinnt_game.play_move(player=Player.X, move=2)
     viergewinnt_game.play_move(player=Player.O, move=3)
     viergewinnt_game.play_move(player=Player.X, move=3)
@@ -52,10 +52,17 @@ def test_viergewinnt_win(viergewinnt_game, player_x_win_condition):
     viergewinnt_game.play_move(player=Player.O, move=5)
     print(viergewinnt_game)
     assert viergewinnt_game.check(player_x_win_condition) == False
+    assert viergewinnt_game.check(player_o_win_condition) == False
 
     viergewinnt_game.play_move(player=Player.X, move=5)
     print(viergewinnt_game)
     assert viergewinnt_game.check(player_x_win_condition) == True
+    assert viergewinnt_game.check(player_o_win_condition) == False
+
+    viergewinnt_game.play_move(player=Player.O, move=6)
+    print(viergewinnt_game)
+    assert viergewinnt_game.check(player_x_win_condition) == True
+    assert viergewinnt_game.check(player_o_win_condition) == True
 
 
 def test_viergewinnt_alternating_turn(viergewinnt_game):

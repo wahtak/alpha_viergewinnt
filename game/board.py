@@ -9,7 +9,7 @@ class Player(enum.Enum):
 
 
 LINE_TERMINATE = '\n'
-SEPERATOR = ' '
+SEPERATOR = ''
 CHARACTER_MAPPING = {0: '.', Player.X.value: Player.X.name, Player.O.value: Player.O.name}
 
 
@@ -35,3 +35,6 @@ class Board(object):
     def __hash__(self):
         # only consider state for hash
         return hash(self.state.tobytes())
+
+    def get_player_state(self, player):
+        return (self.state == player.value).astype(np.int16)
