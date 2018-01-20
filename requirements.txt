@@ -1,3 +1,7 @@
 numpy
 pytest
 networkx
+scipy
+pydot
+graphviz
+matplotlib
