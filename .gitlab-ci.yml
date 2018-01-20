@@ -1,0 +1,6 @@
+stages:
+  - test
+
+pytest:
+  stage: test
+  script: echo "dummy test script."
