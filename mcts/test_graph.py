@@ -1,4 +1,5 @@
 import pytest
+import matplotlib
 
 from .graph import *
 
@@ -19,5 +20,7 @@ def test_successor(mcts_graph):
 
 
 def test_draw(mcts_graph):
+    # use backend which does not require a display for CI
+    matplotlib.use('Agg')
     mcts_graph.add_successor(state=0, move=1, new_state=1)
     mcts_graph.draw()
