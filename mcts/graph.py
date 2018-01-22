@@ -1,7 +1,7 @@
 import networkx as nx
 
 
-class MCTSGraph(nx.DiGraph):
+class GameGraph(nx.DiGraph):
     '''Extended networkx DiGraph with functions for move, state combinations and drawing.'''
 
     def __init__(self, initial_state, *args, **kwargs):
