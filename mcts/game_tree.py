@@ -37,4 +37,4 @@ class GameTree(nx.DiGraph):
         edge_labels = {edge: self.get_edge_data(*edge)['move'] for edge in self.edges()}
         pos = nx.nx_pydot.graphviz_layout(self, prog='dot')
         nx.draw_networkx(self, pos=pos, labels=node_labels, arrows=False, font_family='monospace')
-        nx.draw_networkx_edge_labels(self, pos=pos, edge_labels=edge_labels)
+        nx.draw_networkx_edge_labels(self, pos=pos, edge_labels=edge_labels, font_family='monospace')
