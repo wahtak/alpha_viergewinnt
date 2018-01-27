@@ -1,18 +1,27 @@
+from recordclass import recordclass
+
 import networkx as nx
+
+AttributeTuple = recordclass('AttributeTuple', ['visit_count', 'weight'])
 
 
 class GameTree(nx.DiGraph):
     '''Extended networkx DiGraph with functions for move, state combinations and drawing.'''
 
-    def __init__(self, initial_state, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, initial_state):
+        super().__init__()
+        self.attributes = {}
+
         self.add_node(initial_state)
+        self.attributes[initial_state] = AttributeTuple(visit_count=0, weight=0)
 
     def get_successors(self, state):
         '''return successors of a state as a dictionary {move: state}'''
         return {self.get_edge_data(*edge)['move']: edge[1] for edge in self.edges(state)}
 
     def add_successor(self, state, move, new_state):
+        self.add_node(new_state)
+        self.attributes[new_state] = AttributeTuple(visit_count=0, weight=0)
         self.add_edge(state, new_state, move=move)
 
     def get_ancestors(self, state):
