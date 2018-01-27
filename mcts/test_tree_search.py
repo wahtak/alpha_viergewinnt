@@ -31,30 +31,30 @@ def dummy_strategy():
 
 def test_expand_tree(dummy_strategy):
     initial_state = DummyState()
-    graph = GameTree(initial_state)
+    game_tree = GameTree(initial_state)
 
-    new_state = expand_tree(graph, initial_state, dummy_strategy)
-    assert len(graph.get_successors(initial_state).keys()) == 1
+    new_state = expand_tree(game_tree, initial_state, dummy_strategy)
+    assert len(game_tree.get_successors(initial_state).keys()) == 1
     assert new_state.step == 1
 
-    expand_tree(graph, initial_state, dummy_strategy)
-    expand_tree(graph, initial_state, dummy_strategy)
-    assert len(graph.get_successors(initial_state).keys()) == 3
+    expand_tree(game_tree, initial_state, dummy_strategy)
+    expand_tree(game_tree, initial_state, dummy_strategy)
+    assert len(game_tree.get_successors(initial_state).keys()) == 3
 
     with pytest.raises(NoUnexploredMovesException):
-        expand_tree(graph, initial_state, dummy_strategy)
+        expand_tree(game_tree, initial_state, dummy_strategy)
 
 
 def test_select_leaf(dummy_strategy):
     initial_state = DummyState()
-    graph = GameTree(initial_state)
+    game_tree = GameTree(initial_state)
 
-    expand_tree(graph, initial_state, dummy_strategy)
-    expand_tree(graph, initial_state, dummy_strategy)
-    assert select_leaf(graph, initial_state, dummy_strategy).step == 0
+    expand_tree(game_tree, initial_state, dummy_strategy)
+    expand_tree(game_tree, initial_state, dummy_strategy)
+    assert select_leaf(game_tree, initial_state, dummy_strategy).step == 0
 
-    expand_tree(graph, initial_state, dummy_strategy)
-    assert select_leaf(graph, initial_state, dummy_strategy).step == 1
+    expand_tree(game_tree, initial_state, dummy_strategy)
+    assert select_leaf(game_tree, initial_state, dummy_strategy).step == 1
 
 
 @pytest.fixture
