@@ -15,6 +15,9 @@ class GameTree(nx.DiGraph):
     def add_successor(self, state, move, new_state):
         self.add_edge(state, new_state, move=move)
 
+    def get_ancestors(self, state):
+        return nx.ancestors(self, state)
+
     def draw(self):
         node_labels = {node: str(node) for node in self.nodes()}
         edge_labels = {edge: self.get_edge_data(*edge)['move'] for edge in self.edges()}
