@@ -4,7 +4,7 @@ from copy import deepcopy
 import numpy as np
 from scipy.signal import convolve2d
 
-from .board import Board, Player
+from .board import Board, Player, RowOrder
 
 
 class IllegalMoveException(Exception):
@@ -83,7 +83,7 @@ class ViergewinntGame(Board, DropdownBoard, AlternatingPlayer, ConditionChecker)
     '''Combination of board, winning condition checker and alternating player with parameters of the game Viergewinnt.'''
 
     def __init__(self):
-        Board.__init__(self, size=(6, 7))
+        Board.__init__(self, size=(6, 7), output_row_order=RowOrder.REVERSED)
         AlternatingPlayer.__init__(self, starting_player=Player.X)
 
     def __hash__(self):

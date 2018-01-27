@@ -8,6 +8,12 @@ class Player(enum.Enum):
     O = 2
 
 
+class RowOrder(enum.Enum):
+    NORMAL = 1
+    REVERSED = 2
+
+
+CORNER = ' '
 LINE_TERMINATE = '\n'
 SEPERATOR = ''
 CHARACTER_MAPPING = {0: '.', Player.X.value: Player.X.name, Player.O.value: Player.O.name}
@@ -20,14 +26,27 @@ class Board(object):
     Use numpy arrays for speed during state transitions and winning condition checking.
     '''
 
-    def __init__(self, size):
+    def __init__(self, size, output_row_order):
         self.state = np.zeros(size, dtype=np.int16)
+        self.output_row_order = output_row_order
+
+    def _get_row_iter(self):
+        row_indices = [str(row_index) for row_index in range(self.state.shape[0])]
+
+        if self.output_row_order == RowOrder.REVERSED:
+            row_iter = zip(reversed(row_indices), np.flip(self.state, axis=0))
+        else:
+            row_iter = zip(row_indices, self.state)
+
+        return row_iter
 
     def __str__(self):
         output_chars = []
-        output_chars.extend([str(index) for index in range(self.state.shape[1])])
+        output_chars.append(CORNER)
+        output_chars.extend([str(column_index) for column_index in range(self.state.shape[1])])
         output_chars.append(LINE_TERMINATE)
-        for row in np.flip(self.state, axis=0):
+        for row_index, row in self._get_row_iter():
+            output_chars.append(row_index)
             output_chars.extend([CHARACTER_MAPPING[cell] for cell in row])
             output_chars.append(LINE_TERMINATE)
         return SEPERATOR + SEPERATOR.join(output_chars)

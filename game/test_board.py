@@ -5,7 +5,7 @@ from .board import *
 
 @pytest.fixture
 def board():
-    return Board(size=(6, 7))
+    return Board(size=(6, 7), output_row_order=RowOrder.NORMAL)
 
 
 def test_board_output(board):
