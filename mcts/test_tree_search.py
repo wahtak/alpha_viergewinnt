@@ -1,7 +1,7 @@
 import pytest
 
-from .graph import GameGraph
-from .mcts import *
+from .game_tree import GameTree
+from .tree_search import *
 
 
 class DummyState(object):
@@ -31,7 +31,7 @@ def dummy_strategy():
 
 def test_expand_tree(dummy_strategy):
     initial_state = DummyState()
-    graph = GameGraph(initial_state)
+    graph = GameTree(initial_state)
 
     new_state = expand_tree(graph, initial_state, dummy_strategy)
     assert len(graph.get_successors(initial_state).keys()) == 1
@@ -47,7 +47,7 @@ def test_expand_tree(dummy_strategy):
 
 def test_select_leaf(dummy_strategy):
     initial_state = DummyState()
-    graph = GameGraph(initial_state)
+    graph = GameTree(initial_state)
 
     expand_tree(graph, initial_state, dummy_strategy)
     expand_tree(graph, initial_state, dummy_strategy)
