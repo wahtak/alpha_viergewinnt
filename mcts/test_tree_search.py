@@ -69,3 +69,36 @@ def test_simulate_until_end(dummy_end_condition, dummy_strategy):
     initial_state = DummyState()
 
     assert simulate_until_end(initial_state, dummy_end_condition, dummy_strategy).step == 4
+
+
+@pytest.fixture
+def filled_simple_state_game_tree():
+    game_tree = GameTree((0, ))
+    game_tree.add_successor(state=(0, ), move=0, new_state=(0, 0))
+    game_tree.add_successor(state=(0, ), move=1, new_state=(0, 1))
+    game_tree.add_successor(state=(0, 1), move=0, new_state=(0, 1, 0))
+    game_tree.add_successor(state=(0, 1, 0), move=0, new_state=(0, 1, 0, 0))
+    return game_tree
+
+
+@pytest.fixture
+def simple_state_leafs():
+    return (0, 1, 0, 0), (0, 0)
+
+
+def test_backpropagate(filled_simple_state_game_tree, simple_state_leafs):
+    game_tree = filled_simple_state_game_tree
+    update_leaf, other_leaf = simple_state_leafs
+
+    backpropagate(game_tree, update_leaf, delta_weight=-2)
+    backpropagate(game_tree, update_leaf, delta_weight=1)
+
+    assert game_tree.attributes[update_leaf].visit_count == 2
+    assert game_tree.attributes[update_leaf].weight == -1
+
+    for state in game_tree.get_ancestors(update_leaf):
+        assert game_tree.attributes[state].visit_count == 2
+        assert game_tree.attributes[state].weight == -1
+
+    assert game_tree.attributes[other_leaf].visit_count == 0
+    assert game_tree.attributes[other_leaf].weight == 0

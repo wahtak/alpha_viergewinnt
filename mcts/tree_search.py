@@ -50,5 +50,7 @@ def simulate_until_end(state, end_condition, simulation_strategy):
     return state
 
 
-def backpropagate(game_tree):
-    pass
+def backpropagate(game_tree, state, delta_weight):
+    for state in game_tree.get_ancestors(state) | {state}:
+        game_tree.attributes[state].visit_count += 1
+        game_tree.attributes[state].weight += delta_weight
