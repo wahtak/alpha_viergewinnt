@@ -60,6 +60,18 @@ class NStonessInRowCondition(object):
         return False
 
 
+class WinCondition(NStonessInRowCondition):
+    '''Winning condition for the game Viergewinnt.'''
+
+    def __init__(self, player):
+        super().__init__(num_stones_in_row=4, player=player)
+
+
+class DrawCondition(object):
+    def check(self, board):
+        return len(board.get_possible_moves()) == 0
+
+
 class NotPlayersTurnException(Exception):
     pass
 
@@ -76,7 +88,7 @@ class AlternatingPlayer(object):
         self.current_player = Player.O if self.current_player == Player.X else Player.X
 
 
-class ViergewinntGame(Board, DropdownBoard, AlternatingPlayer, ConditionChecker):
+class Viergewinnt(Board, DropdownBoard, AlternatingPlayer, ConditionChecker):
     '''Combination of board, condition checker and alternating player with parameters of the game Viergewinnt.'''
 
     def __init__(self):
@@ -89,10 +101,3 @@ class ViergewinntGame(Board, DropdownBoard, AlternatingPlayer, ConditionChecker)
     def play_move(self, player, move):
         AlternatingPlayer.register_player_turn(self, player)
         DropdownBoard.play_move(self, player, move)
-
-
-class ViergewinntWinCondition(NStonessInRowCondition):
-    '''Winning condition for the game Viergewinnt.'''
-
-    def __init__(self, player):
-        super().__init__(num_stones_in_row=4, player=player)
