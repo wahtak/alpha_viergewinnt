@@ -51,18 +51,18 @@ def test_viergewinnt_win(viergewinnt_game, player_x_win_condition, player_o_win_
     viergewinnt_game.play_move(player=Player.X, move=0)
     viergewinnt_game.play_move(player=Player.O, move=5)
     print(viergewinnt_game)
-    assert viergewinnt_game.check(player_x_win_condition) == False
-    assert viergewinnt_game.check(player_o_win_condition) == False
+    assert viergewinnt_game.check(player_x_win_condition) is False
+    assert viergewinnt_game.check(player_o_win_condition) is False
 
     viergewinnt_game.play_move(player=Player.X, move=5)
     print(viergewinnt_game)
-    assert viergewinnt_game.check(player_x_win_condition) == True
-    assert viergewinnt_game.check(player_o_win_condition) == False
+    assert viergewinnt_game.check(player_x_win_condition) is True
+    assert viergewinnt_game.check(player_o_win_condition) is False
 
     viergewinnt_game.play_move(player=Player.O, move=6)
     print(viergewinnt_game)
-    assert viergewinnt_game.check(player_x_win_condition) == True
-    assert viergewinnt_game.check(player_o_win_condition) == True
+    assert viergewinnt_game.check(player_x_win_condition) is True
+    assert viergewinnt_game.check(player_o_win_condition) is True
 
 
 def test_viergewinnt_alternating_turn(viergewinnt_game):

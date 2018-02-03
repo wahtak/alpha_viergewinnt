@@ -1,6 +1,3 @@
-import enum
-from copy import deepcopy
-
 import numpy as np
 from scipy.signal import convolve2d
 
@@ -80,7 +77,7 @@ class AlternatingPlayer(object):
 
 
 class ViergewinntGame(Board, DropdownBoard, AlternatingPlayer, ConditionChecker):
-    '''Combination of board, winning condition checker and alternating player with parameters of the game Viergewinnt.'''
+    '''Combination of board, condition checker and alternating player with parameters of the game Viergewinnt.'''
 
     def __init__(self):
         Board.__init__(self, size=(6, 7), output_row_order=RowOrder.REVERSED)

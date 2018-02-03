@@ -4,7 +4,6 @@ Chaslot, Guillaume & Winands, Mark & Herik, H & Uiterwijk, Jos & Bouzy, Bruno. (
 Progressive Strategies for Monte-Carlo Tree Search. New Mathematics and Natural Computation.
 04. 343-357. 10.1142/S1793005708001094.'''
 
-import random
 from copy import deepcopy
 
 
@@ -12,45 +11,55 @@ class NoUnexploredMovesException(Exception):
     pass
 
 
-def select_leaf(game_tree, state, selection_strategy):
-    def leaf_condition(game_tree, state):
-        explored_moves = game_tree.get_successors(state).keys()
+class TreeSearch(object):
+    def __init__(self, tree, selection_strategy, expansion_strategy):
+        self.tree = tree
+        self.selection_strategy = selection_strategy
+        self.expansion_strategy = expansion_strategy
+
+    def select_leaf(self, source):
+        state = source
+        while not self._is_leaf(state):
+            explored_moves = self.tree.get_transitions(state)
+            selected_move = self.selection_strategy(explored_moves)
+            state = self.tree.get_successor(state, selected_move)
+        return state
+
+    def _is_leaf(self, state):
+        has_unexplored_moves = len(self._get_unexplored_moves(state)) > 0
+        no_moves_possible = len(state.get_possible_moves()) == 0
+        return has_unexplored_moves or no_moves_possible
+
+    def _get_unexplored_moves(self, state):
+        explored_moves = self.tree.get_transitions(state)
         possible_moves = state.get_possible_moves()
-        return len(possible_moves) == 0 or set(explored_moves) != set(possible_moves)
+        return set(possible_moves) - set(explored_moves)
 
-    while not leaf_condition(game_tree, state):
-        successors = game_tree.get_successors(state)
-        selected_move = selection_strategy(successors.keys())
-        state = successors[selected_move]
-    return state
+    def expand(self, source):
+        unexplored_moves = self._get_unexplored_moves(source)
+        if len(unexplored_moves) == 0:
+            raise NoUnexploredMovesException()
+        selected_move = self.expansion_strategy(unexplored_moves)
+        successor = deepcopy(source)
+        successor.play_move(player=source.current_player, move=selected_move)
+        self.tree.add_successor(source=source, transition=selected_move, successor=successor)
+        return successor
 
-
-def expand_tree(game_tree, state, expansion_strategy):
-    current_player = state.current_player
-    explored_moves = game_tree.get_successors(state).keys()
-    unexplored_moves = set(state.get_possible_moves()) - set(explored_moves)
-    if len(unexplored_moves) == 0:
-        raise NoUnexploredMovesException()
-
-    selected_move = expansion_strategy(unexplored_moves)
-    new_state = deepcopy(state)
-    new_state.play_move(player=current_player, move=selected_move)
-    game_tree.add_successor(state=state, move=selected_move, new_state=new_state)
-    return new_state
+    def backpropagate(self, source, delta_weight):
+        for state in self.tree.get_path_to_root(source):
+            self.tree.attributes[state].visit_count += 1
+            self.tree.attributes[state].weight += delta_weight
 
 
-def simulate_until_end(state, end_condition, simulation_strategy):
-    state = deepcopy(state)
+class Simulator(object):
+    def __init__(self, strategy, end_condition):
+        self.strategy = strategy
+        self.end_condition = end_condition
 
-    while not end_condition(state):
-        end_condition_eval = end_condition(state)
-        possible_moves = state.get_possible_moves()
-        selected_move = simulation_strategy(possible_moves)
-        state.play_move(state.current_player, selected_move)
-    return state
-
-
-def backpropagate(game_tree, state, delta_weight):
-    for state in game_tree.get_ancestors(state) | {state}:
-        game_tree.attributes[state].visit_count += 1
-        game_tree.attributes[state].weight += delta_weight
+    def simulate_until_end(self, initial_state):
+        state = initial_state
+        while not self.end_condition(state):
+            possible_moves = state.get_possible_moves()
+            selected_move = self.strategy(possible_moves)
+            state.play_move(state.current_player, selected_move)
+        return state

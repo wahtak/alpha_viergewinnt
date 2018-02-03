@@ -5,7 +5,7 @@ import numpy as np
 
 class Player(enum.Enum):
     X = 1
-    O = 2
+    O = 2  # noqa E741
 
 
 class RowOrder(enum.Enum):
@@ -30,7 +30,7 @@ class Board(object):
         self.state = np.zeros(size, dtype=np.int16)
         self.output_row_order = output_row_order
 
-    def _get_row_iter(self):
+    def _row_iter(self):
         row_indices = [str(row_index) for row_index in range(self.state.shape[0])]
 
         if self.output_row_order == RowOrder.REVERSED:
@@ -45,7 +45,7 @@ class Board(object):
         output_chars.append(CORNER)
         output_chars.extend([str(column_index) for column_index in range(self.state.shape[1])])
         output_chars.append(LINE_TERMINATE)
-        for row_index, row in self._get_row_iter():
+        for row_index, row in self._row_iter():
             output_chars.append(row_index)
             output_chars.extend([CHARACTER_MAPPING[cell] for cell in row])
             output_chars.append(LINE_TERMINATE)

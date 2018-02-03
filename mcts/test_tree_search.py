@@ -1,6 +1,6 @@
 import pytest
 
-from .game_tree import GameTree
+from .tree import *
 from .tree_search import *
 
 
@@ -29,32 +29,39 @@ def dummy_strategy():
     return first_choice_strategy
 
 
-def test_expand_tree(dummy_strategy):
-    initial_state = DummyState()
-    game_tree = GameTree(initial_state)
+@pytest.fixture
+def empty_dummy_state_tree_search(dummy_strategy):
+    root = DummyState()
+    tree = Tree(root)
+    tree_search = TreeSearch(tree, selection_strategy=dummy_strategy, expansion_strategy=dummy_strategy)
 
-    new_state = expand_tree(game_tree, initial_state, dummy_strategy)
-    assert len(game_tree.get_successors(initial_state).keys()) == 1
-    assert new_state.step == 1
+    return root, tree, tree_search
 
-    expand_tree(game_tree, initial_state, dummy_strategy)
-    expand_tree(game_tree, initial_state, dummy_strategy)
-    assert len(game_tree.get_successors(initial_state).keys()) == 3
+
+def test_expand(empty_dummy_state_tree_search):
+    root, tree, tree_search = empty_dummy_state_tree_search
+
+    succesor = tree_search.expand(root)
+    assert len(tree.get_transitions(root)) == 1
+    assert succesor.step == 1
+
+    tree_search.expand(root)
+    tree_search.expand(root)
+    assert len(tree.get_transitions(root)) == 3
 
     with pytest.raises(NoUnexploredMovesException):
-        expand_tree(game_tree, initial_state, dummy_strategy)
+        tree_search.expand(root)
 
 
-def test_select_leaf(dummy_strategy):
-    initial_state = DummyState()
-    game_tree = GameTree(initial_state)
+def test_select_leaf(empty_dummy_state_tree_search):
+    root, tree, tree_search = empty_dummy_state_tree_search
 
-    expand_tree(game_tree, initial_state, dummy_strategy)
-    expand_tree(game_tree, initial_state, dummy_strategy)
-    assert select_leaf(game_tree, initial_state, dummy_strategy).step == 0
+    tree_search.expand(root)
+    tree_search.expand(root)
+    assert tree_search.select_leaf(root).step == 0
 
-    expand_tree(game_tree, initial_state, dummy_strategy)
-    assert select_leaf(game_tree, initial_state, dummy_strategy).step == 1
+    tree_search.expand(root)
+    assert tree_search.select_leaf(root).step == 1
 
 
 @pytest.fixture
@@ -65,20 +72,25 @@ def dummy_end_condition():
     return end_condition
 
 
-def test_simulate_until_end(dummy_end_condition, dummy_strategy):
-    initial_state = DummyState()
+@pytest.fixture
+def simulator(dummy_strategy, dummy_end_condition):
+    return Simulator(strategy=dummy_strategy, end_condition=dummy_end_condition)
 
-    assert simulate_until_end(initial_state, dummy_end_condition, dummy_strategy).step == 4
+
+def test_simulate_until_end(simulator):
+    initial_state = DummyState()
+    assert simulator.simulate_until_end(initial_state).step == 4
 
 
 @pytest.fixture
-def filled_simple_state_game_tree():
-    game_tree = GameTree((0, ))
-    game_tree.add_successor(state=(0, ), move=0, new_state=(0, 0))
-    game_tree.add_successor(state=(0, ), move=1, new_state=(0, 1))
-    game_tree.add_successor(state=(0, 1), move=0, new_state=(0, 1, 0))
-    game_tree.add_successor(state=(0, 1, 0), move=0, new_state=(0, 1, 0, 0))
-    return game_tree
+def filled_simple_state_tree_search(dummy_strategy):
+    tree = Tree((0, ))
+    tree.add_successor(source=(0, ), transition=0, successor=(0, 0))
+    tree.add_successor(source=(0, ), transition=1, successor=(0, 1))
+    tree.add_successor(source=(0, 1), transition=0, successor=(0, 1, 0))
+    tree.add_successor(source=(0, 1, 0), transition=0, successor=(0, 1, 0, 0))
+    tree_search = TreeSearch(tree, selection_strategy=dummy_strategy, expansion_strategy=dummy_strategy)
+    return tree, tree_search
 
 
 @pytest.fixture
@@ -86,19 +98,19 @@ def simple_state_leafs():
     return (0, 1, 0, 0), (0, 0)
 
 
-def test_backpropagate(filled_simple_state_game_tree, simple_state_leafs):
-    game_tree = filled_simple_state_game_tree
+def test_backpropagate(filled_simple_state_tree_search, simple_state_leafs):
+    tree, tree_search = filled_simple_state_tree_search
     update_leaf, other_leaf = simple_state_leafs
 
-    backpropagate(game_tree, update_leaf, delta_weight=-2)
-    backpropagate(game_tree, update_leaf, delta_weight=1)
+    tree_search.backpropagate(update_leaf, delta_weight=-2)
+    tree_search.backpropagate(update_leaf, delta_weight=1)
 
-    assert game_tree.attributes[update_leaf].visit_count == 2
-    assert game_tree.attributes[update_leaf].weight == -1
+    assert tree.attributes[update_leaf].visit_count == 2
+    assert tree.attributes[update_leaf].weight == -1
 
-    for state in game_tree.get_ancestors(update_leaf):
-        assert game_tree.attributes[state].visit_count == 2
-        assert game_tree.attributes[state].weight == -1
+    for state in tree.get_path_to_root(update_leaf):
+        assert tree.attributes[state].visit_count == 2
+        assert tree.attributes[state].weight == -1
 
-    assert game_tree.attributes[other_leaf].visit_count == 0
-    assert game_tree.attributes[other_leaf].weight == 0
+    assert tree.attributes[other_leaf].visit_count == 0
+    assert tree.attributes[other_leaf].weight == 0

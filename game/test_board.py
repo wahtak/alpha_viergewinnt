@@ -9,7 +9,6 @@ def board():
 
 
 def test_board_output(board):
-    output_string_length = len(board.__str__())
     print(board)
 
 
