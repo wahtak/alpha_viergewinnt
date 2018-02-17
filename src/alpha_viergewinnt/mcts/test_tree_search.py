@@ -65,21 +65,50 @@ def test_select_leaf(empty_dummy_state_tree_search):
 
 
 @pytest.fixture
-def dummy_end_condition():
-    def end_condition(state):
-        return len(state.get_possible_moves()) == 0
-
-    return end_condition
+def board_full_condition():
+    return lambda state: len(state.get_possible_moves()) == 0
 
 
 @pytest.fixture
-def simulator(dummy_strategy, dummy_end_condition):
-    return Simulator(strategy=dummy_strategy, end_condition=dummy_end_condition)
+def false_condition():
+    return lambda _: False
 
 
-def test_simulate_until_end(simulator):
+@pytest.fixture
+def true_condition():
+    return lambda _: True
+
+
+@pytest.fixture
+def rollout_until_draw_simulator(dummy_strategy, board_full_condition, false_condition):
+    return Simulator(
+        strategy=dummy_strategy,
+        win_condition=false_condition,
+        loss_condition=false_condition,
+        draw_condition=board_full_condition)
+
+
+@pytest.fixture
+def immediate_win_simulator(dummy_strategy, board_full_condition, false_condition, true_condition):
+    return Simulator(
+        strategy=dummy_strategy,
+        win_condition=true_condition,
+        loss_condition=false_condition,
+        draw_condition=board_full_condition)
+
+
+def test_rollout_until_draw(rollout_until_draw_simulator):
     initial_state = DummyState()
-    assert simulator.simulate_until_end(initial_state).step == 4
+    simulator = rollout_until_draw_simulator
+    final_state = simulator.rollout(initial_state)
+    assert final_state.step == 4
+    assert simulator.calculate_rollout_value(final_state) == 0
+
+
+def test_calculate_rollout_value(immediate_win_simulator):
+    initial_state = DummyState()
+    simulator = immediate_win_simulator
+    assert simulator.calculate_rollout_value(initial_state) == 1
 
 
 @pytest.fixture

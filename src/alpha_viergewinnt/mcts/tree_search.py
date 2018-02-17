@@ -52,13 +52,28 @@ class TreeSearch(object):
 
 
 class Simulator(object):
-    def __init__(self, strategy, end_condition):
+    def __init__(self, strategy, win_condition, loss_condition, draw_condition):
         self.strategy = strategy
-        self.end_condition = end_condition
+        self.win_condition = win_condition
+        self.loss_condition = loss_condition
+        self.draw_condition = draw_condition
 
-    def simulate_until_end(self, initial_state):
+    def _simulator_end_condition(self, state):
+        return self.win_condition(state) or self.loss_condition(state) or self.draw_condition(state)
+
+    def calculate_rollout_value(self, state):
+        assert self._simulator_end_condition(state) is True
+
+        rollout_value = 0
+        if self.win_condition(state):
+            rollout_value += 1
+        if self.loss_condition(state):
+            rollout_value -= 1
+        return rollout_value
+
+    def rollout(self, initial_state):
         state = initial_state
-        while not self.end_condition(state):
+        while not self._simulator_end_condition(state):
             possible_moves = state.get_possible_moves()
             selected_move = self.strategy(possible_moves)
             state.play_move(state.current_player, selected_move)
