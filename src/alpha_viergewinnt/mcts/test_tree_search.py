@@ -117,7 +117,7 @@ def test_rollout_until_draw(rollout_until_draw_simulator):
     simulator = rollout_until_draw_simulator
     final_state = simulator.rollout(initial_state)
     assert final_state.step == 4
-    assert simulator.calculate_rollout_value(final_state) == 0
+    assert simulator.get_rollout_value(final_state) == 0
 
 
 def test_calculate_rollout_value(immediate_win_simulator):
