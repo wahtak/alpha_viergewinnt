@@ -18,6 +18,9 @@ class DummyState(object):
     def play_move(self, *args, **kwargs):
         self.step += 1
 
+    def check(self, condition):
+        return condition.check(self)
+
 
 @pytest.fixture
 def dummy_strategy():
@@ -65,36 +68,48 @@ def test_select_leaf(empty_dummy_state_tree_search):
 
 
 @pytest.fixture
-def board_full_condition():
-    return lambda state: len(state.get_possible_moves()) == 0
+def no_possible_moves_condition():
+    class NoPossibleMovesCondition(object):
+        def check(self, state):
+            return len(state.get_possible_moves()) == 0
+
+    return NoPossibleMovesCondition()
 
 
 @pytest.fixture
 def false_condition():
-    return lambda _: False
+    class FalseCondition(object):
+        def check(self, _):
+            return False
+
+    return FalseCondition()
 
 
 @pytest.fixture
 def true_condition():
-    return lambda _: True
+    class TrueCondition(object):
+        def check(self, _):
+            return True
+
+    return TrueCondition()
 
 
 @pytest.fixture
-def rollout_until_draw_simulator(dummy_strategy, board_full_condition, false_condition):
+def rollout_until_draw_simulator(dummy_strategy, no_possible_moves_condition, false_condition):
     return Simulator(
         strategy=dummy_strategy,
         win_condition=false_condition,
         loss_condition=false_condition,
-        draw_condition=board_full_condition)
+        draw_condition=no_possible_moves_condition)
 
 
 @pytest.fixture
-def immediate_win_simulator(dummy_strategy, board_full_condition, false_condition, true_condition):
+def immediate_win_simulator(dummy_strategy, no_possible_moves_condition, false_condition, true_condition):
     return Simulator(
         strategy=dummy_strategy,
         win_condition=true_condition,
         loss_condition=false_condition,
-        draw_condition=board_full_condition)
+        draw_condition=no_possible_moves_condition)
 
 
 def test_rollout_until_draw(rollout_until_draw_simulator):
@@ -108,7 +123,7 @@ def test_rollout_until_draw(rollout_until_draw_simulator):
 def test_calculate_rollout_value(immediate_win_simulator):
     initial_state = DummyState()
     simulator = immediate_win_simulator
-    assert simulator.calculate_rollout_value(initial_state) == 1
+    assert simulator.get_rollout_value(initial_state) == 1
 
 
 @pytest.fixture

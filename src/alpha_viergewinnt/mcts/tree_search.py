@@ -58,22 +58,22 @@ class Simulator(object):
         self.loss_condition = loss_condition
         self.draw_condition = draw_condition
 
-    def _simulator_end_condition(self, state):
-        return self.win_condition(state) or self.loss_condition(state) or self.draw_condition(state)
+    def _is_final_state(self, state):
+        return state.check(self.win_condition) or state.check(self.loss_condition) or state.check(self.draw_condition)
 
-    def calculate_rollout_value(self, state):
-        assert self._simulator_end_condition(state) is True
+    def get_rollout_value(self, state):
+        assert self._is_final_state(state) is True
 
         rollout_value = 0
-        if self.win_condition(state):
+        if state.check(self.win_condition):
             rollout_value += 1
-        if self.loss_condition(state):
+        if state.check(self.loss_condition):
             rollout_value -= 1
         return rollout_value
 
     def rollout(self, initial_state):
         state = initial_state
-        while not self._simulator_end_condition(state):
+        while not self._is_final_state(state):
             possible_moves = state.get_possible_moves()
             selected_move = self.strategy(possible_moves)
             state.play_move(state.current_player, selected_move)
