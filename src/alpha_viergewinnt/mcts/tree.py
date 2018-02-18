@@ -40,10 +40,14 @@ class Tree(nx.DiGraph):
     def get_path_to_root(self, source):
         return nx.ancestors(self, source) | {source}
 
-    def get_max_weight_successor(self, source):
-        successors = [edge[1] for edge in self.edges(source)]
-        max_weight_index = np.argmax([self.attributes[successor].weight for successor in successors])
-        return successors[max_weight_index]
+    def get_transition_to_max_weight_successor(self, source):
+        transition_successor_pairs = self._get_transition_successor_pairs(source)
+        weights = [self.attributes[successor].weight for _, successor in transition_successor_pairs]
+        max_weight_index = np.argmax(weights)
+        return transition_successor_pairs[max_weight_index][0]
+
+    def _get_transition_successor_pairs(self, source):
+        return [(self.get_edge_data(*edge)['transition'], edge[1]) for edge in self.edges(source)]
 
     def draw(self):
         node_labels = {node: str(self.attributes[node]) + '\n\n' + str(node) for node in self.nodes()}

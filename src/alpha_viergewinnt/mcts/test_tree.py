@@ -38,4 +38,4 @@ def test_attributes(tree):
     assert tree.attributes[0].visit_count == 0
     assert tree.attributes[0].weight == 0
     tree.attributes[2].weight = 1
-    assert tree.get_max_weight_successor(1) == 2
+    assert tree.get_transition_to_max_weight_successor(1) == 2
