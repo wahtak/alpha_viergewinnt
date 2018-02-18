@@ -31,5 +31,11 @@ def test_draw(tree):
 
 
 def test_attributes(tree):
+    tree.add_successor(source=0, transition=1, successor=1)
+    tree.add_successor(source=1, transition=2, successor=2)
+    tree.add_successor(source=1, transition=3, successor=3)
+
     assert tree.attributes[0].visit_count == 0
     assert tree.attributes[0].weight == 0
+    tree.attributes[2].weight = 1
+    assert tree.get_max_weight_successor(1) == 2

@@ -1,3 +1,4 @@
+import numpy as np
 import networkx as nx
 
 
@@ -38,6 +39,11 @@ class Tree(nx.DiGraph):
 
     def get_path_to_root(self, source):
         return nx.ancestors(self, source) | {source}
+
+    def get_max_weight_successor(self, source):
+        successors = [edge[1] for edge in self.edges(source)]
+        max_weight_index = np.argmax([self.attributes[successor].weight for successor in successors])
+        return successors[max_weight_index]
 
     def draw(self):
         node_labels = {node: str(self.attributes[node]) + '\n\n' + str(node) for node in self.nodes()}
