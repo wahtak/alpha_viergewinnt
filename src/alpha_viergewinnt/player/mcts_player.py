@@ -5,7 +5,7 @@ from ..mcts.tree import Tree
 from ..mcts.tree_search import TreeSearch, Simulator
 
 
-def init_random_choice_strategy(random=Random()):
+def create_random_choice_strategy(random=Random()):
     def random_choice_strategy(moves):
         return random.choice(list(moves))
 
@@ -13,15 +13,8 @@ def init_random_choice_strategy(random=Random()):
 
 
 class MCTSPlayer(object):
-    def __init__(self,
-                 win_condition,
-                 loss_condition,
-                 draw_condition,
-                 selection_strategy,
-                 expansion_strategy,
-                 simulation_strategy,
-                 iterations=10,
-                 rollouts=10):
+    def __init__(self, win_condition, loss_condition, draw_condition, selection_strategy, expansion_strategy,
+                 simulation_strategy, iterations, rollouts, **kwargs):
 
         self.win_condition = win_condition
         self.loss_condition = loss_condition

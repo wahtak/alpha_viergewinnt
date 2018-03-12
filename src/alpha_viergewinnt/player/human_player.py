@@ -1,4 +1,7 @@
 class HumanPlayer(object):
+    def __init__(self, **kwargs):
+        pass
+
     def get_next_move(self, state):
         selected_move = None
         while selected_move not in state.get_possible_moves():

@@ -2,7 +2,7 @@ from random import Random
 
 
 class RandomPlayer(object):
-    def __init__(self, random=Random()):
+    def __init__(self, random=Random(), **kwargs):
         self.random = random
 
     def get_next_move(self, state):
