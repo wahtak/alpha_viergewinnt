@@ -16,8 +16,8 @@ def create_mcts_player(win_condition, loss_condition, draw_condition):
         selection_strategy=create_random_choice_strategy(),
         expansion_strategy=create_random_choice_strategy(),
         simulation_strategy=create_random_choice_strategy(),
-        iterations=100,
-        rollouts=100)
+        iterations=30,
+        rollouts=30)
 
 
 PLAYER_FACTORIES = {'random': RandomPlayer, 'human': HumanPlayer, 'mcts': create_mcts_player}

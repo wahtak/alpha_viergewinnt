@@ -48,9 +48,9 @@ class MCTSPlayer(object):
             tree_search.backpropagate(expanded_state, state_utility)
 
     def _get_state_utility(self, state):
-        initial_state = deepcopy(state)
         rollout_value_sum = 0
         for _ in range(self.rollouts):
+            initial_state = deepcopy(state)
             final_state = self.simulator.rollout(initial_state)
             rollout_value_sum += self.simulator.get_rollout_value(final_state)
         return rollout_value_sum / self.rollouts
