@@ -12,7 +12,7 @@ class Attributes(object):
         self.weight = weight
 
     def __str__(self):
-        return 'visit_count=%d\nweight=%d' % (self.visit_count, self.weight)
+        return 'visit_count=%d\nweight=%.02f' % (self.visit_count, self.weight)
 
 
 class Tree(nx.DiGraph):
@@ -53,5 +53,5 @@ class Tree(nx.DiGraph):
         node_labels = {node: str(self.attributes[node]) + '\n\n' + str(node) for node in self.nodes()}
         edge_labels = {edge: self.get_edge_data(*edge)['transition'] for edge in self.edges()}
         pos = nx.nx_pydot.graphviz_layout(self, prog='dot')
-        nx.draw_networkx(self, pos=pos, labels=node_labels, arrows=False, font_family='monospace')
-        nx.draw_networkx_edge_labels(self, pos=pos, edge_labels=edge_labels, font_family='monospace')
+        nx.draw_networkx(self, pos=pos, labels=node_labels, arrows=False, font_family='monospace', font_size=8)
+        nx.draw_networkx_edge_labels(self, pos=pos, edge_labels=edge_labels, font_family='monospace', font_size=8)
