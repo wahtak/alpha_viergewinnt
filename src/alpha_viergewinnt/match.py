@@ -1,3 +1,6 @@
+from copy import deepcopy
+
+
 def play_match(game, players, win_conditions, draw_condition, print_state, print_move, print_result):
     while not game.check(draw_condition):
         if print_state:
@@ -13,4 +16,27 @@ def play_match(game, players, win_conditions, draw_condition, print_state, print
             if print_result:
                 print(game)
                 print('Player %s wins!' % last_player.name)
-            return game.current_player
+            return last_player
+
+    if print_result:
+        print(game)
+        print('Draw!')
+    return None
+
+
+def evaluate_players(iterations, game, players, win_conditions, draw_condition):
+    results = {player: 0 for player in players}
+    results[None] = 0
+
+    for iteration in range(iterations):
+        winner = play_match(
+            deepcopy(game),
+            players,
+            win_conditions,
+            draw_condition,
+            print_state=False,
+            print_move=False,
+            print_result=False)
+        results[winner] += 1
+
+    return results
