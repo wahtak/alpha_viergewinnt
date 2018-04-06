@@ -43,7 +43,7 @@ class DrawCondition(object):
         return len(board.get_possible_moves()) == 0
 
 
-class Tictactoe(Board, FreeplayBoard, AlternatingPlayer, ConditionChecker):
+class Game(Board, FreeplayBoard, AlternatingPlayer, ConditionChecker):
     '''Combination of board, condition checker and alternating player with parameters of the game Tictactoe.'''
 
     def __init__(self):

@@ -43,7 +43,7 @@ class DrawCondition(object):
         return len(board.get_possible_moves()) == 0
 
 
-class Viergewinnt(Board, DropdownBoard, AlternatingPlayer, ConditionChecker):
+class Game(Board, DropdownBoard, AlternatingPlayer, ConditionChecker):
     '''Combination of board, condition checker and alternating player with parameters of the game Viergewinnt.'''
 
     def __init__(self):
