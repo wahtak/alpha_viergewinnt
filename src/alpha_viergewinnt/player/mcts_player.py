@@ -30,6 +30,7 @@ class MCTSPlayer(object):
             win_condition=self.win_condition,
             loss_condition=self.loss_condition,
             draw_condition=self.draw_condition)
+        self._last_tree = None
 
     def get_next_move(self, state):
         initial_state = state
@@ -38,6 +39,7 @@ class MCTSPlayer(object):
             tree, selection_strategy=self.selection_strategy, expansion_strategy=self.expansion_strategy)
 
         self._explore_tree_and_update_weights(tree_search, initial_state)
+        self._last_tree = tree
         return tree.get_transition_to_max_weight(initial_state)
 
     def _explore_tree_and_update_weights(self, tree_search, initial_state):
@@ -57,3 +59,6 @@ class MCTSPlayer(object):
             final_state = self.simulator.rollout(initial_state)
             rollout_value_sum += self.simulator.get_rollout_value(final_state)
         return rollout_value_sum / self.rollouts
+
+    def draw_last_tree(self):
+        self._last_tree.draw()
