@@ -3,6 +3,8 @@ import random
 
 from .board import *
 from .viergewinnt import *
+from .condition import *
+from .alternating_player import *
 
 
 @pytest.fixture

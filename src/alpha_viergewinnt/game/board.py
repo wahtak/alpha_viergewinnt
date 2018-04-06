@@ -23,7 +23,7 @@ class Board(object):
     '''
     Generic playing board with string representation and hash (of current state).
 
-    Use numpy arrays for speed during state transitions and winning condition checking.
+    Use numpy arrays for speed during state transitions and condition checking.
     '''
 
     def __init__(self, size, output_row_order):
