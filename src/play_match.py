@@ -1,7 +1,7 @@
 import click
 
 from alpha_viergewinnt.game.board import Player
-from alpha_viergewinnt.game.viergewinnt import Viergewinnt, WinCondition, DrawCondition
+from alpha_viergewinnt.game import tictactoe, viergewinnt
 from alpha_viergewinnt.player.random_player import RandomPlayer
 from alpha_viergewinnt.player.human_player import HumanPlayer
 from alpha_viergewinnt.player.mcts_player import MCTSPlayer, create_random_choice_strategy
@@ -20,21 +20,30 @@ def create_mcts_player(win_condition, loss_condition, draw_condition):
         rollouts=30)
 
 
+GAME_FACTORIES = {
+    'tictactoe': (tictactoe.Game, tictactoe.WinCondition, tictactoe.DrawCondition),
+    'viergewinnt': (viergewinnt.Game, viergewinnt.WinCondition, viergewinnt.DrawCondition)
+}
 PLAYER_FACTORIES = {'random': RandomPlayer, 'human': HumanPlayer, 'mcts': create_mcts_player}
 
 
 @click.command()
 @click.option('-x', required=True, type=click.Choice(PLAYER_FACTORIES.keys()), help='Strategy for player X')
 @click.option('-o', required=True, type=click.Choice(PLAYER_FACTORIES.keys()), help='Strategy for player O')
-def cmd(x, o):
+@click.argument('game', type=click.Choice(GAME_FACTORIES.keys()))
+def cmd(game, x, o):
     """Play a Viergewinnt match"""
-    game = Viergewinnt()
+    Game, WinCondition, DrawCondition = GAME_FACTORIES[game]
+    PlayerX = PLAYER_FACTORIES[x]
+    PlayerO = PLAYER_FACTORIES[o]
+
+    game = Game()
     player_x_win_condition = WinCondition(Player.X)
     player_o_win_condition = WinCondition(Player.O)
     draw_condition = DrawCondition()
-    player_x = PLAYER_FACTORIES[x](
+    player_x = PlayerX(
         win_condition=player_x_win_condition, loss_condition=player_o_win_condition, draw_condition=draw_condition)
-    player_o = PLAYER_FACTORIES[o](
+    player_o = PlayerO(
         win_condition=player_o_win_condition, loss_condition=player_x_win_condition, draw_condition=draw_condition)
 
     play_match(

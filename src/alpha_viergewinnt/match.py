@@ -7,7 +7,7 @@ def play_match(game, players, win_conditions, draw_condition, print_state, print
             print(game)
         next_move = players[game.current_player].get_next_move(game)
         if print_move:
-            print('Player %s plays %d' % (game.current_player.name, next_move))
+            print('Player %s plays %s' % (game.current_player.name, next_move))
 
         last_player = game.current_player
         game.play_move(player=game.current_player, move=next_move)
