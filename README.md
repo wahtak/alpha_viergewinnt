@@ -11,16 +11,17 @@ _WORK IN PROGRESS_
 ## Usage
     $ python play_match.py --help
     Usage: play_match.py [OPTIONS]
-    
-      Play a Viergewinnt match
-    
+
+      Play a match
+
     Options:
-      -x [random|human|mcts]  Strategy for player X  [required]
-      -o [random|human|mcts]  Strategy for player O  [required]
-      --help                  Show this message and exit.
-    
-    $ python play_match.py -x human -o mcts
-    
+      --game [tictactoe|viergewinnt]  Game to be played  [required]
+      -x [random|human|mcts]          Strategy for player X  [required]
+      -o [random|human|mcts]          Strategy for player O  [required]
+      --help                          Show this message and exit.
+
+    $ python play_match.py -x human -o mcts --game viergewinnt
+
 ## MCTS visualization
 Visualization of MCTS search tree with networkx
 

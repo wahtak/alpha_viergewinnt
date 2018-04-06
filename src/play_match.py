@@ -28,11 +28,11 @@ PLAYER_FACTORIES = {'random': RandomPlayer, 'human': HumanPlayer, 'mcts': create
 
 
 @click.command()
+@click.option('--game', required=True, type=click.Choice(GAME_FACTORIES.keys()), help='Game to be played')
 @click.option('-x', required=True, type=click.Choice(PLAYER_FACTORIES.keys()), help='Strategy for player X')
 @click.option('-o', required=True, type=click.Choice(PLAYER_FACTORIES.keys()), help='Strategy for player O')
-@click.argument('game', type=click.Choice(GAME_FACTORIES.keys()))
 def cmd(game, x, o):
-    """Play a Viergewinnt match"""
+    """Play a match"""
     Game, WinCondition, DrawCondition = GAME_FACTORIES[game]
     PlayerX = PLAYER_FACTORIES[x]
     PlayerO = PLAYER_FACTORIES[o]
