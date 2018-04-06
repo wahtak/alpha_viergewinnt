@@ -2,7 +2,7 @@ from random import Random
 from copy import deepcopy
 
 from ..mcts.tree import Tree
-from ..mcts.tree_search import TreeSearch, Simulator
+from ..mcts.tree_search import TreeSearch, Simulator, NoUnexploredMovesException
 
 
 def create_random_choice_strategy(random=Random()):
@@ -43,7 +43,10 @@ class MCTSPlayer(object):
     def _explore_tree_and_update_weights(self, tree_search, initial_state):
         for _ in range(self.iterations):
             leaf_state = tree_search.select_leaf(initial_state)
-            expanded_state = tree_search.expand(leaf_state)
+            try:
+                expanded_state = tree_search.expand(leaf_state)
+            except NoUnexploredMovesException:
+                expanded_state = leaf_state
             state_utility = self._get_state_utility(expanded_state)
             tree_search.backpropagate(expanded_state, state_utility)
 

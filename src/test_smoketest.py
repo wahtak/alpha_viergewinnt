@@ -2,17 +2,21 @@ import pytest
 from random import Random
 
 from alpha_viergewinnt.game.board import Player
-from alpha_viergewinnt.game.viergewinnt import Viergewinnt, WinCondition, DrawCondition
+from alpha_viergewinnt.game import tictactoe, viergewinnt
 from alpha_viergewinnt.player.random_player import RandomPlayer
 from alpha_viergewinnt.player.mcts_player import MCTSPlayer, create_random_choice_strategy
 from alpha_viergewinnt.match import play_match, evaluate_players
 
+GAME_FACTORIES = [(tictactoe.Game, tictactoe.WinCondition, tictactoe.DrawCondition),
+                  (viergewinnt.Game, viergewinnt.WinCondition, viergewinnt.DrawCondition)]
 
-@pytest.fixture
-def default_setup():
+
+@pytest.fixture(params=GAME_FACTORIES)
+def setup(request):
+    Game, WinCondition, DrawCondition = request.param
     # initialize random players with seeded random number generator for deterministic test
     random = Random(1)
-    game = Viergewinnt()
+    game = Game()
     player_x_win_condition = WinCondition(Player.X)
     player_o_win_condition = WinCondition(Player.O)
     win_conditions = {Player.X: player_x_win_condition, Player.O: player_o_win_condition}
@@ -31,8 +35,8 @@ def default_setup():
     return game, players, win_conditions, draw_condition
 
 
-def test_smoketest_single_match(default_setup):
-    game, players, win_conditions, draw_condition = default_setup
+def test_smoketest_single_match(setup):
+    game, players, win_conditions, draw_condition = setup
     winner = play_match(
         game=game,
         players=players,
@@ -44,8 +48,8 @@ def test_smoketest_single_match(default_setup):
     assert isinstance(winner, Player) or winner is None
 
 
-def test_smoketest_evaluation(default_setup):
-    game, players, win_conditions, draw_condition = default_setup
+def test_smoketest_evaluation(setup):
+    game, players, win_conditions, draw_condition = setup
     iterations = 3
     results = evaluate_players(
         iterations=iterations, game=game, players=players, win_conditions=win_conditions, draw_condition=draw_condition)
