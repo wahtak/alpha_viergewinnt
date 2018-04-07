@@ -55,5 +55,8 @@ class Board(object):
         # only consider state for hash
         return hash(self.state.tobytes())
 
+    def __eq__(self, other):
+        return hash(self) == hash(other)
+
     def get_player_state(self, player):
         return (self.state == player.value).astype(np.int16)
