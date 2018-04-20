@@ -45,12 +45,15 @@ class MCTSPlayer(object):
     def _explore_tree_and_update_weights(self, tree_search, initial_state):
         for _ in range(self.iterations):
             leaf_state = tree_search.select_leaf(initial_state)
-            try:
+            if not self._is_final_state(leaf_state):
                 expanded_state = tree_search.expand(leaf_state)
-            except NoUnexploredMovesException:
+            else:
                 expanded_state = leaf_state
             state_utility = self._get_state_utility(expanded_state)
             tree_search.backpropagate(expanded_state, state_utility)
+
+    def _is_final_state(self, state):
+        return state.check(self.win_condition) or state.check(self.loss_condition) or state.check(self.draw_condition)
 
     def _get_state_utility(self, state):
         rollout_value_sum = 0
