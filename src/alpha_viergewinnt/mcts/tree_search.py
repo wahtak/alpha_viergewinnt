@@ -58,9 +58,6 @@ class Simulator(object):
         self.loss_condition = loss_condition
         self.draw_condition = draw_condition
 
-    def _is_final_state(self, state):
-        return state.check(self.win_condition) or state.check(self.loss_condition) or state.check(self.draw_condition)
-
     def get_rollout_value(self, state):
         assert self._is_final_state(state) is True
 
@@ -70,6 +67,9 @@ class Simulator(object):
         if state.check(self.loss_condition):
             rollout_value -= 1
         return rollout_value
+
+    def _is_final_state(self, state):
+        return state.check(self.win_condition) or state.check(self.loss_condition) or state.check(self.draw_condition)
 
     def rollout(self, initial_state):
         state = initial_state
