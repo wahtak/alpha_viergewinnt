@@ -2,7 +2,7 @@ from random import Random
 from copy import deepcopy
 
 from ..mcts.tree import Tree
-from ..mcts.tree_search import TreeSearch, Simulator, NoUnexploredMovesException
+from ..mcts.tree_search import TreeSearch, Simulator
 
 
 def create_random_choice_strategy(random=Random()):
