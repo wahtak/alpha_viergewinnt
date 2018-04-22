@@ -21,5 +21,5 @@ class HumanPlayer(object):
 def get_move_from_string(string):
     move = tuple(int(match) for match in re.findall('[\d]+', string))
     if len(move) == 1:
-        return move.pop()
+        return move[0]
     return move
