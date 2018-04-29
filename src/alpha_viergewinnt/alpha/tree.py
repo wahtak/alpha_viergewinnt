@@ -16,18 +16,21 @@ class Tree(nx.DiGraph):
     def states(self):
         return self.nodes
 
-    def add_state(self, state, source, action):
+    def add_successor(self, successor, source, action):
         if action in self.get_actions(source):
             raise ActionAlreadyExistsException()
-        self.add_node(state, attributes=StateAttributes())
-        self.add_edge(source, state, action=action, attributes=TransitionAttributes())
+        self.add_node(successor, attributes=StateAttributes())
+        self.add_edge(source, successor, action=action, attributes=TransitionAttributes())
 
     def get_actions(self, source):
-        return set([self.get_edge_data(*edge)['action'] for edge in self.edges(source)])
+        return [self.get_edge_data(*edge)['action'] for edge in self.edges(source)]
 
     def get_successor(self, source, action):
         successor, = [edge[1] for edge in self.edges(source) if self.get_edge_data(*edge)['action'] == action]
         return successor
+
+    def has_successors(self, source):
+        return len(self.edges(source)) > 0
 
     def get_attributes(self, source, action=None):
         if action is None:
