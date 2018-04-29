@@ -17,29 +17,29 @@ class Tree(nx.DiGraph):
     def states(self):
         return self.nodes
 
-    def add(self, state, source, action):
-        if action in self.actions(source):
+    def add_state(self, state, source, action):
+        if action in self.get_actions(source):
             raise ActionAlreadyExistsException()
         self.add_node(state, attributes=StateAttributes())
         self.add_edge(source, state, action=action, attributes=TransitionAttributes())
 
-    def actions(self, source):
+    def get_actions(self, source):
         return set([self.get_edge_data(*edge)['action'] for edge in self.edges(source)])
 
-    def successor(self, source, action):
+    def get_successor(self, source, action):
         successor, = [edge[1] for edge in self.edges(source) if self.get_edge_data(*edge)['action'] == action]
         return successor
 
-    def attributes(self, source, action=None):
+    def get_attributes(self, source, action=None):
         if action is None:
-            return self._state_attributes(source)
+            return self._get_state_attributes(source)
         else:
-            return self._transition_attributes(source, action)
+            return self._get_transition_attributes(source, action)
 
-    def _state_attributes(self, source):
+    def _get_state_attributes(self, source):
         return self.nodes[source]['attributes']
 
-    def _transition_attributes(self, source, action):
+    def _get_transition_attributes(self, source, action):
         transition, = [edge for edge in self.edges(source) if self.get_edge_data(*edge)['action'] == action]
         return self.get_edge_data(*transition)['attributes']
 
@@ -54,8 +54,8 @@ class Tree(nx.DiGraph):
         nx.draw_networkx_edge_labels(self, pos=pos, edge_labels=edge_labels, font_family='monospace', font_size=8)
 
     def _get_node_label(self, node):
-        return str(self.attributes(node)) + '\n\n' + str(node)
+        return str(self.get_attributes(node)) + '\n\n' + str(node)
 
     def _get_edge_label(self, edge):
-        edge_data = self.get_edge_data(*edge)
-        return str(edge_data['action']) + '\n\n' + str(edge_data['attributes'])
+        action = self.get_edge_data(*edge)['action']
+        return str(action) + '\n\n' + str(self.get_attributes(edge[0], action))
