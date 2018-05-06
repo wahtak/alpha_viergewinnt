@@ -32,16 +32,10 @@ class Tree(nx.DiGraph):
     def has_successors(self, source):
         return len(self.edges(source)) > 0
 
-    def get_attributes(self, source, action=None):
-        if action is None:
-            return self._get_state_attributes(source)
-        else:
-            return self._get_transition_attributes(source, action)
+    def get_state_attributes(self, state):
+        return self.nodes[state]['attributes']
 
-    def _get_state_attributes(self, source):
-        return self.nodes[source]['attributes']
-
-    def _get_transition_attributes(self, source, action):
+    def get_transition_attributes(self, source, action):
         transition, = [edge for edge in self.edges(source) if self.get_edge_data(*edge)['action'] == action]
         return self.get_edge_data(*transition)['attributes']
 
@@ -49,15 +43,15 @@ class Tree(nx.DiGraph):
         return nx.ancestors(self, source) | {source}
 
     def draw(self):
-        node_labels = {node: self._get_node_label(node) for node in self.nodes()}
-        edge_labels = {edge: self._get_edge_label(edge) for edge in self.edges()}
+        state_labels = {node: self._get_state_label(node) for node in self.nodes()}
+        transition_labels = {edge: self._get_transition_label(edge) for edge in self.edges()}
         pos = nx.nx_pydot.graphviz_layout(self, prog='dot')
-        nx.draw_networkx(self, pos=pos, labels=node_labels, arrows=False, font_family='monospace', font_size=8)
-        nx.draw_networkx_edge_labels(self, pos=pos, edge_labels=edge_labels, font_family='monospace', font_size=8)
+        nx.draw_networkx(self, pos=pos, labels=state_labels, arrows=False, font_family='monospace', font_size=8)
+        nx.draw_networkx_edge_labels(self, pos=pos, edge_labels=transition_labels, font_family='monospace', font_size=8)
 
-    def _get_node_label(self, node):
-        return str(self.get_attributes(node)) + '\n\n' + str(node)
+    def _get_state_label(self, node):
+        return str(self.get_state_attributes(node)) + '\n\n' + str(node)
 
-    def _get_edge_label(self, edge):
+    def _get_transition_label(self, edge):
         action = self.get_edge_data(*edge)['action']
-        return str(action) + '\n\n' + str(self.get_attributes(edge[0], action))
+        return str(action) + '\n\n' + str(self.get_transition_attributes(edge[0], action))

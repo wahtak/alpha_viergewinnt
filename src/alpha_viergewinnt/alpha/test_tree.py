@@ -10,9 +10,9 @@ def test_add_defaults():
     tree.add_successor(20, source=0, action=10)
 
     assert tree.get_successor(source=0, action=10) == 20
-    assert tree.get_attributes(source=0, action=10).action_value is None
-    assert tree.get_attributes(source=0, action=10).prior_probability is None
-    assert tree.get_attributes(source=0, action=10).visit_count == 0
+    assert tree.get_transition_attributes(source=0, action=10).action_value is None
+    assert tree.get_transition_attributes(source=0, action=10).prior_probability is None
+    assert tree.get_transition_attributes(source=0, action=10).visit_count == 0
 
 
 def test_add_existing_action():
@@ -26,15 +26,15 @@ def test_add_existing_action():
 def test_attributes():
     tree = Tree(0)
     tree.add_successor(1, source=0, action=10)
-    tree.get_attributes(source=0, action=10).action_value = 0.5
-    tree.get_attributes(source=0, action=10).prior_probability = 0.2
-    tree.get_attributes(source=0, action=10).visit_count = 0.2
-    tree.get_attributes(source=0).state_value = 1
+    tree.get_transition_attributes(source=0, action=10).action_value = 0.5
+    tree.get_transition_attributes(source=0, action=10).prior_probability = 0.2
+    tree.get_transition_attributes(source=0, action=10).visit_count = 2
+    tree.get_state_attributes(state=1).state_value = 1
 
-    assert tree.get_attributes(source=0, action=10).action_value == 0.5
-    assert tree.get_attributes(source=0, action=10).prior_probability == 0.2
-    assert tree.get_attributes(source=0, action=10).visit_count == 0.2
-    assert tree.get_attributes(source=0).state_value == 1
+    assert tree.get_transition_attributes(source=0, action=10).action_value == 0.5
+    assert tree.get_transition_attributes(source=0, action=10).prior_probability == 0.2
+    assert tree.get_transition_attributes(source=0, action=10).visit_count == 2
+    assert tree.get_state_attributes(state=1).state_value == 1
 
 
 def test_actions_successor_and_path_to_root():
