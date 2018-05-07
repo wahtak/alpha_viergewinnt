@@ -37,7 +37,7 @@ def test_attributes():
     assert tree.get_state_attributes(state=1).state_value == 1
 
 
-def test_actions_successor_and_path_to_root():
+def test_actions_successor_and_predecessors():
     tree = Tree(0)
     tree.add_successor(1, source=0, action=10)
     tree.add_successor(5, source=0, action=50)
@@ -45,10 +45,12 @@ def test_actions_successor_and_path_to_root():
 
     assert set(tree.get_actions(source=0)) == {10, 50}
     assert tree.get_successor(source=0, action=10) == 1
+    assert tree.get_predecessors(state=1) == {0}
     assert tree.get_successor(source=0, action=50) == 5
+    assert tree.get_predecessors(state=5) == {0}
     assert set(tree.get_actions(source=1)) == {30}
     assert tree.get_successor(source=1, action=30) == 3
-    assert tree.get_path_to_root(source=3) == {0, 1, 3}
+    assert tree.get_predecessors(state=3) == {1}
 
 
 def test_has_successors():
@@ -87,7 +89,4 @@ def test_hash_equality_is_identity():
     tree.add_successor(HashableState(3), source=HashableState(2), action=3)
 
     assert len(tree.states) == 4
-    assert tree.get_path_to_root(source=HashableState(3)) == {
-        HashableState(0), HashableState(1), HashableState(2),
-        HashableState(3)
-    }
+    assert tree.get_predecessors(state=HashableState(3)) == {HashableState(1), HashableState(2)}

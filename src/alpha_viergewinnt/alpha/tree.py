@@ -39,8 +39,8 @@ class Tree(nx.DiGraph):
         transition, = [edge for edge in self.edges(source) if self.get_edge_data(*edge)['action'] == action]
         return self.get_edge_data(*transition)['attributes']
 
-    def get_path_to_root(self, source):
-        return nx.ancestors(self, source) | {source}
+    def get_predecessors(self, state):
+        return set(self.predecessors(state))
 
     def draw(self):
         state_labels = {node: self._get_state_label(node) for node in self.nodes()}
