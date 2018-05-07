@@ -7,7 +7,7 @@ class ActionAlreadyExistsException(Exception):
     pass
 
 
-class Tree(nx.DiGraph):
+class GameStateGraph(nx.DiGraph):
     def __init__(self, root):
         super().__init__()
         self.add_node(root, attributes=StateAttributes())
