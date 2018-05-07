@@ -103,3 +103,34 @@ def test_evaluate(empty_dummy_state_tree_search):
     assert tree.get_transition_attributes(root, actions[0]).prior_probability == 1
     assert all([tree.get_transition_attributes(root, action).prior_probability == 0 for action in actions[1:]])
     assert tree.get_state_attributes(root).state_value == 1
+
+
+@pytest.mark.skip()
+def test_backup(empty_dummy_state_tree_search):
+    tree = Tree(0)
+    tree.add_successor(1, source=0, action=10)
+    tree.get_transition_attributes(source=0, action=10).visit_count = 1
+    tree.get_transition_attributes(source=0, action=10).action_value = 1.0
+    tree.get_state_attributes(state=1).state_value = 1.0
+
+    # once visited leaf node
+    tree.add_successor(2, source=1, action=20)
+    tree.get_transition_attributes(source=1, action=20).visit_count = 1
+    tree.get_transition_attributes(source=1, action=20).action_value = 0.5
+    tree.get_state_attributes(state=2).state_value = 0.5
+
+    # unvisited leaf node
+    tree.add_successor(3, source=1, action=30)
+    tree.get_transition_attributes(source=1, action=30).visit_count = 0
+
+    # simulate selection, evaluation of state 3
+    tree.get_transition_attributes(source=0, action=10).visit_count += 1
+    tree.get_transition_attributes(source=1, action=30).visit_count += 1
+    tree.get_state_attributes(state=3).state_value = 2.0
+
+    tree_search = TreeSearch(tree, selection_strategy=None, evaluation_model=None)
+    tree_search.backup(3)
+
+    assert tree.get_transition_attributes(source=1, action=30).action_value == pytest.approx(2.0)
+    assert tree.get_transition_attributes(source=1, action=20).action_value == pytest.approx(0.5)
+    assert tree.get_transition_attributes(source=0, action=10).action_value == pytest.approx(1.25)

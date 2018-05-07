@@ -41,3 +41,6 @@ class TreeSearch(object):
         for action, prior_probability in zip(actions, prior_probabilities):
             self.tree.get_transition_attributes(state, action).prior_probability = prior_probability
         self.tree.get_state_attributes(state).state_value = state_value
+
+    def backup(self, leaf):
+        pass
