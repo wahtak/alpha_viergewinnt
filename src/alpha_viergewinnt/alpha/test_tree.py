@@ -26,13 +26,13 @@ def test_add_existing_action():
 def test_attributes():
     tree = Tree(0)
     tree.add_successor(1, source=0, action=10)
-    tree.get_transition_attributes(source=0, action=10).action_value = 0.5
-    tree.get_transition_attributes(source=0, action=10).prior_probability = 0.2
+    tree.get_transition_attributes(source=0, action=10).action_value = 5
+    tree.get_transition_attributes(source=0, action=10).prior_probability = 1
     tree.get_transition_attributes(source=0, action=10).visit_count = 2
     tree.get_state_attributes(state=1).state_value = 1
 
-    assert tree.get_transition_attributes(source=0, action=10).action_value == 0.5
-    assert tree.get_transition_attributes(source=0, action=10).prior_probability == 0.2
+    assert tree.get_transition_attributes(source=0, action=10).action_value == 5
+    assert tree.get_transition_attributes(source=0, action=10).prior_probability == 1
     assert tree.get_transition_attributes(source=0, action=10).visit_count == 2
     assert tree.get_state_attributes(state=1).state_value == 1
 
