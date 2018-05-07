@@ -1,8 +1,8 @@
 from random import Random
 from copy import deepcopy
 
-from ..mcts.tree import Tree
-from ..mcts.tree_search import TreeSearch, Simulator
+from .tree import Tree
+from .tree_search import TreeSearch, Simulator
 
 
 def create_random_choice_strategy(random=Random()):
@@ -12,7 +12,7 @@ def create_random_choice_strategy(random=Random()):
     return random_choice_strategy
 
 
-class MCTSPlayer(object):
+class PureMctsPlayer(object):
     def __init__(self, win_condition, loss_condition, draw_condition, selection_strategy, expansion_strategy,
                  simulation_strategy, iterations, rollouts, **kwargs):
 

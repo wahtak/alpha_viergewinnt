@@ -4,12 +4,12 @@ from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game import tictactoe, viergewinnt
 from alpha_viergewinnt.player.random_player import RandomPlayer
 from alpha_viergewinnt.player.human_player import HumanPlayer
-from alpha_viergewinnt.player.mcts_player import MCTSPlayer, create_random_choice_strategy
+from alpha_viergewinnt.player.pure_mcts_player import PureMctsPlayer, create_random_choice_strategy
 from alpha_viergewinnt.match import play_match
 
 
 def create_mcts_player(win_condition, loss_condition, draw_condition):
-    return MCTSPlayer(
+    return PureMctsPlayer(
         win_condition=win_condition,
         loss_condition=loss_condition,
         draw_condition=draw_condition,

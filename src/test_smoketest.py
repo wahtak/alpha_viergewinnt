@@ -4,7 +4,7 @@ from random import Random
 from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game import tictactoe, viergewinnt
 from alpha_viergewinnt.player.random_player import RandomPlayer
-from alpha_viergewinnt.player.mcts_player import MCTSPlayer, create_random_choice_strategy
+from alpha_viergewinnt.player.pure_mcts_player import PureMctsPlayer, create_random_choice_strategy
 from alpha_viergewinnt.match import play_match, evaluate_players
 
 GAME_FACTORIES = [(tictactoe.Game, tictactoe.WinCondition, tictactoe.DrawCondition),
@@ -21,7 +21,7 @@ def setup(request):
     player_o_win_condition = WinCondition(Player.O)
     win_conditions = {Player.X: player_x_win_condition, Player.O: player_o_win_condition}
     draw_condition = DrawCondition()
-    mcts_player_x = MCTSPlayer(
+    mcts_player_x = PureMctsPlayer(
         win_condition=player_x_win_condition,
         loss_condition=player_o_win_condition,
         draw_condition=draw_condition,
