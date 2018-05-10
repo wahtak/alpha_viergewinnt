@@ -6,7 +6,7 @@ class StateAttributes(object):
         return 'state_value=' + _try_format_float(self.state_value)
 
 
-class TransitionAttributes(object):
+class ActionAttributes(object):
     def __init__(self, action_value=None, prior_probability=None, visit_count=0):
         self.action_value = action_value
         self.prior_probability = prior_probability

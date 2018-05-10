@@ -63,8 +63,8 @@ def test_expand(empty_dummy_state_mcts):
     actions = graph.get_actions(root)
     assert len(actions) == 3
     assert set(actions) == {0, 1, 2}
-    assert all([graph.get_transition_attributes(root, action).action_value is None for action in actions])
-    assert all([graph.get_transition_attributes(root, action).visit_count == 0 for action in actions])
+    assert all([graph.get_action_attributes(root, action).action_value is None for action in actions])
+    assert all([graph.get_action_attributes(root, action).visit_count == 0 for action in actions])
     assert all([graph.get_successor(root, action).step == 1 for action in actions])
     assert all([len(graph.get_successor(root, action).played_moves) == 1 for action in actions])
     assert all([action == graph.get_successor(root, action).played_moves[0] for action in actions])
@@ -81,7 +81,7 @@ def test_select_leaf(empty_dummy_state_mcts):
     # assume selection strategy always picks first move
     selected_leaf1_action = root.get_possible_moves()[0]
     assert selected_leaf1.step == 1
-    assert graph.get_transition_attributes(root, selected_leaf1_action).visit_count == 1
+    assert graph.get_action_attributes(root, selected_leaf1_action).visit_count == 1
 
     mcts.expand(selected_leaf1)
     selected_leaf2 = mcts.select_leaf(root)
@@ -90,8 +90,8 @@ def test_select_leaf(empty_dummy_state_mcts):
     selected_leaf2_action = selected_leaf1.get_possible_moves()[0]
 
     assert selected_leaf2.step == 2
-    assert graph.get_transition_attributes(root, selected_leaf1_action).visit_count == 2
-    assert graph.get_transition_attributes(selected_leaf1, selected_leaf2_action).visit_count == 1
+    assert graph.get_action_attributes(root, selected_leaf1_action).visit_count == 2
+    assert graph.get_action_attributes(selected_leaf1, selected_leaf2_action).visit_count == 1
 
 
 def test_evaluate(empty_dummy_state_mcts):
@@ -100,8 +100,8 @@ def test_evaluate(empty_dummy_state_mcts):
     mcts.expand(root)
     mcts.evaluate(root)
     actions = graph.get_actions(root)
-    assert graph.get_transition_attributes(root, actions[0]).prior_probability == 1
-    assert all([graph.get_transition_attributes(root, action).prior_probability == 0 for action in actions[1:]])
+    assert graph.get_action_attributes(root, actions[0]).prior_probability == 1
+    assert all([graph.get_action_attributes(root, action).prior_probability == 0 for action in actions[1:]])
     assert graph.get_state_attributes(root).state_value == 1
 
 
@@ -109,28 +109,28 @@ def test_evaluate(empty_dummy_state_mcts):
 def test_backup(empty_dummy_state_mcts):
     graph = GameStateGraph(0)
     graph.add_successor(1, source=0, action=10)
-    graph.get_transition_attributes(source=0, action=10).visit_count = 1
-    graph.get_transition_attributes(source=0, action=10).action_value = 1.0
+    graph.get_action_attributes(source=0, action=10).visit_count = 1
+    graph.get_action_attributes(source=0, action=10).action_value = 1.0
     graph.get_state_attributes(state=1).state_value = 1.0
 
     # once visited leaf node
     graph.add_successor(2, source=1, action=20)
-    graph.get_transition_attributes(source=1, action=20).visit_count = 1
-    graph.get_transition_attributes(source=1, action=20).action_value = 0.5
+    graph.get_action_attributes(source=1, action=20).visit_count = 1
+    graph.get_action_attributes(source=1, action=20).action_value = 0.5
     graph.get_state_attributes(state=2).state_value = 0.5
 
     # unvisited leaf node
     graph.add_successor(3, source=1, action=30)
-    graph.get_transition_attributes(source=1, action=30).visit_count = 0
+    graph.get_action_attributes(source=1, action=30).visit_count = 0
 
     # simulate selection, evaluation of state 3
-    graph.get_transition_attributes(source=0, action=10).visit_count += 1
-    graph.get_transition_attributes(source=1, action=30).visit_count += 1
+    graph.get_action_attributes(source=0, action=10).visit_count += 1
+    graph.get_action_attributes(source=1, action=30).visit_count += 1
     graph.get_state_attributes(state=3).state_value = 2.0
 
     mcts = Mcts(graph, selection_strategy=None, evaluation_model=None)
     mcts.backup(3)
 
-    assert graph.get_transition_attributes(source=1, action=30).action_value == pytest.approx(2.0)
-    assert graph.get_transition_attributes(source=1, action=20).action_value == pytest.approx(0.5)
-    assert graph.get_transition_attributes(source=0, action=10).action_value == pytest.approx(1.25)
+    assert graph.get_action_attributes(source=1, action=30).action_value == pytest.approx(2.0)
+    assert graph.get_action_attributes(source=1, action=20).action_value == pytest.approx(0.5)
+    assert graph.get_action_attributes(source=0, action=10).action_value == pytest.approx(1.25)

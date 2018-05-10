@@ -16,13 +16,13 @@ class Mcts(object):
         while self.graph.has_successors(state):
             actions, attributes = self._get_actions_and_attributes(state)
             selected_action = self.selection_strategy(actions, attributes)
-            self.graph.get_transition_attributes(state, selected_action).visit_count += 1
+            self.graph.get_action_attributes(state, selected_action).visit_count += 1
             state = self.graph.get_successor(state, selected_action)
         return state
 
     def _get_actions_and_attributes(self, state):
         actions = self.graph.get_actions(state)
-        attributes = [self.graph.get_transition_attributes(state, action) for action in actions]
+        attributes = [self.graph.get_action_attributes(state, action) for action in actions]
         return actions, attributes
 
     def expand(self, leaf):
@@ -39,7 +39,7 @@ class Mcts(object):
         actions, attributes = self._get_actions_and_attributes(state)
         prior_probabilities, state_value = self.evaluation_model(actions, state)
         for action, prior_probability in zip(actions, prior_probabilities):
-            self.graph.get_transition_attributes(state, action).prior_probability = prior_probability
+            self.graph.get_action_attributes(state, action).prior_probability = prior_probability
         self.graph.get_state_attributes(state).state_value = state_value
 
     def backup(self, leaf):
