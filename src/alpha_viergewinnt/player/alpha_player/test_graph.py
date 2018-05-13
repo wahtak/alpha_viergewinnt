@@ -90,3 +90,8 @@ def test_hash_equality_is_identity():
 
     assert len(graph.states) == 4
     assert graph.get_predecessors(state=HashableState(3)) == {HashableState(1), HashableState(2)}
+
+
+@pytest.mark.skip()
+def test_path():
+    pass

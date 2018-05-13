@@ -55,3 +55,23 @@ class GameStateGraph(nx.DiGraph):
     def _get_action_label(self, edge):
         action = self.get_edge_data(*edge)['action']
         return str(action) + '\n\n' + str(self.get_action_attributes(edge[0], action))
+
+
+class GameStatePath(GameStateGraph):
+    def __init__(self, root):
+        super().__init__(root)
+        self.root = root
+        self.leaf = root
+
+    def add_successor(self, successor, action):
+        self.add_node(successor)
+        self.add_edge(self.leaf, successor, action=action)
+        self.leaf = successor
+
+    def get_action(self, source):
+        action, = self.get_actions(source)
+        return action
+
+    def get_predecessor(self, state):
+        predecessor, = self.get_predecessors(state)
+        return predecessor
