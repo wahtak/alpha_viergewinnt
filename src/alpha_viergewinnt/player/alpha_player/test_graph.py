@@ -12,7 +12,7 @@ def test_add_defaults():
     assert graph.get_successor(source=0, action=10) == 20
     assert graph.get_action_attributes(source=0, action=10).action_value is None
     assert graph.get_action_attributes(source=0, action=10).prior_probability is None
-    assert graph.get_action_attributes(source=0, action=10).visit_count == 0
+    assert graph.get_action_attributes(source=0, action=10).visit_count is None
 
 
 def test_add_existing_action():

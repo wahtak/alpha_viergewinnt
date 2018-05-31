@@ -63,7 +63,7 @@ def test_expand(empty_dummy_state_mcts):
     actions = graph.get_actions(root)
     assert len(actions) == 3
     assert set(actions) == {0, 1, 2}
-    assert all([graph.get_action_attributes(root, action).action_value is None for action in actions])
+    assert all([graph.get_action_attributes(root, action).action_value == 0 for action in actions])
     assert all([graph.get_action_attributes(root, action).visit_count == 0 for action in actions])
     assert all([graph.get_successor(root, action).step == 1 for action in actions])
     assert all([len(graph.get_successor(root, action).played_moves) == 1 for action in actions])

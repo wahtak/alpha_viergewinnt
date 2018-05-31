@@ -7,7 +7,7 @@ class StateAttributes(object):
 
 
 class ActionAttributes(object):
-    def __init__(self, action_value=None, prior_probability=None, visit_count=0):
+    def __init__(self, action_value=None, prior_probability=None, visit_count=None):
         self.action_value = action_value
         self.prior_probability = prior_probability
         self.visit_count = visit_count
