@@ -139,3 +139,19 @@ def test_backup(empty_dummy_state_mcts):
     assert graph.get_action_attributes(source=1, action=30).action_value == pytest.approx(2.0)
     assert graph.get_action_attributes(source=1, action=20).action_value == pytest.approx(0.5)
     assert graph.get_action_attributes(source=0, action=10).action_value == pytest.approx(1.25)
+
+
+def test_simulate_step(empty_dummy_state_mcts):
+    root, graph, mcts = empty_dummy_state_mcts
+
+    mcts.simulate_step(source=root)
+    mcts.simulate_step(source=root)
+
+    assert graph.get_action_attributes(source=root, action=0).visit_count == 1
+    assert graph.get_action_attributes(source=root, action=1).visit_count == 0
+    assert graph.get_action_attributes(source=root, action=2).visit_count == 0
+    second_expanded = graph.get_successor(root, action=0)
+    assert graph.get_action_attributes(source=second_expanded, action=0).visit_count == 0
+    assert graph.get_action_attributes(source=second_expanded, action=1).visit_count == 0
+    assert graph.get_action_attributes(source=second_expanded, action=2).visit_count == 0
+    assert graph.get_state_attributes(state=second_expanded).state_value == 1

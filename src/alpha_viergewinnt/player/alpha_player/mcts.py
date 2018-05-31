@@ -14,6 +14,12 @@ class Mcts(object):
         self.selection_strategy = selection_strategy
         self.evaluation_model = evaluation_model
 
+    def simulate_step(self, source):
+        selected_path = self._select(source)
+        self._expand(selected_path.leaf)
+        self._evaluate(selected_path.leaf)
+        self._backup(selected_path)
+
     def _select(self, source):
         path = self.path_factory(source)
         state = source
