@@ -59,7 +59,7 @@ def empty_dummy_state_mcts(select_first_strategy, max_first_model):
 def test_expand(empty_dummy_state_mcts):
     root, graph, mcts = empty_dummy_state_mcts
 
-    mcts.expand(root)
+    mcts._expand(root)
     actions = graph.get_actions(root)
     assert len(actions) == 3
     assert set(actions) == {0, 1, 2}
@@ -70,21 +70,21 @@ def test_expand(empty_dummy_state_mcts):
     assert all([action == graph.get_successor(root, action).played_moves[0] for action in actions])
 
     with pytest.raises(AlreadyExpandedException):
-        mcts.expand(root)
+        mcts._expand(root)
 
 
 def test_select(empty_dummy_state_mcts):
     root, graph, mcts = empty_dummy_state_mcts
 
-    mcts.expand(root)
-    path = mcts.select(root)
+    mcts._expand(root)
+    path = mcts._select(root)
     assert len(path) == 2
     assert path.leaf.step == 1
     selected_action = path.get_action(root)
     assert graph.get_action_attributes(root, selected_action).visit_count == 1
 
-    mcts.expand(path.leaf)
-    path = mcts.select(root)
+    mcts._expand(path.leaf)
+    path = mcts._select(root)
     assert len(path) == 3
     assert path.leaf.step == 2
     selected_action1 = path.get_action(root)
@@ -98,8 +98,8 @@ def test_select(empty_dummy_state_mcts):
 def test_evaluate(empty_dummy_state_mcts):
     root, graph, mcts = empty_dummy_state_mcts
 
-    mcts.expand(root)
-    mcts.evaluate(root)
+    mcts._expand(root)
+    mcts._evaluate(root)
     actions = graph.get_actions(root)
     assert graph.get_action_attributes(root, actions[0]).prior_probability == 1
     assert all([graph.get_action_attributes(root, action).prior_probability == 0 for action in actions[1:]])
@@ -134,7 +134,7 @@ def test_backup(empty_dummy_state_mcts):
     graph.get_state_attributes(state=3).state_value = 2.0
 
     mcts = Mcts(graph, GameStatePath, selection_strategy=None, evaluation_model=None)
-    mcts.backup(path)
+    mcts._backup(path)
 
     assert graph.get_action_attributes(source=1, action=30).action_value == pytest.approx(2.0)
     assert graph.get_action_attributes(source=1, action=20).action_value == pytest.approx(0.5)

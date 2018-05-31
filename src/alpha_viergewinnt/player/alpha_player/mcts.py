@@ -14,7 +14,7 @@ class Mcts(object):
         self.selection_strategy = selection_strategy
         self.evaluation_model = evaluation_model
 
-    def select(self, source):
+    def _select(self, source):
         path = self.path_factory(source)
         state = source
         while self.graph.has_successors(state):
@@ -27,7 +27,7 @@ class Mcts(object):
             state = successor
         return path
 
-    def expand(self, leaf):
+    def _expand(self, leaf):
         if self.graph.has_successors(leaf):
             raise AlreadyExpandedException()
 
@@ -37,14 +37,14 @@ class Mcts(object):
             successor.play_move(player=leaf.current_player, move=action)
             self.graph.add_successor(successor, source=leaf, action=action)
 
-    def evaluate(self, state):
+    def _evaluate(self, state):
         actions = self.graph.get_actions(state)
         prior_probabilities, state_value = self.evaluation_model(actions, state)
         for action, prior_probability in zip(actions, prior_probabilities):
             self.graph.get_action_attributes(state, action).prior_probability = prior_probability
         self.graph.get_state_attributes(state).state_value = state_value
 
-    def backup(self, path):
+    def _backup(self, path):
         path_state = path.leaf
         subtree_value = self.graph.get_state_attributes(path.leaf).state_value
         while path_state is not path.root:
