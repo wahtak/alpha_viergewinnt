@@ -1,10 +1,10 @@
 import pytest
 import random
 
-from .board import *
-from .viergewinnt import *
-from .condition import *
-from .alternating_player import *
+from alpha_viergewinnt.game.board import *
+from alpha_viergewinnt.game.viergewinnt import *
+from alpha_viergewinnt.game.condition import *
+from alpha_viergewinnt.game.alternating_player import *
 
 
 @pytest.fixture

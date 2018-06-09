@@ -1,7 +1,6 @@
-import pytest
 import matplotlib
 
-from .tree import *
+from alpha_viergewinnt.player.pure_mcts_player.tree import *
 
 
 def test_successor_and_ancestors():

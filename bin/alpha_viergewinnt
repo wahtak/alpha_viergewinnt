@@ -1,3 +1,4 @@
+#!/bin/env python
 import click
 
 from alpha_viergewinnt.game.board import Player

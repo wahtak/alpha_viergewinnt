@@ -1,7 +1,7 @@
 import pytest
 from copy import deepcopy
 
-from .board import *
+from alpha_viergewinnt.game.board import *
 
 
 @pytest.fixture

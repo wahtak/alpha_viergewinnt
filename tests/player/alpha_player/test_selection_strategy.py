@@ -1,6 +1,5 @@
-from .attributes import ActionAttributes
-
-from .selection_strategy import *
+from alpha_viergewinnt.player.alpha_player.attributes import ActionAttributes
+from alpha_viergewinnt.player.alpha_player.selection_strategy import *
 
 
 def test_call_selection_strategy():

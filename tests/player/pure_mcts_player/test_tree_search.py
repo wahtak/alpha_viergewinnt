@@ -1,7 +1,7 @@
 import pytest
 
-from .tree import *
-from .tree_search import *
+from alpha_viergewinnt.player.pure_mcts_player.tree import *
+from alpha_viergewinnt.player.pure_mcts_player.tree_search import *
 
 
 class DummyState(object):

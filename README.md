@@ -25,4 +25,4 @@ _WORK IN PROGRESS_
 ## MCTS visualization
 Visualization of MCTS search tree with networkx
 
-![mcts](/doc/tree_search.png?raw=true)
+![mcts](/docs/tree_search.png?raw=true)

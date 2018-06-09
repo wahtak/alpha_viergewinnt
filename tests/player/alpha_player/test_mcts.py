@@ -1,7 +1,7 @@
 import pytest
 
-from .graph import *
-from .mcts import *
+from alpha_viergewinnt.player.alpha_player.graph import *
+from alpha_viergewinnt.player.alpha_player.mcts import *
 
 
 class DummyState(object):

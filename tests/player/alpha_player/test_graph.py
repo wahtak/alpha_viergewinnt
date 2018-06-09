@@ -2,7 +2,7 @@ import pytest
 
 import matplotlib
 
-from .graph import *
+from alpha_viergewinnt.player.alpha_player.graph import *
 
 
 def test_add_defaults():
