@@ -21,6 +21,9 @@ class Mcts(object):
         self._backup(selected_path)
 
     def _select(self, source):
+        """
+        Select a path from source to a leaf state in graph according to selection strategy.
+        """
         path = self.path_factory(source)
         state = source
         while self.graph.has_successors(state):
@@ -34,6 +37,9 @@ class Mcts(object):
         return path
 
     def _expand(self, leaf):
+        """
+        Add resulting states for all possible actions on a leaf state.
+        """
         if self.graph.has_successors(leaf):
             raise AlreadyExpandedException()
 
@@ -46,6 +52,9 @@ class Mcts(object):
             self.graph.get_action_attributes(source=leaf, action=action).action_value = 0
 
     def _evaluate(self, state):
+        """
+        Evaluate the state value and prior probabilities for all actions with the evaluation model.
+        """
         actions = self.graph.get_actions(state)
         prior_probabilities, state_value = self.evaluation_model(actions, state)
         for action, prior_probability in zip(actions, prior_probabilities):
@@ -53,6 +62,9 @@ class Mcts(object):
         self.graph.get_state_attributes(state).state_value = state_value
 
     def _backup(self, path):
+        """
+        Backpropagate the state value up a (previously selected) path, by adapting the action values
+        """
         path_state = path.leaf
         subtree_value = self.graph.get_state_attributes(path.leaf).state_value
         while path_state is not path.root:
