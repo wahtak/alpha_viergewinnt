@@ -34,28 +34,28 @@ def dummy_state_and_actions():
     return state, actions
 
 
-def test_get_action_priors_and_state_values(dummy_state_and_actions, true_condition, false_condition):
+def test_get_prior_probabilities_and_state_value(dummy_state_and_actions, true_condition, false_condition):
     state, actions = dummy_state_and_actions
 
     # win
     evaluation_model = ConditionEvaluationModel(
         win_condition=true_condition, loss_condition=false_condition, draw_condition=false_condition)
-    action_priors, state_value = evaluation_model.get_action_priors_and_state_values(actions, state)
+    prior_probabilities, state_value = evaluation_model(actions, state)
 
-    assert len(action_priors) == len(actions)
-    assert sum(action_priors) == pytest.approx(1)
+    assert len(prior_probabilities) == len(actions)
+    assert sum(prior_probabilities) == pytest.approx(1)
     assert state_value == 1
 
     # loss
     evaluation_model = ConditionEvaluationModel(
         win_condition=false_condition, loss_condition=true_condition, draw_condition=false_condition)
-    action_priors, state_value = evaluation_model.get_action_priors_and_state_values(actions, state)
+    prior_probabilities, state_value = evaluation_model(actions, state)
 
     assert state_value == -1
 
     # draw
     evaluation_model = ConditionEvaluationModel(
         win_condition=false_condition, loss_condition=false_condition, draw_condition=true_condition)
-    action_priors, state_value = evaluation_model.get_action_priors_and_state_values(actions, state)
+    prior_probabilities, state_value = evaluation_model(actions, state)
 
     assert state_value == 0

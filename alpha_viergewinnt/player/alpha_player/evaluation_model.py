@@ -7,7 +7,10 @@ class ConditionEvaluationModel(object):
         self.loss_condition = loss_condition
         self.draw_condition = draw_condition
 
-    def get_action_priors_and_state_values(self, actions, state):
+    def __call__(self, actions, state):
+        return self.get_prior_probabilities_and_state_value(actions, state)
+
+    def get_prior_probabilities_and_state_value(self, actions, state):
         action_priors = np.ones(len(actions)) / len(actions)
 
         state_value = 0
