@@ -18,7 +18,7 @@ def max_first_model():
 
 
 def test_get_next_move(select_first_strategy, max_first_model):
-    player = AlphaPlayer(select_first_strategy, max_first_model)
+    player = AlphaPlayer(select_first_strategy, max_first_model, mcts_steps=10)
     root = DummyState()
     action = player.get_next_move(root)
 
