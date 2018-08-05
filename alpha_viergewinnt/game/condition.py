@@ -22,7 +22,7 @@ class NStonessInRowCondition(object):
         self.winning_layouts = [horizontal_layout, vertical_layout, regular_diagonal_layout, flipped_diagonal_layout]
 
     def check(self, board):
-        player_state = board.get_player_state(self.player)
+        player_state = board.get_state_filtered_for_player(self.player)
         for layout in self.winning_layouts:
             convolution = convolve2d(player_state, layout, mode='valid')
             if (convolution == self.num_stones_in_row).any():

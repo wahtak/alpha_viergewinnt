@@ -22,6 +22,29 @@ def player_o_win_condition():
     return WinCondition(Player.O)
 
 
+def test_get_all_moves(game):
+    game.play_move(player=Player.X, move=1)
+    game.play_move(player=Player.O, move=1)
+    game.play_move(player=Player.X, move=1)
+    game.play_move(player=Player.O, move=1)
+    game.play_move(player=Player.X, move=1)
+    game.play_move(player=Player.O, move=1)
+    expected_all_moves = [0, 1, 2, 3, 4, 5, 6]
+    all_moves = game.get_all_moves()
+    assert set(expected_all_moves) == set(all_moves)
+
+
+def test_get_possible_moves(game):
+    game.play_move(player=Player.X, move=1)
+    game.play_move(player=Player.O, move=1)
+    game.play_move(player=Player.X, move=1)
+    game.play_move(player=Player.O, move=1)
+    game.play_move(player=Player.X, move=1)
+    game.play_move(player=Player.O, move=1)
+    expected_possible_moves = [0, 2, 3, 4, 5, 6]
+    assert set(expected_possible_moves) == set(game.get_possible_moves())
+
+
 def test_play_move(game):
     # valid move
     game.play_move(player=Player.X, move=1)

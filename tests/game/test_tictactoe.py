@@ -32,7 +32,14 @@ def test_play_move(game):
         game.play_move(player=Player.O, move=(0, 3))
 
 
-def test_possible_moves(game):
+def test_get_all_moves(game):
+    game.play_move(player=Player.X, move=(0, 1))
+    expected_all_moves = [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)]
+    all_moves = game.get_all_moves()
+    assert set(expected_all_moves) == set(all_moves)
+
+
+def test_get_possible_moves(game):
     game.play_move(player=Player.X, move=(0, 1))
     expected_possible_moves = [(0, 0), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)]
     assert set(expected_possible_moves) == set(game.get_possible_moves())
