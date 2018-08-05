@@ -1,8 +1,12 @@
 import numpy as np
 
+STATE_VALUE_WIN = 1
+STATE_VALUE_LOSS = -1
+STATE_VALUE_DRAW = 0
 
-class ConditionEvaluationModel(object):
-    def __init__(self, win_condition, loss_condition, draw_condition):
+
+class EvaluationModel(object):
+    def __init__(self, board_size, win_condition, loss_condition, draw_condition):
         self.win_condition = win_condition
         self.loss_condition = loss_condition
         self.draw_condition = draw_condition
@@ -11,25 +15,21 @@ class ConditionEvaluationModel(object):
         return self.get_prior_probabilities_and_state_value(actions, state)
 
     def get_prior_probabilities_and_state_value(self, actions, state):
-        action_priors = np.ones(len(actions)) / len(actions)
+        uniform_action_priors = np.ones(len(actions)) / len(actions)
 
-        state_value = 0
         if state.check(self.win_condition):
-            state_value = 1
-        if state.check(self.loss_condition):
-            state_value = -1
+            return uniform_action_priors, STATE_VALUE_WIN
 
-        return action_priors, state_value
+        elif state.check(self.loss_condition):
+            return uniform_action_priors, STATE_VALUE_LOSS
 
+        elif state.check(self.draw_condition):
+            return uniform_action_priors, STATE_VALUE_DRAW
 
-# def create_model(board, num_moves):
-#     hidden_in = 42
-#     output_of_input_layer = tf.contrib.layers.fully_connected(board, hidden_dim)
-#     _output = tf.contrib.layers.fully_connected(board, hidden_dim)
+        else:
+            return self.estimate_prior_probabilities_and_state_value(actions, state)
 
-# class AlphaStrategy(object):
-#     def __init__(self, board_shape, input_enum, num_moves):
-#         # self.input_offset = np.mean([element for element in input_enum])
-
-#         self.board_placeholder = tf.placeholder(dtype=tf.int8, shape=board_shape, name='board')
-#         self.move_probabilities, self.state_utility = create_model(self.board_placeholder, num_moves)
+    def estimate_prior_probabilities_and_state_value(self, actions, state):
+        # dummy estimation
+        uniform_action_priors = np.ones(len(actions)) / len(actions)
+        return uniform_action_priors, STATE_VALUE_DRAW

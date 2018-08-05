@@ -2,7 +2,7 @@ import pytest
 
 from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game.tictactoe import Game, WinCondition, DrawCondition
-from alpha_viergewinnt.player.alpha_player import AlphaPlayer, SelectionStrategy, ConditionEvaluationModel
+from alpha_viergewinnt.player.alpha_player import AlphaPlayer, SelectionStrategy, EvaluationModel
 
 
 @pytest.fixture()
@@ -17,11 +17,11 @@ def selection_stategy():
 
 
 @pytest.fixture()
-def evaluation_model():
+def evaluation_model(game):
     win_condition = WinCondition(Player.X)
     loss_condition = WinCondition(Player.O)
     draw_condition = DrawCondition()
-    return ConditionEvaluationModel(win_condition, loss_condition, draw_condition)
+    return EvaluationModel(game.board_size, win_condition, loss_condition, draw_condition)
 
 
 def test_get_any_next_move(game, selection_stategy, evaluation_model):

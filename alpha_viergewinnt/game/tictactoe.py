@@ -50,7 +50,8 @@ class Game(Board, FreeplayBoard, AlternatingPlayer, ConditionChecker):
     '''Combination of board, condition checker and alternating player with parameters of the game Tictactoe.'''
 
     def __init__(self):
-        Board.__init__(self, size=(3, 3), output_row_order=RowOrder.NORMAL)
+        self.board_size = (3, 3)
+        Board.__init__(self, size=self.board_size, output_row_order=RowOrder.NORMAL)
         AlternatingPlayer.__init__(self, starting_player=Player.X)
 
     def __hash__(self):

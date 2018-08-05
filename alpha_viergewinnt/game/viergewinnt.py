@@ -50,7 +50,8 @@ class Game(Board, DropdownBoard, AlternatingPlayer, ConditionChecker):
     '''Combination of board, condition checker and alternating player with parameters of the game Viergewinnt.'''
 
     def __init__(self):
-        Board.__init__(self, size=(6, 7), output_row_order=RowOrder.REVERSED)
+        self.board_size = (6, 7)
+        Board.__init__(self, size=self.board_size, output_row_order=RowOrder.REVERSED)
         AlternatingPlayer.__init__(self, starting_player=Player.X)
 
     def __hash__(self):
