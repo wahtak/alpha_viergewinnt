@@ -15,3 +15,6 @@ class AlternatingPlayer(object):
         if player != self.current_player:
             raise NotPlayersTurnException('not player %s\'s turn' % player)
         self.current_player = Player.O if self.current_player == Player.X else Player.X
+
+    def get_state_from_current_player_perspective(self):
+        return self.get_state_from_player_perspective(self.current_player)

@@ -58,5 +58,15 @@ class Board(object):
     def __eq__(self, other):
         return hash(self) == hash(other)
 
-    def get_state_filtered_for_player(self, player):
-        return (self.state == player.value).astype(np.int16)
+    def get_array_view(self, player, player_value, opponent=None, opponent_value=0):
+        """
+        Get board state as an array, where stones of player have the value player_value and stones
+        of the opponent (optional) have the value opponent_value.
+        """
+        player_array = (self.state == player.value).astype(np.int16) * player_value
+
+        if opponent is not None:
+            opponent_array = (self.state == opponent.value).astype(np.int16) * opponent_value
+            return player_array + opponent_array
+        else:
+            return player_array
