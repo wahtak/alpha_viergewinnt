@@ -6,9 +6,9 @@ class SelectionStrategy():
         self.exploration_factor = exploration_factor
 
     def __call__(self, actions, attributes):
-        return self.get_selected_action(actions, attributes)
+        return self.select_action(actions, attributes)
 
-    def get_selected_action(self, actions, attributes):
+    def select_action(self, actions, attributes):
         potential_values = [self._get_potential_value(action_attributes) for action_attributes in attributes]
         return actions[np.argmax(potential_values)]
 

@@ -28,7 +28,7 @@ class FreeplayBoard(object):
         self.state[move] = player.value
 
     def get_all_moves(self):
-        return np.ndindex(self.state.shape)
+        return list(np.ndindex(self.state.shape))
 
     def get_possible_moves(self):
         return [tuple(index) for index in np.argwhere(self.state == 0)]

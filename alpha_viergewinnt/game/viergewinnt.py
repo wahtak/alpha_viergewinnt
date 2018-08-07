@@ -28,7 +28,7 @@ class DropdownBoard(object):
             raise ColumnFullException('column %d is full' % move)
 
     def get_all_moves(self):
-        return range(self.state.shape[0] + 1)
+        return list(range(self.state.shape[0] + 1))
 
     def get_possible_moves(self):
         return [column for column, column_vector in enumerate(self.state.T) if (column_vector == 0).any()]

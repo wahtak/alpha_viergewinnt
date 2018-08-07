@@ -18,6 +18,18 @@ class DummyState(object):
         return condition.check(self)
 
 
+class DummyEstimator(object):
+    def __init__(self, actions):
+        self.actions = actions
+
+    def infer(self, state):
+        uniform_prior_probabilities = np.ones(len(self.actions)) / len(self.actions)
+        return uniform_prior_probabilities, 0
+
+    def learn(self, state, selected_action, value):
+        pass
+
+
 @pytest.fixture
 def false_condition():
     class FalseCondition(object):
@@ -37,31 +49,36 @@ def true_condition():
 
 
 @pytest.fixture
-def dummy_state_and_actions():
-    state = DummyState()
-    actions = state.get_possible_moves()
-
-    return state, actions
+def state():
+    return DummyState()
 
 
-def test_win_loss_draw(dummy_state_and_actions, true_condition, false_condition):
-    state, actions = dummy_state_and_actions
+@pytest.fixture
+def actions(state):
+    return state.get_possible_moves()
 
+
+@pytest.fixture
+def estimator(actions):
+    return DummyEstimator(actions=actions)
+
+
+def test_win_loss_draw(state, actions, estimator, true_condition, false_condition):
     # win
     evaluation_model = EvaluationModel(
-        board_size=state.board_size,
+        estimator=estimator,
         win_condition=true_condition,
         loss_condition=false_condition,
         draw_condition=false_condition)
     prior_probabilities, state_value = evaluation_model(actions, state)
 
     assert len(prior_probabilities) == len(actions)
-    assert sum(prior_probabilities) == pytest.approx(1)
+    assert sum(prior_probabilities) == pytest.approx(0)
     assert state_value == 1
 
     # loss
     evaluation_model = EvaluationModel(
-        board_size=state.board_size,
+        estimator=estimator,
         win_condition=false_condition,
         loss_condition=true_condition,
         draw_condition=false_condition)
@@ -71,7 +88,7 @@ def test_win_loss_draw(dummy_state_and_actions, true_condition, false_condition)
 
     # draw
     evaluation_model = EvaluationModel(
-        board_size=state.board_size,
+        estimator=estimator,
         win_condition=false_condition,
         loss_condition=false_condition,
         draw_condition=true_condition)
@@ -80,11 +97,9 @@ def test_win_loss_draw(dummy_state_and_actions, true_condition, false_condition)
     assert state_value == 0
 
 
-def test_not_end_state(dummy_state_and_actions, true_condition, false_condition):
-    state, actions = dummy_state_and_actions
-
+def test_not_win_loss_draw(state, actions, estimator, true_condition, false_condition):
     evaluation_model = EvaluationModel(
-        board_size=state.board_size,
+        estimator=estimator,
         win_condition=false_condition,
         loss_condition=false_condition,
         draw_condition=false_condition)

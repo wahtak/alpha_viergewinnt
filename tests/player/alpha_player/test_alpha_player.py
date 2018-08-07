@@ -1,6 +1,6 @@
 import pytest
 
-from alpha_viergewinnt.player.alpha_player.player import *
+from alpha_viergewinnt.player.alpha_player import *
 
 from .test_mcts import DummyState
 from .test_mcts import select_first_strategy as select_first_strategy_
