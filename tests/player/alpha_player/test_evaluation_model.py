@@ -21,13 +21,15 @@ class DummyState(object):
 class DummyEstimator(object):
     def __init__(self, actions):
         self.actions = actions
+        self.knowledge = []
 
     def infer(self, state):
         uniform_prior_probabilities = np.ones(len(self.actions)) / len(self.actions)
-        return uniform_prior_probabilities, 0
+        state_value = 0.5
+        return uniform_prior_probabilities, state_value
 
     def learn(self, state, selected_action, value):
-        pass
+        self.knowledge.append((state, selected_action, value))
 
 
 @pytest.fixture
@@ -74,7 +76,7 @@ def test_evaluate_win_loss_draw(state, actions, estimator, true_condition, false
 
     assert len(prior_probabilities) == len(actions)
     assert sum(prior_probabilities) == pytest.approx(0)
-    assert state_value == 1
+    assert state_value == VALUE_WIN
 
     # loss
     evaluation_model = EvaluationModel(
@@ -84,7 +86,7 @@ def test_evaluate_win_loss_draw(state, actions, estimator, true_condition, false
         draw_condition=false_condition)
     prior_probabilities, state_value = evaluation_model(actions, state)
 
-    assert state_value == -1
+    assert state_value == VALUE_LOSS
 
     # draw
     evaluation_model = EvaluationModel(
@@ -94,7 +96,7 @@ def test_evaluate_win_loss_draw(state, actions, estimator, true_condition, false
         draw_condition=true_condition)
     prior_probabilities, state_value = evaluation_model(actions, state)
 
-    assert state_value == 0
+    assert state_value == VALUE_DRAW
 
 
 def test_evaluate_not_win_loss_draw(state, actions, estimator, true_condition, false_condition):
@@ -107,19 +109,21 @@ def test_evaluate_not_win_loss_draw(state, actions, estimator, true_condition, f
 
     assert len(prior_probabilities) == len(actions)
     assert sum(prior_probabilities) == pytest.approx(1)
-    assert np.isscalar(state_value)
+    # from DummyEstimator
+    assert state_value == 0.5
 
 
 def test_learn_when_finished(state, actions, estimator, true_condition, false_condition):
-    # game finished
+    # game finished with win
     evaluation_model = EvaluationModel(
         estimator=estimator,
         win_condition=true_condition,
         loss_condition=false_condition,
         draw_condition=false_condition)
+    selected_action = 0
+    evaluation_model.learn(states_and_selected_actions=[(state, selected_action)], final_state=state)
 
-    # expect no exception
-    evaluation_model.learn(states_and_selected_actions=[], final_state=state)
+    assert estimator.knowledge == [(state, selected_action, VALUE_WIN)]
 
 
 def test_learn_when_not_finished(state, actions, estimator, true_condition, false_condition):
