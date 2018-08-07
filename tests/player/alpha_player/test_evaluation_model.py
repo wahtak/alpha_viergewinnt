@@ -63,7 +63,7 @@ def estimator(actions):
     return DummyEstimator(actions=actions)
 
 
-def test_win_loss_draw(state, actions, estimator, true_condition, false_condition):
+def test_evaluate_win_loss_draw(state, actions, estimator, true_condition, false_condition):
     # win
     evaluation_model = EvaluationModel(
         estimator=estimator,
@@ -97,7 +97,7 @@ def test_win_loss_draw(state, actions, estimator, true_condition, false_conditio
     assert state_value == 0
 
 
-def test_not_win_loss_draw(state, actions, estimator, true_condition, false_condition):
+def test_evaluate_not_win_loss_draw(state, actions, estimator, true_condition, false_condition):
     evaluation_model = EvaluationModel(
         estimator=estimator,
         win_condition=false_condition,
@@ -108,3 +108,27 @@ def test_not_win_loss_draw(state, actions, estimator, true_condition, false_cond
     assert len(prior_probabilities) == len(actions)
     assert sum(prior_probabilities) == pytest.approx(1)
     assert np.isscalar(state_value)
+
+
+def test_learn_when_finished(state, actions, estimator, true_condition, false_condition):
+    # game finished
+    evaluation_model = EvaluationModel(
+        estimator=estimator,
+        win_condition=true_condition,
+        loss_condition=false_condition,
+        draw_condition=false_condition)
+
+    # expect no exception
+    evaluation_model.learn(states_and_selected_actions=[], final_state=state)
+
+
+def test_learn_when_not_finished(state, actions, estimator, true_condition, false_condition):
+    # game not finished
+    evaluation_model = EvaluationModel(
+        estimator=estimator,
+        win_condition=false_condition,
+        loss_condition=false_condition,
+        draw_condition=false_condition)
+
+    with pytest.raises(GameNotFinishedException):
+        evaluation_model.learn(states_and_selected_actions=[], final_state=state)

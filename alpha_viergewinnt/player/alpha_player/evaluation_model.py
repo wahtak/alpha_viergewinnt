@@ -20,7 +20,7 @@ class EvaluationModel(object):
         return self.get_prior_probabilities_and_state_value(actions, state)
 
     def get_prior_probabilities_and_state_value(self, actions, state):
-        state_value = self.get_final_state_value(state)
+        state_value = self._get_final_state_value(state)
 
         if state_value is not None:
             # game is finished
@@ -28,17 +28,17 @@ class EvaluationModel(object):
             return prior_probabilities, state_value
 
         all_likelihoods, state_value = self.estimator.infer(state)
-        prior_probabilities = self.get_probabilities_for_possible_actions(
+        prior_probabilities = self._get_probabilities_for_possible_actions(
             all_likelihoods=all_likelihoods, all_actions=self.estimator.actions, possbile_actions=actions)
 
         return prior_probabilities, state_value
 
-    def get_probabilities_for_possible_actions(self, all_likelihoods, all_actions, possbile_actions):
+    def _get_probabilities_for_possible_actions(self, all_likelihoods, all_actions, possbile_actions):
         likelihoods = [value for action, value in zip(all_actions, all_likelihoods) if action in possbile_actions]
         probabilities = likelihoods / np.sum(likelihoods)
         return probabilities
 
-    def get_final_state_value(self, state):
+    def _get_final_state_value(self, state):
         if state.check(self.win_condition):
             return VALUE_WIN
         elif state.check(self.loss_condition):
@@ -50,7 +50,7 @@ class EvaluationModel(object):
             return None
 
     def learn(self, states_and_selected_actions, final_state):
-        final_state_value = self.get_final_state_value(final_state)
+        final_state_value = self._get_final_state_value(final_state)
 
         if final_state_value is None:
             raise GameNotFinishedException()
