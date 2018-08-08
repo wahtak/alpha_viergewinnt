@@ -13,8 +13,7 @@ def game():
 
 @pytest.fixture()
 def selection_stategy():
-    exploration_factor = 1
-    return SelectionStrategy(exploration_factor)
+    return SelectionStrategy(exploration_factor=1)
 
 
 @pytest.fixture()
