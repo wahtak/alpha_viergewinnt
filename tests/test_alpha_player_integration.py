@@ -6,22 +6,22 @@ from alpha_viergewinnt.player.alpha_player import \
     AlphaPlayer, AlphaTrainer, SelectionStrategy, EvaluationModel, Estimator
 
 
-@pytest.fixture()
+@pytest.fixture
 def game():
     return Game()
 
 
-@pytest.fixture()
+@pytest.fixture
 def selection_stategy():
     return SelectionStrategy(exploration_factor=1)
 
 
-@pytest.fixture()
+@pytest.fixture
 def estimator(game):
     return Estimator(board_size=game.board_size, actions=game.get_all_moves())
 
 
-@pytest.fixture()
+@pytest.fixture
 def evaluation_model(estimator):
     win_condition = WinCondition(Player.X)
     loss_condition = WinCondition(Player.O)
