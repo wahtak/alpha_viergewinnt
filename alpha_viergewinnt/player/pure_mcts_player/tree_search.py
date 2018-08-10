@@ -41,7 +41,7 @@ class TreeSearch(object):
             raise NoUnexploredMovesException()
         selected_move = self.expansion_strategy(unexplored_moves)
         successor = deepcopy(source)
-        successor.play_move(player=source.current_player, move=selected_move)
+        successor.play_move(player=source.active_player, move=selected_move)
         self.tree.add_successor(source=source, transition=selected_move, successor=successor)
         return successor
 
@@ -76,5 +76,5 @@ class Simulator(object):
         while not self._is_final_state(state):
             possible_moves = state.get_possible_moves()
             selected_move = self.strategy(possible_moves)
-            state.play_move(state.current_player, selected_move)
+            state.play_move(state.active_player, selected_move)
         return state

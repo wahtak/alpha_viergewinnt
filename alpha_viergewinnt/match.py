@@ -5,12 +5,12 @@ def play_match(game, players, win_conditions, draw_condition, print_state, print
     while not game.check(draw_condition):
         if print_state:
             print(game)
-        next_move = players[game.current_player].get_next_move(game)
+        next_move = players[game.active_player].get_next_move(game)
         if print_move:
-            print('Player %s plays %s' % (game.current_player.name, next_move))
+            print('Player %s plays %s' % (game.active_player.name, next_move))
 
-        last_player = game.current_player
-        game.play_move(player=game.current_player, move=next_move)
+        last_player = game.active_player
+        game.play_move(player=game.active_player, move=next_move)
 
         if game.check(win_conditions[last_player]):
             if print_result:

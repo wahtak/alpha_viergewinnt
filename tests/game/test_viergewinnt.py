@@ -103,6 +103,6 @@ def test_random_playout_until_full(game):
     for move in range(max_number_of_moves):
         assert game.check(draw_condition) is False
         random_move = random.choice(game.get_possible_moves())
-        game.play_move(player=game.current_player, move=random_move)
+        game.play_move(player=game.active_player, move=random_move)
 
     assert game.check(draw_condition) is True

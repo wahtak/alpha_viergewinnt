@@ -6,7 +6,7 @@ from alpha_viergewinnt.player.pure_mcts_player.tree_search import *
 
 class DummyState(object):
     def __init__(self):
-        self.current_player = None
+        self.active_player = None
         self.step = 0
 
     def get_possible_moves(self):

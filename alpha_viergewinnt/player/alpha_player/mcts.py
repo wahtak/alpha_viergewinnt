@@ -46,7 +46,7 @@ class Mcts(object):
         possible_actions = leaf.get_possible_moves()
         for action in possible_actions:
             successor = deepcopy(leaf)
-            successor.play_move(player=leaf.current_player, move=action)
+            successor.play_move(player=leaf.active_player, move=action)
             self.graph.add_successor(successor, source=leaf, action=action)
             self.graph.get_action_attributes(source=leaf, action=action).visit_count = 0
             self.graph.get_action_attributes(source=leaf, action=action).action_value = 0

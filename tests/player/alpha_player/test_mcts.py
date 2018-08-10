@@ -6,7 +6,7 @@ from alpha_viergewinnt.player.alpha_player.mcts import *
 
 class DummyState(object):
     def __init__(self):
-        self.current_player = None
+        self.active_player = None
         self.played_moves = []
         self.step = 0
 

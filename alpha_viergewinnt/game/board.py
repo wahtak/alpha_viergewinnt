@@ -7,6 +7,10 @@ class Player(enum.Enum):
     X = 1
     O = 2  # noqa E741
 
+    @classmethod
+    def opponent(cls, player):
+        return cls.X if player == cls.O else cls.O
+
 
 class RowOrder(enum.Enum):
     NORMAL = 1
