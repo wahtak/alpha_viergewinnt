@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class Estimator(object):
+class GenericEstimator(object):
     def __init__(self, board_size, actions):
         self.actions = actions
 

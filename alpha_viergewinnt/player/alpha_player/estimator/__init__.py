@@ -1,0 +1,3 @@
+from .generic_estimator import GenericEstimator
+from .generic_estimator import GenericEstimator as TictactoeEstimator
+from .generic_estimator import GenericEstimator as ViergewinntEstimator

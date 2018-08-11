@@ -6,7 +6,7 @@ from alpha_viergewinnt.game import tictactoe, viergewinnt
 from alpha_viergewinnt.player.random_player import RandomPlayer
 from alpha_viergewinnt.player.human_player import HumanPlayer
 from alpha_viergewinnt.player.pure_mcts_player import PureMctsPlayer, create_random_choice_strategy
-from alpha_viergewinnt.player.alpha_player import AlphaPlayer, Estimator, EvaluationModel, SelectionStrategy
+from alpha_viergewinnt.player.alpha_player import AlphaPlayer, GenericEstimator, EvaluationModel, SelectionStrategy
 from alpha_viergewinnt.match import play_match
 
 
@@ -24,7 +24,7 @@ def create_pure_mcts_player(win_condition, loss_condition, draw_condition, **kwa
 
 def create_alpha_player(game, win_condition, loss_condition, draw_condition, **kwargs):
     selection_stategy = SelectionStrategy(exploration_factor=1)
-    estimator = Estimator(board_size=game.board_size, actions=game.get_all_moves())
+    estimator = GenericEstimator(board_size=game.board_size, actions=game.get_all_moves())
     evaluation_model = EvaluationModel(estimator, win_condition, loss_condition, draw_condition)
     return AlphaPlayer(selection_stategy, evaluation_model, mcts_steps=100)
 

@@ -5,7 +5,7 @@ from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game import tictactoe, viergewinnt
 from alpha_viergewinnt.player.random_player import RandomPlayer
 from alpha_viergewinnt.player.pure_mcts_player import PureMctsPlayer, create_random_choice_strategy
-from alpha_viergewinnt.player.alpha_player import AlphaPlayer, Estimator, EvaluationModel, SelectionStrategy
+from alpha_viergewinnt.player.alpha_player import AlphaPlayer, GenericEstimator, EvaluationModel, SelectionStrategy
 from alpha_viergewinnt.match import play_match, evaluate_players
 
 
@@ -27,7 +27,7 @@ def game_and_conditions(request):
     return Game(), WinCondition(Player.X), WinCondition(Player.O), DrawCondition()
 
 
-def pure_mcts_player(game_and_conditions, random):
+def create_pure_mcts_player(game_and_conditions, random):
     _, win_condition, loss_condition, draw_condition = game_and_conditions
     return PureMctsPlayer(
         win_condition=win_condition,
@@ -40,15 +40,15 @@ def pure_mcts_player(game_and_conditions, random):
         rollouts=3)
 
 
-def alpha_player(game_and_conditions, _):
+def create_alpha_player(game_and_conditions, _):
     game, win_condition, loss_condition, draw_condition = game_and_conditions
     selection_stategy = SelectionStrategy(exploration_factor=1)
-    estimator = Estimator(board_size=game.board_size, actions=game.get_all_moves())
+    estimator = GenericEstimator(board_size=game.board_size, actions=game.get_all_moves())
     evaluation_model = EvaluationModel(estimator, win_condition, loss_condition, draw_condition)
     return AlphaPlayer(selection_stategy, evaluation_model, mcts_steps=5)
 
 
-TEST_PLAYER_FACTORIES = [pure_mcts_player, alpha_player]
+TEST_PLAYER_FACTORIES = [create_pure_mcts_player, create_alpha_player]
 
 
 @pytest.fixture(params=TEST_PLAYER_FACTORIES)

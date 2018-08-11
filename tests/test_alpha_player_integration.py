@@ -3,7 +3,7 @@ import pytest
 from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game.tictactoe import Game, WinCondition, DrawCondition
 from alpha_viergewinnt.player.alpha_player import \
-    AlphaPlayer, AlphaTrainer, SelectionStrategy, EvaluationModel, Estimator
+    AlphaPlayer, AlphaTrainer, SelectionStrategy, EvaluationModel, GenericEstimator
 
 
 @pytest.fixture
@@ -18,7 +18,7 @@ def selection_stategy():
 
 @pytest.fixture
 def estimator(game):
-    return Estimator(board_size=game.board_size, actions=game.get_all_moves())
+    return GenericEstimator(board_size=game.board_size, actions=game.get_all_moves())
 
 
 @pytest.fixture
