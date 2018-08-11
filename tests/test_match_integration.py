@@ -36,8 +36,8 @@ def create_pure_mcts_player(game_and_conditions, random):
         selection_strategy=create_random_choice_strategy(random),
         expansion_strategy=create_random_choice_strategy(random),
         simulation_strategy=create_random_choice_strategy(random),
-        iterations=3,
-        rollouts=3)
+        iterations=2,
+        rollouts=2)
 
 
 def create_alpha_player(game_and_conditions, _):
@@ -45,7 +45,7 @@ def create_alpha_player(game_and_conditions, _):
     selection_stategy = SelectionStrategy(exploration_factor=1)
     estimator = GenericEstimator(board_size=game.board_size, actions=game.get_all_moves())
     evaluation_model = EvaluationModel(estimator, win_condition, loss_condition, draw_condition)
-    return AlphaPlayer(selection_stategy, evaluation_model, mcts_steps=5)
+    return AlphaPlayer(selection_stategy, evaluation_model, mcts_steps=2)
 
 
 TEST_PLAYER_FACTORIES = [create_pure_mcts_player, create_alpha_player]
