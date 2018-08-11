@@ -1,5 +1,7 @@
 from copy import deepcopy
 
+import numpy as np
+
 
 class Match(object):
     def __init__(self, game, players, win_conditions, draw_condition, trainers=None):
@@ -29,8 +31,9 @@ class Match(object):
         game = deepcopy(self.game)
         while not self._is_game_finished(game):
             self._play_move(game, record_moves=True)
+        result = self._get_result(game)
         self._learn(game)
-        return self._get_result(game)
+        return result
 
     def _is_game_finished(self, game):
         if game.check(self.draw_condition):
@@ -51,8 +54,11 @@ class Match(object):
         return next_move
 
     def _learn(self, game):
-        for trainer in self.trainers.values():
-            trainer.learn(game)
+        losses = []
+        for player, trainer in self.trainers.items():
+            loss = trainer.learn(game)
+            losses.append(loss)
+        print('Training loss %.4f' % np.mean(losses))
 
     def _get_result(self, game):
         print(game)

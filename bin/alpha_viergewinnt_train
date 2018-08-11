@@ -4,7 +4,7 @@ import click
 from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game import tictactoe, viergewinnt
 from alpha_viergewinnt.player.alpha_player import \
-    AlphaPlayer, AlphaTrainer, GenericEstimator, EvaluationModel, SelectionStrategy
+    AlphaPlayer, AlphaTrainer, GenericEstimator, MlpEstimator, EvaluationModel, SelectionStrategy
 from alpha_viergewinnt.match import Match
 
 GAME_FACTORIES = {
@@ -12,7 +12,7 @@ GAME_FACTORIES = {
     'viergewinnt': (viergewinnt.Game, viergewinnt.WinCondition, viergewinnt.DrawCondition)
 }
 
-ESTIMATOR_FACTORIES = {'generic': GenericEstimator}
+ESTIMATOR_FACTORIES = {'generic': GenericEstimator, 'mlp': MlpEstimator}
 
 
 @click.command()
@@ -35,6 +35,8 @@ def cmd(game, estimator, mcts_steps):
 
     player_x_evaluation_model = EvaluationModel(
         estimator=estimator,
+        player=Player.X,
+        opponent=Player.O,
         win_condition=player_x_win_condition,
         loss_condition=player_o_win_condition,
         draw_condition=draw_condition)
@@ -43,6 +45,8 @@ def cmd(game, estimator, mcts_steps):
 
     player_o_evaluation_model = EvaluationModel(
         estimator=estimator,
+        player=Player.O,
+        opponent=Player.X,
         win_condition=player_o_win_condition,
         loss_condition=player_x_win_condition,
         draw_condition=draw_condition)

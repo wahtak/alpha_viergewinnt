@@ -7,5 +7,6 @@ class AlphaTrainer(object):
         self.states_and_selected_actions.append((state, selected_action))
 
     def learn(self, final_state):
-        self.evaluation_model.learn(self.states_and_selected_actions, final_state)
+        loss = self.evaluation_model.learn(self.states_and_selected_actions, final_state)
         self.states_and_selected_actions = []
+        return loss

@@ -27,7 +27,13 @@ def evaluation_model(estimator):
     win_condition = WinCondition(Player.X)
     loss_condition = WinCondition(Player.O)
     draw_condition = DrawCondition()
-    return EvaluationModel(estimator, win_condition, loss_condition, draw_condition)
+    return EvaluationModel(
+        estimator=estimator,
+        player=Player.X,
+        opponent=Player.O,
+        win_condition=win_condition,
+        loss_condition=loss_condition,
+        draw_condition=draw_condition)
 
 
 def test_get_any_next_move(game, selection_stategy, evaluation_model):

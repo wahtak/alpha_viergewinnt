@@ -1,12 +1,13 @@
 import pytest
 
+from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.player.alpha_player.evaluation_model import *
 
 
 class DummyState(object):
     def __init__(self):
         self.board_size = (4, 4)
-        self.state = np.zeros(shape=self.board_size, dtype=np.int16)
+        self.state = 0
 
     def get_all_moves(self):
         return [0, 1, 2, 3]
@@ -16,6 +17,9 @@ class DummyState(object):
 
     def check(self, condition):
         return condition.check(self)
+
+    def get_array_view(self, *args, **kwargs):
+        return self.state
 
 
 class DummyEstimator(object):
@@ -30,6 +34,8 @@ class DummyEstimator(object):
 
     def learn(self, state, selected_action, value):
         self.knowledge.append((state, selected_action, value))
+        dummy_loss = 0
+        return dummy_loss
 
 
 @pytest.fixture
@@ -69,6 +75,8 @@ def test_evaluate_win_loss_draw(state, actions, estimator, true_condition, false
     # win
     evaluation_model = EvaluationModel(
         estimator=estimator,
+        player=Player.X,
+        opponent=Player.O,
         win_condition=true_condition,
         loss_condition=false_condition,
         draw_condition=false_condition)
@@ -82,6 +90,8 @@ def test_evaluate_win_loss_draw(state, actions, estimator, true_condition, false
     # loss
     evaluation_model = EvaluationModel(
         estimator=estimator,
+        player=Player.X,
+        opponent=Player.O,
         win_condition=false_condition,
         loss_condition=true_condition,
         draw_condition=false_condition)
@@ -93,6 +103,8 @@ def test_evaluate_win_loss_draw(state, actions, estimator, true_condition, false
     # draw
     evaluation_model = EvaluationModel(
         estimator=estimator,
+        player=Player.X,
+        opponent=Player.O,
         win_condition=false_condition,
         loss_condition=false_condition,
         draw_condition=true_condition)
@@ -105,6 +117,8 @@ def test_evaluate_win_loss_draw(state, actions, estimator, true_condition, false
 def test_evaluate_not_win_loss_draw(state, actions, estimator, true_condition, false_condition):
     evaluation_model = EvaluationModel(
         estimator=estimator,
+        player=Player.X,
+        opponent=Player.O,
         win_condition=false_condition,
         loss_condition=false_condition,
         draw_condition=false_condition)
@@ -121,19 +135,23 @@ def test_learn_when_finished(state, actions, estimator, true_condition, false_co
     # game finished with win
     evaluation_model = EvaluationModel(
         estimator=estimator,
+        player=Player.X,
+        opponent=Player.O,
         win_condition=true_condition,
         loss_condition=false_condition,
         draw_condition=false_condition)
     selected_action = 0
     evaluation_model.learn(states_and_selected_actions=[(state, selected_action)], final_state=state)
 
-    assert estimator.knowledge == [(state, selected_action, VALUE_WIN)]
+    assert estimator.knowledge == [(state.get_array_view(), selected_action, VALUE_WIN)]
 
 
 def test_learn_when_not_finished(state, actions, estimator, true_condition, false_condition):
     # game not finished
     evaluation_model = EvaluationModel(
         estimator=estimator,
+        player=Player.X,
+        opponent=Player.O,
         win_condition=false_condition,
         loss_condition=false_condition,
         draw_condition=false_condition)

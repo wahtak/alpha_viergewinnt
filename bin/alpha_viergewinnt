@@ -6,7 +6,7 @@ from alpha_viergewinnt.game import tictactoe, viergewinnt
 from alpha_viergewinnt.player.random_player import RandomPlayer
 from alpha_viergewinnt.player.human_player import HumanPlayer
 from alpha_viergewinnt.player.pure_mcts_player import PureMctsPlayer, create_random_choice_strategy
-from alpha_viergewinnt.player.alpha_player import AlphaPlayer, GenericEstimator, EvaluationModel, SelectionStrategy
+from alpha_viergewinnt.player.alpha_player import AlphaPlayer, MlpEstimator, EvaluationModel, SelectionStrategy
 from alpha_viergewinnt.match import Match
 
 
@@ -22,10 +22,10 @@ def create_pure_mcts_player(win_condition, loss_condition, draw_condition, **kwa
         rollouts=30)
 
 
-def create_alpha_player(game, win_condition, loss_condition, draw_condition, **kwargs):
+def create_alpha_player(game, player, opponent, win_condition, loss_condition, draw_condition, **kwargs):
     selection_stategy = SelectionStrategy(exploration_factor=1)
-    estimator = GenericEstimator(board_size=game.board_size, actions=game.get_all_moves())
-    evaluation_model = EvaluationModel(estimator, win_condition, loss_condition, draw_condition)
+    estimator = MlpEstimator(board_size=game.board_size, actions=game.get_all_moves())
+    evaluation_model = EvaluationModel(estimator, player, opponent, win_condition, loss_condition, draw_condition)
     return AlphaPlayer(selection_stategy, evaluation_model, mcts_steps=100)
 
 
@@ -58,11 +58,15 @@ def cmd(game, x, o):
     draw_condition = DrawCondition()
     player_x = PlayerX(
         game=game,
+        player=Player.X,
+        opponent=Player.O,
         win_condition=player_x_win_condition,
         loss_condition=player_o_win_condition,
         draw_condition=draw_condition)
     player_o = PlayerO(
         game=game,
+        player=Player.O,
+        opponent=Player.X,
         win_condition=player_o_win_condition,
         loss_condition=player_x_win_condition,
         draw_condition=draw_condition)
