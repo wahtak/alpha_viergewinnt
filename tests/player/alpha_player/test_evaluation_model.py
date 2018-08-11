@@ -72,11 +72,12 @@ def test_evaluate_win_loss_draw(state, actions, estimator, true_condition, false
         win_condition=true_condition,
         loss_condition=false_condition,
         draw_condition=false_condition)
-    prior_probabilities, state_value = evaluation_model(actions, state)
+    prior_probabilities, state_value, game_finished = evaluation_model(actions, state)
 
     assert len(prior_probabilities) == len(actions)
     assert sum(prior_probabilities) == pytest.approx(0)
     assert state_value == VALUE_WIN
+    assert game_finished is True
 
     # loss
     evaluation_model = EvaluationModel(
@@ -84,9 +85,10 @@ def test_evaluate_win_loss_draw(state, actions, estimator, true_condition, false
         win_condition=false_condition,
         loss_condition=true_condition,
         draw_condition=false_condition)
-    prior_probabilities, state_value = evaluation_model(actions, state)
+    prior_probabilities, state_value, game_finished = evaluation_model(actions, state)
 
     assert state_value == VALUE_LOSS
+    assert game_finished is True
 
     # draw
     evaluation_model = EvaluationModel(
@@ -94,9 +96,10 @@ def test_evaluate_win_loss_draw(state, actions, estimator, true_condition, false
         win_condition=false_condition,
         loss_condition=false_condition,
         draw_condition=true_condition)
-    prior_probabilities, state_value = evaluation_model(actions, state)
+    prior_probabilities, state_value, game_finished = evaluation_model(actions, state)
 
     assert state_value == VALUE_DRAW
+    assert game_finished is True
 
 
 def test_evaluate_not_win_loss_draw(state, actions, estimator, true_condition, false_condition):
@@ -105,12 +108,13 @@ def test_evaluate_not_win_loss_draw(state, actions, estimator, true_condition, f
         win_condition=false_condition,
         loss_condition=false_condition,
         draw_condition=false_condition)
-    prior_probabilities, state_value = evaluation_model(actions, state)
+    prior_probabilities, state_value, game_finished = evaluation_model(actions, state)
 
     assert len(prior_probabilities) == len(actions)
     assert sum(prior_probabilities) == pytest.approx(1)
     # from DummyEstimator
     assert state_value == 0.5
+    assert game_finished is False
 
 
 def test_learn_when_finished(state, actions, estimator, true_condition, false_condition):

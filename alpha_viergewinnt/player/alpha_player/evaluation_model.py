@@ -23,15 +23,15 @@ class EvaluationModel(object):
         state_value = self._get_final_state_value(state)
 
         if state_value is not None:
-            # game is finished
+            game_finished = True
             prior_probabilities = np.zeros(len(actions))
-            return prior_probabilities, state_value
+            return prior_probabilities, state_value, game_finished
 
+        game_finished = False
         all_likelihoods, state_value = self.estimator.infer(state)
         prior_probabilities = self._get_probabilities_for_possible_actions(
             all_likelihoods=all_likelihoods, all_actions=self.estimator.actions, possbile_actions=actions)
-
-        return prior_probabilities, state_value
+        return prior_probabilities, state_value, game_finished
 
     def _get_probabilities_for_possible_actions(self, all_likelihoods, all_actions, possbile_actions):
         likelihoods = [value for action, value in zip(all_actions, all_likelihoods) if action in possbile_actions]

@@ -42,7 +42,8 @@ def max_first_model():
     def evaluate(actions, state):
         max_first_prior_probabilities = [1] + ([0] * (len(actions) - 1))
         dummy_state_value = 1
-        return max_first_prior_probabilities, dummy_state_value
+        game_finished = False
+        return max_first_prior_probabilities, dummy_state_value, game_finished
 
     return evaluate
 
@@ -68,6 +69,9 @@ def test_expand(empty_dummy_state_mcts):
     assert all([graph.get_successor(root, action).step == 1 for action in actions])
     assert all([len(graph.get_successor(root, action).played_moves) == 1 for action in actions])
     assert all([action == graph.get_successor(root, action).played_moves[0] for action in actions])
+    assert graph.get_action_attributes(root, actions[0]).prior_probability == 1
+    assert all([graph.get_action_attributes(root, action).prior_probability == 0 for action in actions[1:]])
+    assert graph.get_state_attributes(root).state_value == 1
 
     with pytest.raises(AlreadyExpandedException):
         mcts._expand(root)
@@ -93,17 +97,6 @@ def test_select(empty_dummy_state_mcts):
 
     assert graph.get_action_attributes(root, selected_action1).visit_count == 2
     assert graph.get_action_attributes(leaf_predecessor, selected_action2).visit_count == 1
-
-
-def test_evaluate(empty_dummy_state_mcts):
-    root, graph, mcts = empty_dummy_state_mcts
-
-    mcts._expand(root)
-    mcts._evaluate(root)
-    actions = graph.get_actions(root)
-    assert graph.get_action_attributes(root, actions[0]).prior_probability == 1
-    assert all([graph.get_action_attributes(root, action).prior_probability == 0 for action in actions[1:]])
-    assert graph.get_state_attributes(root).state_value == 1
 
 
 def test_backup(empty_dummy_state_mcts):

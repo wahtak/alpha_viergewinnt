@@ -17,7 +17,6 @@ class Mcts(object):
     def simulate_step(self, source):
         selected_path = self._select(source)
         self._expand(selected_path.leaf)
-        self._evaluate(selected_path.leaf)
         self._backup(selected_path)
 
     def _select(self, source):
@@ -38,28 +37,25 @@ class Mcts(object):
 
     def _expand(self, leaf):
         """
-        Add resulting states for all possible actions on a leaf state.
+        Evaluate the state value and prior probabilities for all actions with the evaluation model
+        and add resulting actions and states.
         """
         if self.graph.has_successors(leaf):
             raise AlreadyExpandedException()
 
-        possible_actions = leaf.get_possible_moves()
-        for action in possible_actions:
-            successor = deepcopy(leaf)
-            successor.play_move(player=leaf.active_player, move=action)
-            self.graph.add_successor(successor, source=leaf, action=action)
-            self.graph.get_action_attributes(source=leaf, action=action).visit_count = 0
-            self.graph.get_action_attributes(source=leaf, action=action).action_value = 0
+        actions = leaf.get_possible_moves()
+        prior_probabilities, state_value, game_finished = self.evaluation_model(actions, leaf)
 
-    def _evaluate(self, state):
-        """
-        Evaluate the state value and prior probabilities for all actions with the evaluation model.
-        """
-        actions = self.graph.get_actions(state)
-        prior_probabilities, state_value = self.evaluation_model(actions, state)
-        for action, prior_probability in zip(actions, prior_probabilities):
-            self.graph.get_action_attributes(state, action).prior_probability = prior_probability
-        self.graph.get_state_attributes(state).state_value = state_value
+        self.graph.get_state_attributes(state=leaf).state_value = state_value
+
+        if not game_finished:
+            for action, prior_probability in zip(actions, prior_probabilities):
+                successor = deepcopy(leaf)
+                successor.play_move(player=leaf.active_player, move=action)
+                self.graph.add_successor(successor, source=leaf, action=action)
+                self.graph.get_action_attributes(source=leaf, action=action).visit_count = 0
+                self.graph.get_action_attributes(source=leaf, action=action).action_value = 0
+                self.graph.get_action_attributes(source=leaf, action=action).prior_probability = prior_probability
 
     def _backup(self, path):
         """
