@@ -7,7 +7,7 @@ from alpha_viergewinnt.player.random_player import RandomPlayer
 from alpha_viergewinnt.player.human_player import HumanPlayer
 from alpha_viergewinnt.player.pure_mcts_player import PureMctsPlayer, create_random_choice_strategy
 from alpha_viergewinnt.player.alpha_player import AlphaPlayer, GenericEstimator, EvaluationModel, SelectionStrategy
-from alpha_viergewinnt.match import play_match
+from alpha_viergewinnt.match import Match
 
 
 def create_pure_mcts_player(win_condition, loss_condition, draw_condition, **kwargs):
@@ -67,16 +67,14 @@ def cmd(game, x, o):
         loss_condition=player_x_win_condition,
         draw_condition=draw_condition)
 
-    play_match(
+    match = Match(
         game=game,
         players={Player.X: player_x,
                  Player.O: player_o},
         win_conditions={Player.X: player_x_win_condition,
                         Player.O: player_o_win_condition},
-        draw_condition=draw_condition,
-        print_state=True,
-        print_move=True,
-        print_result=True)
+        draw_condition=draw_condition)
+    match.play()
 
 
 if __name__ == '__main__':

@@ -1,0 +1,69 @@
+#!/bin/env python
+import click
+
+from alpha_viergewinnt.game.board import Player
+from alpha_viergewinnt.game import tictactoe, viergewinnt
+from alpha_viergewinnt.player.alpha_player import \
+    AlphaPlayer, AlphaTrainer, GenericEstimator, EvaluationModel, SelectionStrategy
+from alpha_viergewinnt.match import Match
+
+GAME_FACTORIES = {
+    'tictactoe': (tictactoe.Game, tictactoe.WinCondition, tictactoe.DrawCondition),
+    'viergewinnt': (viergewinnt.Game, viergewinnt.WinCondition, viergewinnt.DrawCondition)
+}
+
+ESTIMATOR_FACTORIES = {'generic': GenericEstimator}
+
+
+@click.command()
+@click.option('--game', required=True, type=click.Choice(GAME_FACTORIES.keys()), help='Game to be trained')
+@click.option(
+    '--estimator', required=True, type=click.Choice(ESTIMATOR_FACTORIES.keys()), help='Estimator to be trained')
+@click.option('--mcts-steps', required=True, type=int, help='Number of MCTS steps per move')
+def cmd(game, estimator, mcts_steps):
+    """Play a match"""
+    Game, WinCondition, DrawCondition = GAME_FACTORIES[game]
+    Estimator = ESTIMATOR_FACTORIES[estimator]
+
+    game = Game()
+    player_x_win_condition = WinCondition(Player.X)
+    player_o_win_condition = WinCondition(Player.O)
+    draw_condition = DrawCondition()
+
+    selection_stategy = SelectionStrategy(exploration_factor=1)
+    estimator = Estimator(board_size=game.board_size, actions=game.get_all_moves())
+
+    player_x_evaluation_model = EvaluationModel(
+        estimator=estimator,
+        win_condition=player_x_win_condition,
+        loss_condition=player_o_win_condition,
+        draw_condition=draw_condition)
+    player_x = AlphaPlayer(selection_stategy, player_x_evaluation_model, mcts_steps)
+    trainer_x = AlphaTrainer(player_x_evaluation_model)
+
+    player_o_evaluation_model = EvaluationModel(
+        estimator=estimator,
+        win_condition=player_o_win_condition,
+        loss_condition=player_x_win_condition,
+        draw_condition=draw_condition)
+    player_o = AlphaPlayer(selection_stategy, player_o_evaluation_model, mcts_steps)
+    trainer_o = AlphaTrainer(player_o_evaluation_model)
+
+    match = Match(
+        game=game,
+        players={Player.X: player_x,
+                 Player.O: player_o},
+        win_conditions={Player.X: player_x_win_condition,
+                        Player.O: player_o_win_condition},
+        draw_condition=draw_condition,
+        trainers={
+            Player.X: trainer_x,
+            Player.O: trainer_o
+        })
+
+    while True:
+        match.train()
+
+
+if __name__ == '__main__':
+    cmd()

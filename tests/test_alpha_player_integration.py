@@ -1,4 +1,5 @@
 import pytest
+from copy import deepcopy
 
 from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game.tictactoe import Game, WinCondition, DrawCondition
@@ -70,6 +71,6 @@ def test_learn_after_finished_game(game, selection_stategy, evaluation_model):
     alpha_trainer = AlphaTrainer(evaluation_model)
 
     selected_action = alpha_player.get_next_move(game)
-    alpha_trainer.record(state=game, selected_action=selected_action)
+    alpha_trainer.record(state=deepcopy(game), selected_action=selected_action)
     game.play_move(player=Player.X, move=selected_action)
     alpha_trainer.learn(final_state=game)

@@ -8,3 +8,4 @@ class AlphaTrainer(object):
 
     def learn(self, final_state):
         self.evaluation_model.learn(self.states_and_selected_actions, final_state)
+        self.states_and_selected_actions = []
