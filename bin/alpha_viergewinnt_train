@@ -68,8 +68,12 @@ def cmd(game, estimator, mcts_steps):
             Player.O: trainer_o
         })
 
+    estimator.load()
+
     while True:
-        match.train()
+        for i in range(10):
+            match.train()
+        estimator.save()
 
 
 if __name__ == '__main__':

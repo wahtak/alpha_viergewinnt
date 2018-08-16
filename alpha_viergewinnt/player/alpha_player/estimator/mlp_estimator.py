@@ -8,13 +8,14 @@ from torch.optim import SGD
 
 
 class MlpEstimator(Module):
-    def __init__(self, board_size, actions):
+    def __init__(self, board_size, actions, filename='mlp_estimator.pth'):
         super().__init__()
         self.logger = logging.getLogger(self.__class__.__module__ + '.' + self.__class__.__name__)
 
         self.actions = actions
         board_width, board_height = board_size
         self.state_size = board_width * board_height
+        self.filename = filename
 
         self.hidden_size = self.state_size * 2
         self.actions_size = len(actions)
@@ -52,3 +53,16 @@ class MlpEstimator(Module):
         self.optimizer.step()
 
         return loss.item()
+
+    def save(self):
+        state_dict = self.state_dict()
+        torch.save(state_dict, self.filename)
+        self.logger.info('Saved parameters to %s' % self.filename)
+
+    def load(self):
+        try:
+            state_dict = torch.load(self.filename)
+            self.load_state_dict(state_dict)
+            self.logger.info('Loaded parameters from %s' % self.filename)
+        except FileNotFoundError:
+            self.logger.warning('Could not load parameters from %s' % self.filename)

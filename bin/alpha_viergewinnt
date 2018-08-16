@@ -26,6 +26,7 @@ def create_pure_mcts_player(win_condition, loss_condition, draw_condition, **kwa
 def create_alpha_player(game, player, opponent, win_condition, loss_condition, draw_condition, **kwargs):
     selection_stategy = SelectionStrategy(exploration_factor=1)
     estimator = MlpEstimator(board_size=game.board_size, actions=game.get_all_moves())
+    estimator.load()
     evaluation_model = EvaluationModel(estimator, player, opponent, win_condition, loss_condition, draw_condition)
     return AlphaPlayer(selection_stategy, evaluation_model, mcts_steps=100)
 
