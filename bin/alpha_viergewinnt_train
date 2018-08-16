@@ -1,11 +1,14 @@
 #!/bin/env python
 import click
+import logging
 
 from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game import tictactoe, viergewinnt
 from alpha_viergewinnt.player.alpha_player import \
     AlphaPlayer, AlphaTrainer, GenericEstimator, MlpEstimator, EvaluationModel, SelectionStrategy
 from alpha_viergewinnt.match import Match
+
+logger = logging.getLogger(__name__)
 
 GAME_FACTORIES = {
     'tictactoe': (tictactoe.Game, tictactoe.WinCondition, tictactoe.DrawCondition),
@@ -70,4 +73,5 @@ def cmd(game, estimator, mcts_steps):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
     cmd()

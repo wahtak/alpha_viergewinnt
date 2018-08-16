@@ -1,5 +1,6 @@
 #!/bin/env python
 import click
+import logging
 
 from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game import tictactoe, viergewinnt
@@ -82,4 +83,5 @@ def cmd(game, x, o):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG, format=None)
     cmd()

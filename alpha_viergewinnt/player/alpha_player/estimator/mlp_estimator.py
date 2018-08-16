@@ -1,4 +1,6 @@
-import numpy as np
+import logging
+
+import torch
 from torch import tensor, sigmoid
 from torch.nn import Linear, Module
 from torch.nn.functional import softmax, cross_entropy, mse_loss
@@ -8,6 +10,7 @@ from torch.optim import SGD
 class MlpEstimator(Module):
     def __init__(self, board_size, actions):
         super().__init__()
+        self.logger = logging.getLogger(self.__class__.__module__ + '.' + self.__class__.__name__)
 
         self.actions = actions
         board_width, board_height = board_size

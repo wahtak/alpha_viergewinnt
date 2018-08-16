@@ -1,3 +1,4 @@
+import logging
 from copy import deepcopy
 
 import numpy as np
@@ -5,6 +6,7 @@ import numpy as np
 
 class Match(object):
     def __init__(self, game, players, win_conditions, draw_condition, trainers=None):
+        self.logger = logging.getLogger(self.__class__.__module__ + '.' + self.__class__.__name__)
         self.game = game
         self.players = players
         self.win_conditions = win_conditions
@@ -44,13 +46,13 @@ class Match(object):
         return False
 
     def _play_move(self, game, record_moves=False):
-        print(game)
+        self.logger.debug(game)
         current_player = game.active_player
         next_move = self.players[current_player].get_next_move(game)
         if record_moves:
             self.trainers[current_player].record(deepcopy(game), next_move)
         game.play_move(player=current_player, move=next_move)
-        print('Player %s plays %s' % (current_player.name, next_move))
+        self.logger.debug('Player %s plays %s' % (current_player.name, next_move))
         return next_move
 
     def _learn(self, game):
@@ -58,14 +60,14 @@ class Match(object):
         for player, trainer in self.trainers.items():
             loss = trainer.learn(game)
             losses.append(loss)
-        print('Training loss %.4f' % np.mean(losses))
+        self.logger.info('Training loss %.4f' % np.mean(losses))
 
     def _get_result(self, game):
-        print(game)
+        self.logger.debug(game)
         for player in self.players:
             if game.check(self.win_conditions[player]):
-                print('Player %s wins!' % player.name)
+                self.logger.debug('Player %s wins!' % player.name)
                 return player
 
-        print('Draw!')
+        self.logger.debug('Draw!')
         return None
