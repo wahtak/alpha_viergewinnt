@@ -27,13 +27,13 @@ class DummyEstimator(object):
         self.actions = actions
         self.knowledge = []
 
-    def infer(self, state):
+    def infer(self, state_array):
         uniform_prior_probabilities = np.ones(len(self.actions)) / len(self.actions)
         state_value = 0.5
         return uniform_prior_probabilities, state_value
 
-    def learn(self, state, selected_action, value):
-        self.knowledge.append((state, selected_action, value))
+    def learn(self, state_array, selected_action, final_value):
+        self.knowledge.append((state_array, selected_action, final_value))
         dummy_loss = 0
         return dummy_loss
 
