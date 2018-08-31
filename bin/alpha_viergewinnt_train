@@ -24,7 +24,8 @@ ESTIMATOR_FACTORIES = {'generic': GenericEstimator, 'mlp': MlpEstimator}
     '--estimator', required=True, type=click.Choice(ESTIMATOR_FACTORIES.keys()), help='Estimator to be trained')
 @click.option('--mcts-steps', required=True, type=int, help='Number of MCTS steps per move')
 def cmd(game, estimator, mcts_steps):
-    """Play a match"""
+    filename = '{}_{}'.format(game, estimator)
+
     Game, WinCondition, DrawCondition = GAME_FACTORIES[game]
     Estimator = ESTIMATOR_FACTORIES[estimator]
 
@@ -68,12 +69,12 @@ def cmd(game, estimator, mcts_steps):
             Player.O: trainer_o
         })
 
-    estimator.load()
+    estimator.load(filename)
 
     while True:
         for i in range(10):
             match.train()
-        estimator.save()
+        estimator.save(filename)
 
 
 if __name__ == '__main__':

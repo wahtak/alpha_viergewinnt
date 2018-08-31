@@ -23,12 +23,12 @@ def create_pure_mcts_player(win_condition, loss_condition, draw_condition, **kwa
         rollouts=30)
 
 
-def create_alpha_player(game, player, opponent, win_condition, loss_condition, draw_condition, **kwargs):
+def create_alpha_player(game, player, opponent, win_condition, loss_condition, draw_condition, filename, **kwargs):
     selection_stategy = SelectionStrategy(exploration_factor=1)
-    estimator = MlpEstimator(board_size=game.board_size, actions=game.get_all_moves())
+    estimator = MlpEstimator(board_size=game.board_size, actions=game.get_all_moves(), filename=filename)
     estimator.load()
     evaluation_model = EvaluationModel(estimator, player, opponent, win_condition, loss_condition, draw_condition)
-    return AlphaPlayer(selection_stategy, evaluation_model, mcts_steps=100)
+    return AlphaPlayer(selection_stategy, evaluation_model, mcts_steps=500)
 
 
 GAME_FACTORIES = {
@@ -49,7 +49,8 @@ PLAYER_FACTORIES = {
 @click.option('-x', required=True, type=click.Choice(PLAYER_FACTORIES.keys()), help='Strategy for player X')
 @click.option('-o', required=True, type=click.Choice(PLAYER_FACTORIES.keys()), help='Strategy for player O')
 def cmd(game, x, o):
-    """Play a match"""
+    filename = '{}_mlp'.format(game)
+
     Game, WinCondition, DrawCondition = GAME_FACTORIES[game]
     PlayerX = PLAYER_FACTORIES[x]
     PlayerO = PLAYER_FACTORIES[o]
@@ -64,14 +65,16 @@ def cmd(game, x, o):
         opponent=Player.O,
         win_condition=player_x_win_condition,
         loss_condition=player_o_win_condition,
-        draw_condition=draw_condition)
+        draw_condition=draw_condition,
+        filename=filename)
     player_o = PlayerO(
         game=game,
         player=Player.O,
         opponent=Player.X,
         win_condition=player_o_win_condition,
         loss_condition=player_x_win_condition,
-        draw_condition=draw_condition)
+        draw_condition=draw_condition,
+        filename=filename)
 
     match = Match(
         game=game,
