@@ -4,6 +4,9 @@ VALUE_WIN = 1
 VALUE_LOSS = -1
 VALUE_DRAW = 0
 
+VALUE_PLAYER = 1
+VALUE_OPPONENT = -1
+
 
 class GameNotFinishedException(Exception):
     pass
@@ -48,7 +51,8 @@ class EvaluationModel(object):
             return None
 
     def _get_array_from_state(self, state):
-        return state.get_array_view(player=self.player, player_value=1, opponent=self.opponent, opponent_value=-1)
+        return state.get_array_view(
+            player=self.player, player_value=VALUE_PLAYER, opponent=self.opponent, opponent_value=VALUE_OPPONENT)
 
     def _get_probabilities_for_possible_actions(self, all_likelihoods, all_actions, possbile_actions):
         likelihoods = [value for action, value in zip(all_actions, all_likelihoods) if action in possbile_actions]

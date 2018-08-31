@@ -76,7 +76,9 @@ def test_learn_after_finished_game(game, selection_stategy, evaluation_model):
     alpha_player = AlphaPlayer(selection_stategy, evaluation_model, mcts_steps=10)
     alpha_trainer = AlphaTrainer(evaluation_model)
 
-    selected_action = alpha_player.get_next_move(game)
-    alpha_trainer.record(state=deepcopy(game), selected_action=selected_action)
-    game.play_move(player=Player.X, move=selected_action)
+    selected_move = alpha_player.get_next_move(game)
+    assert selected_move == (2, 2)
+
+    alpha_trainer.record(state=deepcopy(game), selected_action=selected_move)
+    game.play_move(player=Player.X, move=selected_move)
     alpha_trainer.learn(final_state=game)
