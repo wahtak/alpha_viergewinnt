@@ -8,7 +8,7 @@ from torch.optim import SGD
 
 
 class MlpEstimator(Module):
-    def __init__(self, board_size, actions, filename='mlp_estimator.pth'):
+    def __init__(self, board_size, actions, filename=None, **kwargs):
         super().__init__()
         self.logger = logging.getLogger(self.__class__.__module__ + '.' + self.__class__.__name__)
 
