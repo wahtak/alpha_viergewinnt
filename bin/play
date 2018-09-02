@@ -2,6 +2,7 @@
 import click
 import logging
 
+from alpha_viergewinnt.game import board
 from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game import tictactoe, viergewinnt
 from alpha_viergewinnt.player.random_player import RandomPlayer
@@ -49,7 +50,7 @@ PLAYER_FACTORIES = {
 @click.option('-x', required=True, type=click.Choice(PLAYER_FACTORIES.keys()), help='Strategy for player X')
 @click.option('-o', required=True, type=click.Choice(PLAYER_FACTORIES.keys()), help='Strategy for player O')
 def cmd(game, x, o):
-    filename = '{}_mlp'.format(game)
+    filename = 'resources/{}_mlp'.format(game)
 
     Game, WinCondition, DrawCondition = GAME_FACTORIES[game]
     PlayerX = PLAYER_FACTORIES[x]
@@ -88,4 +89,5 @@ def cmd(game, x, o):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG, format=None)
+    board.SEPERATOR = ' '
     cmd()

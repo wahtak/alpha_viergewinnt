@@ -1,0 +1,115 @@
+#!/bin/env python
+import click
+import logging
+
+import numpy as np
+
+from alpha_viergewinnt.game.board import Player
+from alpha_viergewinnt.game import tictactoe, viergewinnt
+from alpha_viergewinnt.player.alpha_player import \
+    AlphaPlayer, AlphaTrainer, GenericEstimator, MlpEstimator, EvaluationModel, SamplingSelectionStrategy
+from alpha_viergewinnt.match import Match
+
+logger = logging.getLogger(__name__)
+
+GAME_FACTORIES = {
+    'tictactoe': (tictactoe.Game, tictactoe.WinCondition, tictactoe.DrawCondition),
+    'viergewinnt': (viergewinnt.Game, viergewinnt.WinCondition, viergewinnt.DrawCondition)
+}
+
+ESTIMATOR_FACTORIES = {'generic': GenericEstimator, 'mlp': MlpEstimator}
+
+
+@click.command()
+@click.option('--game', required=True, type=click.Choice(GAME_FACTORIES.keys()), help='Game to be trained')
+@click.option(
+    '--estimator', required=True, type=click.Choice(ESTIMATOR_FACTORIES.keys()), help='Estimator to be trained')
+@click.option('--mcts-steps', required=True, type=int, help='Number of MCTS steps per move')
+@click.option('--training-iterations', type=int, default=0, help='Number of training cycles to be run')
+@click.option('--comparison-iterations', type=int, default=0, help='Number of comparison cycles to be run')
+def cmd(game, estimator, mcts_steps, training_iterations, comparison_iterations):
+    filename = 'resources/{}_{}'.format(game, estimator)
+
+    Game, WinCondition, DrawCondition = GAME_FACTORIES[game]
+    TrainingEstimator = ESTIMATOR_FACTORIES[estimator]
+
+    game = Game()
+    player_x_win_condition = WinCondition(Player.X)
+    player_o_win_condition = WinCondition(Player.O)
+    draw_condition = DrawCondition()
+
+    selection_stategy = SamplingSelectionStrategy(exploration_factor=1)
+    training_estimator = TrainingEstimator(board_size=game.board_size, actions=game.get_all_moves(), filename=filename)
+
+    evaluation_model_x = EvaluationModel(
+        estimator=training_estimator,
+        player=Player.X,
+        opponent=Player.O,
+        win_condition=player_x_win_condition,
+        loss_condition=player_o_win_condition,
+        draw_condition=draw_condition)
+    player_x = AlphaPlayer(selection_stategy, evaluation_model_x, mcts_steps)
+    trainer_x = AlphaTrainer(evaluation_model_x)
+
+    if training_iterations > 0:
+        logger.info('Starting training')
+
+        evaluation_model_o = EvaluationModel(
+            estimator=training_estimator,
+            player=Player.O,
+            opponent=Player.X,
+            win_condition=player_o_win_condition,
+            loss_condition=player_x_win_condition,
+            draw_condition=draw_condition)
+        player_o = AlphaPlayer(selection_stategy, evaluation_model_o, mcts_steps)
+        trainer_o = AlphaTrainer(evaluation_model_o)
+
+        training_match = Match(
+            game=game,
+            players={Player.X: player_x,
+                     Player.O: player_o},
+            win_conditions={Player.X: player_x_win_condition,
+                            Player.O: player_o_win_condition},
+            draw_condition=draw_condition,
+            trainers={
+                Player.X: trainer_x,
+                Player.O: trainer_o
+            })
+
+        training_estimator.load()
+
+        for i in range(training_iterations):
+            training_match.train()
+            training_estimator.save()
+
+    if comparison_iterations > 0:
+        logger.info('Starting comparison')
+
+        comparison_estimator = GenericEstimator(board_size=game.board_size, actions=game.get_all_moves(), filename=None)
+        evaluation_model_o_comparison = EvaluationModel(
+            estimator=comparison_estimator,
+            player=Player.O,
+            opponent=Player.X,
+            win_condition=player_o_win_condition,
+            loss_condition=player_x_win_condition,
+            draw_condition=draw_condition)
+        player_o_comparison = AlphaPlayer(selection_stategy, evaluation_model_o_comparison, mcts_steps)
+
+        comparison_match = Match(
+            game=game,
+            players={Player.X: player_x,
+                     Player.O: player_o_comparison},
+            win_conditions={Player.X: player_x_win_condition,
+                            Player.O: player_o_win_condition},
+            draw_condition=draw_condition)
+
+        results = comparison_match.compare(comparison_iterations)
+        outcome_percentages = tuple(
+            100 * np.array([results[Player.X], results[Player.O], results[None]]) / comparison_iterations)
+        logger.info(
+            'Comparison results: %.2f%% player X wins, %.2f%% player O wins, %.2f%% draws.' % outcome_percentages)
+
+
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
+    cmd()

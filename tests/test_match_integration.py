@@ -5,7 +5,7 @@ from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game import tictactoe, viergewinnt
 from alpha_viergewinnt.player.random_player import RandomPlayer
 from alpha_viergewinnt.player.pure_mcts_player import PureMctsPlayer, create_random_choice_strategy
-from alpha_viergewinnt.player.alpha_player import AlphaPlayer, MlpEstimator, EvaluationModel, SelectionStrategy
+from alpha_viergewinnt.player.alpha_player import AlphaPlayer, MlpEstimator, EvaluationModel, MaximumSelectionStrategy
 from alpha_viergewinnt.match import Match
 
 
@@ -42,7 +42,7 @@ def create_pure_mcts_player(game_and_conditions, random):
 
 def create_alpha_player(game_and_conditions, _):
     game, player_x_win_condition, player_o_win_condition, draw_condition = game_and_conditions
-    selection_stategy = SelectionStrategy(exploration_factor=1)
+    selection_stategy = MaximumSelectionStrategy(exploration_factor=1)
     estimator = MlpEstimator(board_size=game.board_size, actions=game.get_all_moves())
     evaluation_model = EvaluationModel(
         estimator=estimator,
@@ -73,9 +73,9 @@ def test_single_match_smoketest(setup):
     assert isinstance(winner, Player) or winner is None
 
 
-def test_evaluation_smoketest(setup):
+def test_comparison_smoketest(setup):
     game, players, win_conditions, draw_condition = setup
     iterations = 3
     match = Match(game=game, players=players, win_conditions=win_conditions, draw_condition=draw_condition)
-    results = match.evaluate(iterations)
+    results = match.compare(iterations)
     assert sum(results.values()) == iterations

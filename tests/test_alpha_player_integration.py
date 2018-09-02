@@ -4,7 +4,7 @@ from copy import deepcopy
 from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game.tictactoe import Game, WinCondition, DrawCondition
 from alpha_viergewinnt.player.alpha_player import \
-    AlphaPlayer, AlphaTrainer, SelectionStrategy, EvaluationModel, GenericEstimator
+    AlphaPlayer, AlphaTrainer, MaximumSelectionStrategy, EvaluationModel, GenericEstimator
 
 
 @pytest.fixture
@@ -14,7 +14,7 @@ def game():
 
 @pytest.fixture
 def selection_stategy():
-    return SelectionStrategy(exploration_factor=1)
+    return MaximumSelectionStrategy(exploration_factor=1)
 
 
 @pytest.fixture

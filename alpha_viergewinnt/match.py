@@ -13,7 +13,7 @@ class Match(object):
         self.draw_condition = draw_condition
         self.trainers = trainers
 
-    def evaluate(self, iterations):
+    def compare(self, iterations):
         results = {player: 0 for player in self.players}
         results[None] = 0
 
