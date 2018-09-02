@@ -17,7 +17,7 @@ class MlpEstimator(Module):
         self.state_size = board_width * board_height
         self.filename = filename
 
-        self.hidden_size = self.state_size * 2
+        self.hidden_size = self.state_size * 10
         self.actions_size = len(actions)
 
         self.layer_input = Linear(self.state_size, self.hidden_size)
@@ -35,7 +35,7 @@ class MlpEstimator(Module):
 
     def forward(self, input_):
         hidden = sigmoid(self.layer_input(input_))
-        action_values = softmax(self.layer_action_values(hidden), dim=1)
+        action_values = softmax(sigmoid(self.layer_action_values(hidden)), dim=1)
         state_value = sigmoid(self.layer_state_value(hidden))
         return action_values, state_value
 
@@ -46,7 +46,7 @@ class MlpEstimator(Module):
 
         self.optimizer.zero_grad()
         action_values, state_value = self.forward(state_tensor)
-        state_value_loss = mse_loss(state_value, target_state_value)
+        state_value_loss = mse_loss(state_value, target_state_value) * 3
         action_values_loss = cross_entropy(action_values, action_value_index)
         loss = state_value_loss + action_values_loss
         loss.backward()
