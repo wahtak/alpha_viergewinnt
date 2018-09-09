@@ -8,6 +8,14 @@ from torch.optim import SGD
 
 
 class MlpEstimator(Module):
+    # constants for state values and state array
+    STATE_VALUE_WIN = 1
+    STATE_VALUE_LOSS = -1
+    STATE_VALUE_DRAW = 0
+
+    STATE_ARRAY_PLAYER = 1
+    STATE_ARRAY_OPPONENT = -1
+
     def __init__(self, board_size, actions, filename=None, **kwargs):
         super().__init__()
         self.logger = logging.getLogger(self.__class__.__module__ + '.' + self.__class__.__name__)
@@ -39,9 +47,9 @@ class MlpEstimator(Module):
         state_value = sigmoid(self.layer_state_value(hidden))
         return action_values, state_value
 
-    def learn(self, state_array, selected_action, final_value):
+    def learn(self, state_array, selected_action, final_state_value):
         state_tensor = tensor(state_array).float().view(1, self.state_size)
-        target_state_value = tensor(final_value).view(1, 1).float()
+        target_state_value = tensor(final_state_value).view(1, 1).float()
         action_value_index = tensor([index for index, action in enumerate(self.actions) if action == selected_action])
 
         self.optimizer.zero_grad()

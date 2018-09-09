@@ -23,6 +23,14 @@ class DummyState(object):
 
 
 class DummyEstimator(object):
+    # constants for state values and state array
+    STATE_VALUE_WIN = 1
+    STATE_VALUE_LOSS = -1
+    STATE_VALUE_DRAW = 0
+
+    STATE_ARRAY_PLAYER = 1
+    STATE_ARRAY_OPPONENT = -1
+
     def __init__(self, actions):
         self.actions = actions
         self.knowledge = []
@@ -32,8 +40,8 @@ class DummyEstimator(object):
         state_value = 0.5
         return uniform_prior_probabilities, state_value
 
-    def learn(self, state_array, selected_action, final_value):
-        self.knowledge.append((state_array, selected_action, final_value))
+    def learn(self, state_array, selected_action, final_state_value):
+        self.knowledge.append((state_array, selected_action, final_state_value))
         dummy_loss = 0
         return dummy_loss
 
@@ -84,7 +92,7 @@ def test_evaluate_win_loss_draw(state, actions, estimator, true_condition, false
 
     assert len(prior_probabilities) == len(actions)
     assert sum(prior_probabilities) == pytest.approx(0)
-    assert state_value == VALUE_WIN
+    assert state_value == estimator.STATE_VALUE_WIN
     assert game_finished is True
 
     # loss
@@ -97,7 +105,7 @@ def test_evaluate_win_loss_draw(state, actions, estimator, true_condition, false
         draw_condition=false_condition)
     prior_probabilities, state_value, game_finished = evaluation_model(actions, state)
 
-    assert state_value == VALUE_LOSS
+    assert state_value == estimator.STATE_VALUE_LOSS
     assert game_finished is True
 
     # draw
@@ -110,7 +118,7 @@ def test_evaluate_win_loss_draw(state, actions, estimator, true_condition, false
         draw_condition=true_condition)
     prior_probabilities, state_value, game_finished = evaluation_model(actions, state)
 
-    assert state_value == VALUE_DRAW
+    assert state_value == estimator.STATE_VALUE_DRAW
     assert game_finished is True
 
 
@@ -143,7 +151,7 @@ def test_learn_when_finished(state, actions, estimator, true_condition, false_co
     selected_action = 0
     evaluation_model.learn(states_and_selected_actions=[(state, selected_action)], final_state=state)
 
-    assert estimator.knowledge == [(state.get_array_view(), selected_action, VALUE_WIN)]
+    assert estimator.knowledge == [(state.get_array_view(), selected_action, estimator.STATE_VALUE_WIN)]
 
 
 def test_learn_when_not_finished(state, actions, estimator, true_condition, false_condition):

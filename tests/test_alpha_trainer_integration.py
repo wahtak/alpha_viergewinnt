@@ -5,7 +5,6 @@ from collections import namedtuple
 from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game.tictactoe import Game, WinCondition, DrawCondition
 from alpha_viergewinnt.player.alpha_player import AlphaTrainer, EvaluationModel
-from alpha_viergewinnt.player.alpha_player.evaluation_model import VALUE_WIN, VALUE_LOSS, VALUE_PLAYER, VALUE_OPPONENT
 
 
 @pytest.fixture
@@ -14,7 +13,14 @@ def game():
 
 
 class DummyEstimator(object):
-    KnowledgeEntry = namedtuple('KnowledgeEntry', ['state_array', 'selected_action', 'final_value'])
+    STATE_VALUE_WIN = 1
+    STATE_VALUE_LOSS = -1
+    STATE_VALUE_DRAW = 0
+
+    STATE_ARRAY_PLAYER = 1
+    STATE_ARRAY_OPPONENT = -1
+
+    KnowledgeEntry = namedtuple('KnowledgeEntry', ['state_array', 'selected_action', 'final_state_value'])
 
     def __init__(self):
         self.knowledge = []
@@ -22,8 +28,8 @@ class DummyEstimator(object):
     def infer(self, state_array):
         raise NotImplementedError()
 
-    def learn(self, state_array, selected_action, final_value):
-        knowledge_entry = DummyEstimator.KnowledgeEntry(state_array, selected_action, final_value)
+    def learn(self, state_array, selected_action, final_state_value):
+        knowledge_entry = DummyEstimator.KnowledgeEntry(state_array, selected_action, final_state_value)
         self.knowledge.append(knowledge_entry)
         dummy_loss = 0
         return dummy_loss
@@ -74,29 +80,32 @@ def test_correct_learning_inputs(game, evaluation_models):
     estimator_x = trainers[Player.X].evaluation_model.estimator
     estimator_o = trainers[Player.O].evaluation_model.estimator
 
-    PL = VALUE_PLAYER
-    OP = VALUE_OPPONENT
+    PL = estimator_x.STATE_ARRAY_PLAYER
+    OP = estimator_x.STATE_ARRAY_OPPONENT
 
     assert len(estimator_x.knowledge) == 3
 
     assert estimator_x.knowledge[0].state_array.tolist() == [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
     assert estimator_x.knowledge[0].selected_action == (0, 0)
-    assert estimator_x.knowledge[0].final_value == VALUE_WIN
+    assert estimator_x.knowledge[0].final_state_value == estimator_x.STATE_VALUE_WIN
 
     assert estimator_x.knowledge[1].state_array.tolist() == [[PL, 0, 0], [OP, 0, 0], [0, 0, 0]]
     assert estimator_x.knowledge[1].selected_action == (1, 1)
-    assert estimator_x.knowledge[1].final_value == VALUE_WIN
+    assert estimator_x.knowledge[1].final_state_value == estimator_x.STATE_VALUE_WIN
 
     assert estimator_x.knowledge[2].state_array.tolist() == [[PL, OP, 0], [OP, PL, 0], [0, 0, 0]]
     assert estimator_x.knowledge[2].selected_action == (2, 2)
-    assert estimator_x.knowledge[2].final_value == VALUE_WIN
+    assert estimator_x.knowledge[2].final_state_value == estimator_x.STATE_VALUE_WIN
+
+    PL = estimator_o.STATE_ARRAY_PLAYER
+    OP = estimator_o.STATE_ARRAY_OPPONENT
 
     assert len(estimator_o.knowledge) == 2
 
     assert estimator_o.knowledge[0].state_array.tolist() == [[OP, 0, 0], [0, 0, 0], [0, 0, 0]]
     assert estimator_o.knowledge[0].selected_action == (1, 0)
-    assert estimator_o.knowledge[0].final_value == VALUE_LOSS
+    assert estimator_o.knowledge[0].final_state_value == estimator_o.STATE_VALUE_LOSS
 
     assert estimator_o.knowledge[1].state_array.tolist() == [[OP, 0, 0], [PL, OP, 0], [0, 0, 0]]
     assert estimator_o.knowledge[1].selected_action == (0, 1)
-    assert estimator_o.knowledge[1].final_value == VALUE_LOSS
+    assert estimator_o.knowledge[1].final_state_value == estimator_o.STATE_VALUE_LOSS

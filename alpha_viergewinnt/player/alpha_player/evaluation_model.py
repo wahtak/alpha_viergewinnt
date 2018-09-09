@@ -1,12 +1,5 @@
 import numpy as np
 
-VALUE_WIN = 1
-VALUE_LOSS = -1
-VALUE_DRAW = 0
-
-VALUE_PLAYER = 1
-VALUE_OPPONENT = -1
-
 
 class GameNotFinishedException(Exception):
     pass
@@ -41,18 +34,21 @@ class EvaluationModel(object):
 
     def _get_final_state_value(self, state):
         if state.check(self.win_condition):
-            return VALUE_WIN
+            return self.estimator.STATE_VALUE_WIN
         elif state.check(self.loss_condition):
-            return VALUE_LOSS
+            return self.estimator.STATE_VALUE_LOSS
         elif state.check(self.draw_condition):
-            return VALUE_DRAW
+            return self.estimator.STATE_VALUE_DRAW
         else:
             # game not yet finished
             return None
 
     def _get_array_from_state(self, state):
         return state.get_array_view(
-            player=self.player, player_value=VALUE_PLAYER, opponent=self.opponent, opponent_value=VALUE_OPPONENT)
+            player=self.player,
+            player_value=self.estimator.STATE_ARRAY_PLAYER,
+            opponent=self.opponent,
+            opponent_value=self.estimator.STATE_ARRAY_OPPONENT)
 
     def _get_probabilities_for_possible_actions(self, all_likelihoods, all_actions, possbile_actions):
         likelihoods = [value for action, value in zip(all_actions, all_likelihoods) if action in possbile_actions]
