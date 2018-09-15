@@ -1,9 +1,9 @@
 import logging
 
 import torch
-from torch import tensor, sigmoid
+from torch import tensor, sigmoid, clamp
 from torch.nn import Linear, Module
-from torch.nn.functional import softmax, cross_entropy, mse_loss
+from torch.nn.functional import mse_loss, cross_entropy, softmax
 from torch.optim import SGD
 
 
@@ -16,7 +16,7 @@ class MlpEstimator(Module):
     STATE_ARRAY_PLAYER = 1
     STATE_ARRAY_OPPONENT = -1
 
-    def __init__(self, board_size, actions, filename=None, **kwargs):
+    def __init__(self, board_size, actions, learning_rate=0.01, hidden_layer_scale=10, filename=None, **kwargs):
         super().__init__()
         self.logger = logging.getLogger(self.__class__.__module__ + '.' + self.__class__.__name__)
 
@@ -25,26 +25,26 @@ class MlpEstimator(Module):
         self.state_size = board_width * board_height
         self.filename = filename
 
-        self.hidden_size = self.state_size * 10
+        self.hidden_size = self.state_size * hidden_layer_scale
         self.actions_size = len(actions)
 
         self.layer_input = Linear(self.state_size, self.hidden_size)
         self.layer_action_values = Linear(self.hidden_size, self.actions_size)
         self.layer_state_value = Linear(self.hidden_size, 1)
 
-        self.optimizer = SGD(self.parameters(), lr=0.001, momentum=0.9)
+        self.optimizer = SGD(self.parameters(), lr=learning_rate, momentum=0.9)
 
     def infer(self, state_array):
         state_tensor = tensor(state_array).float().view(1, self.state_size)
         action_values_tensor, state_value_tensor = self.forward(state_tensor)
-        action_values = action_values_tensor.view(-1).detach().numpy()
-        state_value = state_value_tensor.view(-1).detach().item()
+        action_values = softmax(action_values_tensor, dim=1).view(-1).detach().numpy()
+        state_value = clamp(state_value_tensor, min=-1, max=1).view(-1).detach().item()
         return action_values, state_value
 
     def forward(self, input_):
         hidden = sigmoid(self.layer_input(input_))
-        action_values = softmax(sigmoid(self.layer_action_values(hidden)), dim=1)
-        state_value = sigmoid(self.layer_state_value(hidden))
+        action_values = self.layer_action_values(hidden)
+        state_value = self.layer_state_value(hidden)
         return action_values, state_value
 
     def learn(self, state_array, selected_action, final_state_value):
@@ -54,7 +54,7 @@ class MlpEstimator(Module):
 
         self.optimizer.zero_grad()
         action_values, state_value = self.forward(state_tensor)
-        state_value_loss = mse_loss(state_value, target_state_value) * 3
+        state_value_loss = mse_loss(state_value, target_state_value)
         action_values_loss = cross_entropy(action_values, action_value_index)
         loss = state_value_loss + action_values_loss
         loss.backward()
