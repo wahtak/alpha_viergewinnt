@@ -23,7 +23,7 @@ class FreeplayBoard(object):
             raise IllegalMoveException('field %s does not exist.' % (move, ))
 
         if field != 0:
-            raise FieldOccupiedException('field %s is occupied' % move)
+            raise FieldOccupiedException('field %s is occupied' % (move, ))
 
         self.state[move] = player.value
 

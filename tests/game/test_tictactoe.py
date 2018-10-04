@@ -27,9 +27,15 @@ def test_play_move(game):
     game.play_move(player=Player.X, move=(0, 1))
     assert game.state[0, 1] == Player.X.value
 
+    # field already occupied
+    with pytest.raises(FieldOccupiedException):
+        game.play_move(player=Player.O, move=(0, 1))
+
+
+def test_play_illegal_move(game):
     # field does not exist
     with pytest.raises(IllegalMoveException):
-        game.play_move(player=Player.O, move=(0, 3))
+        game.play_move(player=Player.X, move=(0, 3))
 
 
 def test_get_all_moves(game):
