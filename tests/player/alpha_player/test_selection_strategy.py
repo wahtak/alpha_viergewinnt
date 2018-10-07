@@ -1,14 +1,14 @@
-from alpha_viergewinnt.player.alpha_player.attributes import ActionAttributes
+import numpy as np
+
+from alpha_viergewinnt.player.alpha_player.attributes import Attributes
 from alpha_viergewinnt.player.alpha_player.selection_strategy import *
 
 
 def test_call_selection_strategies():
-    actions = [0, 1, 2]
-    attributes = [
-        ActionAttributes(action_value=0.1, prior_probability=1, visit_count=10),
-        ActionAttributes(action_value=0.1, prior_probability=1, visit_count=1),
-        ActionAttributes(action_value=0.0, prior_probability=0.1, visit_count=0)
-    ]
+    actions = [0, 1, 3]
+    attributes = Attributes(state_value=None, prior_probabilities=np.array([1, 1, 1, 0.1]))
+    attributes.action_values = np.array([0.1, 0.1, 0.2, 0])
+    attributes.visit_counts = np.array([10, 1, 0, 0])
 
     maximum_selection_strategy = MaximumSelectionStrategy(exploration_factor=1)
     assert maximum_selection_strategy(actions, attributes) == 1

@@ -10,9 +10,7 @@ def test_add_defaults():
     graph.add_successor(20, source=0, action=10)
 
     assert graph.get_successor(source=0, action=10) == 20
-    assert graph.get_action_attributes(source=0, action=10).action_value is None
-    assert graph.get_action_attributes(source=0, action=10).prior_probability is None
-    assert graph.get_action_attributes(source=0, action=10).visit_count is None
+    assert graph.get_attributes(state=0) is None
 
 
 def test_add_existing_action():
@@ -23,18 +21,11 @@ def test_add_existing_action():
         graph.add_successor(5, source=0, action=10)
 
 
-def test_attributes():
+def test_set_get_attributes():
     graph = GameStateGraph(root=0)
-    graph.add_successor(1, source=0, action=10)
-    graph.get_action_attributes(source=0, action=10).action_value = 5
-    graph.get_action_attributes(source=0, action=10).prior_probability = 1
-    graph.get_action_attributes(source=0, action=10).visit_count = 2
-    graph.get_state_attributes(state=1).state_value = 1
+    graph.set_attributes(attributes=[1, 2, 3], state=0)
 
-    assert graph.get_action_attributes(source=0, action=10).action_value == 5
-    assert graph.get_action_attributes(source=0, action=10).prior_probability == 1
-    assert graph.get_action_attributes(source=0, action=10).visit_count == 2
-    assert graph.get_state_attributes(state=1).state_value == 1
+    assert graph.get_attributes(state=0) == [1, 2, 3]
 
 
 def test_actions_successor_and_predecessors():

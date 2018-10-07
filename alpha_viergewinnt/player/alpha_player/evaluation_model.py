@@ -22,14 +22,12 @@ class EvaluationModel(object):
 
         if state_value is not None:
             game_finished = True
-            prior_probabilities = np.zeros(len(actions))
+            prior_probabilities = np.zeros(len(self.estimator.actions))
             return prior_probabilities, state_value, game_finished
 
         game_finished = False
         state_array = self._get_array_from_state(state)
-        all_likelihoods, state_value = self.estimator.infer(state_array)
-        prior_probabilities = self._get_probabilities_for_possible_actions(
-            all_likelihoods=all_likelihoods, all_actions=self.estimator.actions, possbile_actions=actions)
+        prior_probabilities, state_value = self.estimator.infer(state_array)
         return prior_probabilities, state_value, game_finished
 
     def _get_final_state_value(self, state):
@@ -49,11 +47,6 @@ class EvaluationModel(object):
             player_value=self.estimator.STATE_ARRAY_PLAYER,
             opponent=self.opponent,
             opponent_value=self.estimator.STATE_ARRAY_OPPONENT)
-
-    def _get_probabilities_for_possible_actions(self, all_likelihoods, all_actions, possbile_actions):
-        likelihoods = [value for action, value in zip(all_actions, all_likelihoods) if action in possbile_actions]
-        probabilities = likelihoods / np.sum(likelihoods)
-        return probabilities
 
     def learn(self, states_and_selected_actions, final_state):
         final_state_value = self._get_final_state_value(final_state)

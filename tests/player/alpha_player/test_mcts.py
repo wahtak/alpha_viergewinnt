@@ -40,7 +40,7 @@ def select_first_strategy():
 @pytest.fixture
 def max_first_model():
     def evaluate(actions, state):
-        max_first_prior_probabilities = [1] + ([0] * (len(actions) - 1))
+        max_first_prior_probabilities = np.array([1] + ([0] * (len(actions) - 1)))
         dummy_state_value = 1
         game_finished = False
         return max_first_prior_probabilities, dummy_state_value, game_finished
@@ -62,16 +62,17 @@ def test_expand(empty_dummy_state_mcts):
 
     mcts._expand(root)
     actions = graph.get_actions(root)
+    attributes = graph.get_attributes(root)
     assert len(actions) == 3
     assert set(actions) == {0, 1, 2}
-    assert all([graph.get_action_attributes(root, action).action_value == 0 for action in actions])
-    assert all([graph.get_action_attributes(root, action).visit_count == 0 for action in actions])
+    assert all(attributes.action_values == 0)
+    assert all(attributes.visit_counts == 0)
     assert all([graph.get_successor(root, action).step == 1 for action in actions])
     assert all([len(graph.get_successor(root, action).played_moves) == 1 for action in actions])
     assert all([action == graph.get_successor(root, action).played_moves[0] for action in actions])
-    assert graph.get_action_attributes(root, actions[0]).prior_probability == 1
-    assert all([graph.get_action_attributes(root, action).prior_probability == 0 for action in actions[1:]])
-    assert graph.get_state_attributes(root).state_value == 1
+    assert attributes.prior_probabilities[0] == 1
+    assert all(attributes.prior_probabilities[1:] == 0)
+    assert attributes.state_value == 1
 
     with pytest.raises(AlreadyExpandedException):
         mcts._expand(root)
@@ -85,7 +86,7 @@ def test_select(empty_dummy_state_mcts):
     assert len(path) == 2
     assert path.leaf.step == 1
     selected_action = path.get_action(root)
-    assert graph.get_action_attributes(root, selected_action).visit_count == 1
+    assert graph.get_attributes(root).visit_counts[selected_action] == 1
 
     mcts._expand(path.leaf)
     path = mcts._select(root)
@@ -95,43 +96,49 @@ def test_select(empty_dummy_state_mcts):
     leaf_predecessor = path.get_predecessor(path.leaf)
     selected_action2 = path.get_action(leaf_predecessor)
 
-    assert graph.get_action_attributes(root, selected_action1).visit_count == 2
-    assert graph.get_action_attributes(leaf_predecessor, selected_action2).visit_count == 1
+    assert graph.get_attributes(root).visit_counts[selected_action1] == 2
+    assert graph.get_attributes(leaf_predecessor).visit_counts[selected_action2] == 1
 
 
 def test_backup(empty_dummy_state_mcts):
     graph = GameStateGraph(0)
 
-    # common node
-    graph.add_successor(1, source=0, action=10)
-    graph.get_action_attributes(source=0, action=10).visit_count = 1
-    graph.get_action_attributes(source=0, action=10).action_value = 1.0
-    graph.get_state_attributes(state=1).state_value = 1.0
+    # expand root node
+    attributes = Attributes(state_value=None, prior_probabilities=[None, None])
+    graph.set_attributes(attributes, state=0)
+    # add common node
+    graph.add_successor(1, source=0, action=0)
+    attributes.action_values[0] = -0.3
 
-    # once visited leaf node
-    graph.add_successor(2, source=1, action=20)
-    graph.get_action_attributes(source=1, action=20).visit_count = 1
-    graph.get_action_attributes(source=1, action=20).action_value = 0.5
-    graph.get_state_attributes(state=2).state_value = 0.5
+    # expand common node
+    attributes = Attributes(state_value=None, prior_probabilities=[None, None])
+    graph.set_attributes(attributes, state=1)
+    # add expanded leaf node
+    graph.add_successor(2, source=1, action=0)
+    attributes.action_values[0] = -0.6
+    # add unvisited leaf node
+    graph.add_successor(3, source=1, action=1)
 
-    # unvisited leaf node
-    graph.add_successor(3, source=1, action=30)
-    graph.get_action_attributes(source=1, action=30).visit_count = 0
-
-    # simulate selection, evaluation of state 3
+    # simulate selection state 3
     path = GameStatePath(0)
-    path.add_successor(1, action=10)
-    graph.get_action_attributes(source=0, action=10).visit_count += 1
-    path.add_successor(3, action=30)
-    graph.get_action_attributes(source=1, action=30).visit_count += 1
-    graph.get_state_attributes(state=3).state_value = 2.0
+    path.add_successor(1, action=0)
+    path.add_successor(3, action=1)
+
+    # simulate expansion of state 3 which turn out to be a winning state
+    attributes = Attributes(state_value=1.0, prior_probabilities=[None, None])
+    graph.set_attributes(attributes, state=3)
 
     mcts = Mcts(graph, GameStatePath, selection_strategy=None, evaluation_model=None)
     mcts._backup(path)
 
-    assert graph.get_action_attributes(source=1, action=30).action_value == pytest.approx(2.0)
-    assert graph.get_action_attributes(source=1, action=20).action_value == pytest.approx(0.5)
-    assert graph.get_action_attributes(source=0, action=10).action_value == pytest.approx(1.25)
+    # expect the action_value of an action which was not selected to be unmodified
+    assert graph.get_attributes(state=1).action_values[0] == pytest.approx(-0.6)
+
+    # expect the action_value of an action resulting in a leaf state to equal to the state_value
+    assert graph.get_attributes(state=1).action_values[1] == pytest.approx(1.0)
+
+    # expect the action_value of an action resulting in a non-leaf state to equal to the mean of sub action values
+    assert graph.get_attributes(state=0).action_values[0] == pytest.approx(0.2)
 
 
 def test_simulate_step(empty_dummy_state_mcts):
@@ -140,11 +147,11 @@ def test_simulate_step(empty_dummy_state_mcts):
     mcts.simulate_step(source=root)
     mcts.simulate_step(source=root)
 
-    assert graph.get_action_attributes(source=root, action=0).visit_count == 1
-    assert graph.get_action_attributes(source=root, action=1).visit_count == 0
-    assert graph.get_action_attributes(source=root, action=2).visit_count == 0
+    assert graph.get_attributes(state=root).visit_counts[0] == 1
+    assert graph.get_attributes(state=root).visit_counts[1] == 0
+    assert graph.get_attributes(state=root).visit_counts[2] == 0
     second_expanded = graph.get_successor(root, action=0)
-    assert graph.get_action_attributes(source=second_expanded, action=0).visit_count == 0
-    assert graph.get_action_attributes(source=second_expanded, action=1).visit_count == 0
-    assert graph.get_action_attributes(source=second_expanded, action=2).visit_count == 0
-    assert graph.get_state_attributes(state=second_expanded).state_value == 1
+    assert graph.get_attributes(state=second_expanded).visit_counts[0] == 0
+    assert graph.get_attributes(state=second_expanded).visit_counts[1] == 0
+    assert graph.get_attributes(state=second_expanded).visit_counts[2] == 0
+    assert graph.get_attributes(state=second_expanded).state_value == 1

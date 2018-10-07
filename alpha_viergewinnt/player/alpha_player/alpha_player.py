@@ -20,7 +20,7 @@ class AlphaPlayer(object):
 
     def _select_action(self, state):
         actions = self.graph.get_actions(state)
-        attributes = [self.graph.get_action_attributes(state, action) for action in actions]
+        attributes = self.graph.get_attributes(state)
         selected_action = self.selection_strategy(actions, attributes)
         return selected_action
 

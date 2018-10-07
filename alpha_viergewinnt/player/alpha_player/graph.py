@@ -1,7 +1,5 @@
 import networkx as nx
 
-from .attributes import StateAttributes, ActionAttributes
-
 
 class ActionAlreadyExistsException(Exception):
     pass
@@ -10,7 +8,7 @@ class ActionAlreadyExistsException(Exception):
 class GameStateGraph(nx.DiGraph):
     def __init__(self, root):
         super().__init__()
-        self.add_node(root, attributes=StateAttributes())
+        self.add_node(root, attributes=None)
 
     @property
     def states(self):
@@ -19,8 +17,8 @@ class GameStateGraph(nx.DiGraph):
     def add_successor(self, successor, source, action):
         if action in self.get_actions(source):
             raise ActionAlreadyExistsException()
-        self.add_node(successor, attributes=StateAttributes())
-        self.add_edge(source, successor, action=action, attributes=ActionAttributes())
+        self.add_node(successor, attributes=None)
+        self.add_edge(source, successor, action=action)
 
     def get_actions(self, source):
         return [self.get_edge_data(*edge)['action'] for edge in self.edges(source)]
@@ -32,12 +30,11 @@ class GameStateGraph(nx.DiGraph):
     def has_successors(self, source):
         return len(self.edges(source)) > 0
 
-    def get_state_attributes(self, state):
+    def get_attributes(self, state):
         return self.nodes[state]['attributes']
 
-    def get_action_attributes(self, source, action):
-        edge, = [edge for edge in self.edges(source) if self.get_edge_data(*edge)['action'] == action]
-        return self.get_edge_data(*edge)['attributes']
+    def set_attributes(self, attributes, state):
+        self.nodes[state]['attributes'] = attributes
 
     def get_predecessors(self, state):
         return set(self.predecessors(state))
@@ -50,11 +47,10 @@ class GameStateGraph(nx.DiGraph):
         nx.draw_networkx_edge_labels(self, pos=pos, edge_labels=action_labels, font_family='monospace', font_size=8)
 
     def _get_state_label(self, node):
-        return str(self.get_state_attributes(node)) + '\n\n' + str(node)
+        return str(self.get_attributes(node)) + '\n\n' + str(node)
 
     def _get_action_label(self, edge):
-        action = self.get_edge_data(*edge)['action']
-        return str(action) + '\n\n' + str(self.get_action_attributes(edge[0], action))
+        return str(self.get_edge_data(*edge)['action'])
 
 
 class GameStatePath(GameStateGraph):
