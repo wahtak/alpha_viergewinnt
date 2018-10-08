@@ -17,21 +17,22 @@ class FreeplayBoard(object):
     '''Functionality for placing stones.'''
 
     def play_move(self, player, move):
+        state_index = (move // self.state.shape[1], move % self.state.shape[1])
         try:
-            field = self.state[move]
+            field = self.state[state_index]
         except IndexError:
             raise IllegalMoveException('field %s does not exist.' % (move, ))
 
         if field != 0:
             raise FieldOccupiedException('field %s is occupied' % (move, ))
 
-        self.state[move] = player.value
+        self.state[state_index] = player.value
 
     def get_all_moves(self):
-        return list(np.ndindex(self.state.shape))
+        return list(range(self.state.size))
 
     def get_possible_moves(self):
-        return [tuple(index) for index in np.argwhere(self.state == 0)]
+        return np.flatnonzero(self.state.reshape(-1) == 0).tolist()
 
 
 class WinCondition(NStonessInRowCondition):

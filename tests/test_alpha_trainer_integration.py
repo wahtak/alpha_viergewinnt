@@ -68,11 +68,11 @@ def test_correct_learning_inputs(game, evaluation_models):
         trainers[player].record(state=deepcopy(game), selected_action=move)
         game.play_move(player=player, move=move)
 
-    record_and_play(player=Player.X, move=(0, 0))
-    record_and_play(player=Player.O, move=(1, 0))
-    record_and_play(player=Player.X, move=(1, 1))
-    record_and_play(player=Player.O, move=(0, 1))
-    record_and_play(player=Player.X, move=(2, 2))
+    record_and_play(player=Player.X, move=0)
+    record_and_play(player=Player.O, move=3)
+    record_and_play(player=Player.X, move=4)
+    record_and_play(player=Player.O, move=1)
+    record_and_play(player=Player.X, move=8)
 
     trainers[Player.X].learn(final_state=game)
     trainers[Player.O].learn(final_state=game)
@@ -86,15 +86,15 @@ def test_correct_learning_inputs(game, evaluation_models):
     assert len(estimator_x.knowledge) == 3
 
     assert estimator_x.knowledge[0].state_array.tolist() == [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
-    assert estimator_x.knowledge[0].selected_action == (0, 0)
+    assert estimator_x.knowledge[0].selected_action == 0
     assert estimator_x.knowledge[0].final_state_value == estimator_x.STATE_VALUE_WIN
 
     assert estimator_x.knowledge[1].state_array.tolist() == [[PL, 0, 0], [OP, 0, 0], [0, 0, 0]]
-    assert estimator_x.knowledge[1].selected_action == (1, 1)
+    assert estimator_x.knowledge[1].selected_action == 4
     assert estimator_x.knowledge[1].final_state_value == estimator_x.STATE_VALUE_WIN
 
     assert estimator_x.knowledge[2].state_array.tolist() == [[PL, OP, 0], [OP, PL, 0], [0, 0, 0]]
-    assert estimator_x.knowledge[2].selected_action == (2, 2)
+    assert estimator_x.knowledge[2].selected_action == 8
     assert estimator_x.knowledge[2].final_state_value == estimator_x.STATE_VALUE_WIN
 
     PL = estimator_o.STATE_ARRAY_PLAYER
@@ -103,9 +103,9 @@ def test_correct_learning_inputs(game, evaluation_models):
     assert len(estimator_o.knowledge) == 2
 
     assert estimator_o.knowledge[0].state_array.tolist() == [[OP, 0, 0], [0, 0, 0], [0, 0, 0]]
-    assert estimator_o.knowledge[0].selected_action == (1, 0)
+    assert estimator_o.knowledge[0].selected_action == 3
     assert estimator_o.knowledge[0].final_state_value == estimator_o.STATE_VALUE_LOSS
 
     assert estimator_o.knowledge[1].state_array.tolist() == [[OP, 0, 0], [PL, OP, 0], [0, 0, 0]]
-    assert estimator_o.knowledge[1].selected_action == (0, 1)
+    assert estimator_o.knowledge[1].selected_action == 1
     assert estimator_o.knowledge[1].final_state_value == estimator_o.STATE_VALUE_LOSS

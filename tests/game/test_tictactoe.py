@@ -24,53 +24,53 @@ def player_o_win_condition():
 
 def test_play_move(game):
     # valid move
-    game.play_move(player=Player.X, move=(0, 1))
+    game.play_move(player=Player.X, move=1)
     assert game.state[0, 1] == Player.X.value
 
     # field already occupied
     with pytest.raises(FieldOccupiedException):
-        game.play_move(player=Player.O, move=(0, 1))
+        game.play_move(player=Player.O, move=1)
 
 
 def test_play_illegal_move(game):
     # field does not exist
     with pytest.raises(IllegalMoveException):
-        game.play_move(player=Player.X, move=(0, 3))
+        game.play_move(player=Player.X, move=9)
 
 
 def test_get_all_moves(game):
-    game.play_move(player=Player.X, move=(0, 1))
-    expected_all_moves = [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)]
+    game.play_move(player=Player.X, move=1)
+    expected_all_moves = [0, 1, 2, 3, 4, 5, 6, 7, 8]
     all_moves = game.get_all_moves()
     assert set(expected_all_moves) == set(all_moves)
 
 
 def test_get_possible_moves(game):
-    game.play_move(player=Player.X, move=(0, 1))
-    expected_possible_moves = [(0, 0), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)]
+    game.play_move(player=Player.X, move=1)
+    expected_possible_moves = [0, 2, 3, 4, 5, 6, 7, 8]
     assert set(expected_possible_moves) == set(game.get_possible_moves())
 
 
 def test_win(game, player_x_win_condition, player_o_win_condition):
-    game.play_move(player=Player.X, move=(0, 0))
-    game.play_move(player=Player.O, move=(0, 1))
-    game.play_move(player=Player.X, move=(1, 1))
-    game.play_move(player=Player.O, move=(0, 2))
+    game.play_move(player=Player.X, move=0)
+    game.play_move(player=Player.O, move=1)
+    game.play_move(player=Player.X, move=4)
+    game.play_move(player=Player.O, move=2)
 
     print(game)
     assert game.check(player_x_win_condition) is False
     assert game.check(player_o_win_condition) is False
 
-    game.play_move(player=Player.X, move=(2, 2))
+    game.play_move(player=Player.X, move=8)
     print(game)
     assert game.check(player_x_win_condition) is True
     assert game.check(player_o_win_condition) is False
 
 
 def test_alternating_turn(game):
-    game.play_move(player=Player.X, move=(0, 0))
+    game.play_move(player=Player.X, move=0)
     with pytest.raises(NotPlayersTurnException):
-        game.play_move(player=Player.X, move=(0, 1))
+        game.play_move(player=Player.X, move=1)
 
 
 def test_random_playout_until_full(game):
