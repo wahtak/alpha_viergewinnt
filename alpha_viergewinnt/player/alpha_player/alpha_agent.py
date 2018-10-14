@@ -14,12 +14,12 @@ class AlphaAgent(object):
         self._random_state = np.random.RandomState(random_seed)
 
     def get_next_move(self, state):
-        return self._sample_action(self._get_search_probabilities(state))
+        return self._sample_action(self._get_search_distribution(state))
 
-    def _sample_action(self, search_probabilities):
-        return self._random_state.choice(len(search_probabilities), p=search_probabilities)
+    def _sample_action(self, search_distribution):
+        return self._random_state.choice(len(search_distribution), p=search_distribution)
 
-    def _get_search_probabilities(self, state):
+    def _get_search_distribution(self, state):
         # TODO: recycle graph from last call
         self.graph = GameStateGraph(state)
         mcts = Mcts(self.graph, self.evaluation_model)
@@ -27,7 +27,7 @@ class AlphaAgent(object):
         for _ in range(self.mcts_steps):
             mcts.simulate_step(state)
 
-        return mcts.get_search_probabilities(state, self.exploration_factor)
+        return mcts.get_search_distribution(state, self.exploration_factor)
 
     def draw_graph(self):
         self.graph.draw()
@@ -44,8 +44,8 @@ class AlphaTrainer(AlphaAgent):
         self.states_and_selected_actions = []
 
     def get_next_move(self, state):
-        search_probabilities = self._get_search_probabilities(state)
-        selected_action = self._sample_action(search_probabilities)
+        search_distribution = self._get_search_distribution(state)
+        selected_action = self._sample_action(search_distribution)
         self._record(state, selected_action)
         return selected_action
 

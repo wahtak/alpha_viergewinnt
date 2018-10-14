@@ -32,16 +32,16 @@ class Mcts(object):
         return not self.graph.has_successors(state)
 
     def _select_action(self, state):
-        potential_values = self._get_potential_values(state)
-        masked_potential_values = self._mask_invalid_actions(potential_values, state, fill_value=np.NINF)
-        return np.argmax(masked_potential_values)
+        potential_value = self._get_potential_value(state)
+        masked_potential_value = self._mask_invalid_actions(potential_value, state, fill_value=np.NINF)
+        return np.argmax(masked_potential_value)
 
-    def _get_potential_values(self, state):
+    def _get_potential_value(self, state):
         exploration_factor = 1
         attributes = self.graph.get_attributes(state)
-        upper_confidence_bound = exploration_factor * attributes.prior_probabilities * np.sqrt(
-            np.sum(attributes.visit_counts)) / (1 + attributes.visit_counts)
-        return attributes.action_values + upper_confidence_bound
+        upper_confidence_bound = exploration_factor * attributes.prior_distribution * np.sqrt(
+            np.sum(attributes.visit_count)) / (1 + attributes.visit_count)
+        return attributes.action_value + upper_confidence_bound
 
     def _mask_invalid_actions(self, values, state, fill_value):
         actions = self.graph.get_actions(state)
@@ -57,9 +57,9 @@ class Mcts(object):
         assert self._is_leaf(leaf)
 
         actions = leaf.get_possible_moves()
-        prior_probabilities, state_value, game_finished = self.evaluation_model(actions, leaf)
+        prior_distribution, state_value, game_finished = self.evaluation_model(actions, leaf)
 
-        attributes = Attributes(state_value, prior_probabilities)
+        attributes = Attributes(state_value, prior_distribution)
         self.graph.set_attributes(attributes, state=leaf)
 
         if not game_finished:
@@ -80,23 +80,23 @@ class Mcts(object):
             self._update_attributes(path_state, path_action, action_value_update=leaf_value)
 
     def _update_attributes(self, state, action, action_value_update):
-        visit_counts = self.graph.get_attributes(state).visit_counts
-        action_values = self.graph.get_attributes(state).action_values
+        visit_count = self.graph.get_attributes(state).visit_count
+        action_value = self.graph.get_attributes(state).action_value
 
-        total_action_value = action_values[action] * visit_counts[action]
+        total_action_value = action_value[action] * visit_count[action]
         total_action_value += action_value_update
-        visit_counts[action] += 1
-        action_values[action] = total_action_value / visit_counts[action]
+        visit_count[action] += 1
+        action_value[action] = total_action_value / visit_count[action]
 
-    def get_prior_probabilities(self, state):
-        self.graph.get_attributes(state).prior_probabilities
+    def get_prior_distribution(self, state):
+        self.graph.get_attributes(state).prior_distribution
 
-    def get_search_probabilities(self, state, exploration_factor):
-        visit_counts = self.graph.get_attributes(state).visit_counts
-        masked_visit_counts = self._mask_invalid_actions(visit_counts, state, fill_value=0)
-        assert np.sum(masked_visit_counts) != 0
+    def get_search_distribution(self, state, exploration_factor):
+        visit_count = self.graph.get_attributes(state).visit_count
+        masked_visit_count = self._mask_invalid_actions(visit_count, state, fill_value=0)
+        assert np.sum(masked_visit_count) != 0
         # smaller exploration factor leads to numerical wierdness
         assert exploration_factor >= 0.01
-        likelihoods = np.power(masked_visit_counts, 1 / exploration_factor)
+        likelihoods = np.power(masked_visit_count, 1 / exploration_factor)
         probabilities = likelihoods / sum(likelihoods)
         return probabilities

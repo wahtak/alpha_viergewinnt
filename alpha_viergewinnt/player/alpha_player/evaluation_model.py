@@ -15,20 +15,20 @@ class EvaluationModel(object):
         self.draw_condition = draw_condition
 
     def __call__(self, actions, state):
-        return self.get_prior_probabilities_and_state_value(actions, state)
+        return self.get_prior_distribution_and_state_value(actions, state)
 
-    def get_prior_probabilities_and_state_value(self, actions, state):
+    def get_prior_distribution_and_state_value(self, actions, state):
         state_value = self._get_final_state_value(state)
 
         if state_value is not None:
             game_finished = True
-            prior_probabilities = np.zeros(len(self.estimator.actions))
-            return prior_probabilities, state_value, game_finished
+            prior_distribution = np.zeros(len(self.estimator.actions))
+            return prior_distribution, state_value, game_finished
 
         game_finished = False
         state_array = self._get_array_from_state(state)
-        prior_probabilities, state_value = self.estimator.infer(state_array)
-        return prior_probabilities, state_value, game_finished
+        prior_distribution, state_value = self.estimator.infer(state_array)
+        return prior_distribution, state_value, game_finished
 
     def _get_final_state_value(self, state):
         if state.check(self.win_condition):

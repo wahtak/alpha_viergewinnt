@@ -29,23 +29,23 @@ class MlpEstimator(Module):
         self.actions_size = len(actions)
 
         self.layer_input = Linear(self.state_size, self.hidden_size)
-        self.layer_action_values = Linear(self.hidden_size, self.actions_size)
+        self.layer_action_value = Linear(self.hidden_size, self.actions_size)
         self.layer_state_value = Linear(self.hidden_size, 1)
 
         self.optimizer = SGD(self.parameters(), lr=learning_rate, momentum=0.9)
 
     def infer(self, state_array):
         state_tensor = tensor(state_array).float().view(1, self.state_size)
-        action_values_tensor, state_value_tensor = self.forward(state_tensor)
-        action_values = softmax(action_values_tensor, dim=1).view(-1).detach().numpy()
+        action_value_tensor, state_value_tensor = self.forward(state_tensor)
+        action_value = softmax(action_value_tensor, dim=1).view(-1).detach().numpy()
         state_value = clamp(state_value_tensor, min=-1, max=1).view(-1).detach().item()
-        return action_values, state_value
+        return action_value, state_value
 
     def forward(self, input_):
         hidden = sigmoid(self.layer_input(input_))
-        action_values = self.layer_action_values(hidden)
+        action_value = self.layer_action_value(hidden)
         state_value = self.layer_state_value(hidden)
-        return action_values, state_value
+        return action_value, state_value
 
     def learn(self, state_array, selected_action, final_state_value):
         state_tensor = tensor(state_array).float().view(1, self.state_size)
@@ -53,10 +53,10 @@ class MlpEstimator(Module):
         action_value_index = tensor([index for index, action in enumerate(self.actions) if action == selected_action])
 
         self.optimizer.zero_grad()
-        action_values, state_value = self.forward(state_tensor)
+        action_value, state_value = self.forward(state_tensor)
         state_value_loss = mse_loss(state_value, target_state_value)
-        action_values_loss = cross_entropy(action_values, action_value_index)
-        loss = state_value_loss + action_values_loss
+        action_value_loss = cross_entropy(action_value, action_value_index)
+        loss = state_value_loss + action_value_loss
         loss.backward()
         self.optimizer.step()
 

@@ -15,8 +15,8 @@ class GenericEstimator(object):
 
     def infer(self, state_array):
         # dummy estimation
-        uniform_action_values = np.ones(len(self.actions)) / len(self.actions)
-        return uniform_action_values, 0
+        uniform_action_value = np.ones(len(self.actions)) / len(self.actions)
+        return uniform_action_value, 0
 
     def learn(self, state_array, selected_action, final_state_value):
         # dummy learning

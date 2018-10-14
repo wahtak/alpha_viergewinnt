@@ -2,16 +2,16 @@ import numpy as np
 
 
 class Attributes(object):
-    def __init__(self, state_value, prior_probabilities):
+    def __init__(self, state_value, prior_distribution):
         self.state_value = state_value
-        self.prior_probabilities = prior_probabilities
-        self.action_values = np.zeros(len(prior_probabilities))
-        self.visit_counts = np.zeros(len(prior_probabilities))
+        self.prior_distribution = prior_distribution
+        self.action_value = np.zeros(len(prior_distribution))
+        self.visit_count = np.zeros(len(prior_distribution))
 
     def __str__(self):
-        return 'state_value=' + _try_format_float(self.state_value) + '\nprior_probabilities=' + _try_format_float(
-            self.prior_probabilities) + '\naction_values=' + _try_format_float(
-                self.action_values) + '\nvisit_counts=' + _try_format_int(self.visit_counts)
+        return 'state_value=' + _try_format_float(self.state_value) + '\nprior_distribution=' + _try_format_float(
+            self.prior_distribution) + '\naction_value=' + _try_format_float(
+                self.action_value) + '\nvisit_count=' + _try_format_int(self.visit_count)
 
 
 def _try_format_float(value):

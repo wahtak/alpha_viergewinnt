@@ -36,9 +36,9 @@ class DummyEstimator(object):
         self.knowledge = []
 
     def infer(self, state_array):
-        uniform_prior_probabilities = np.ones(len(self.actions)) / len(self.actions)
+        uniform_prior_distribution = np.ones(len(self.actions)) / len(self.actions)
         state_value = 0.5
-        return uniform_prior_probabilities, state_value
+        return uniform_prior_distribution, state_value
 
     def learn(self, state_array, selected_action, final_state_value):
         self.knowledge.append((state_array, selected_action, final_state_value))
@@ -88,10 +88,10 @@ def test_evaluate_win_loss_draw(state, actions, estimator, true_condition, false
         win_condition=true_condition,
         loss_condition=false_condition,
         draw_condition=false_condition)
-    prior_probabilities, state_value, game_finished = evaluation_model(actions, state)
+    prior_distribution, state_value, game_finished = evaluation_model(actions, state)
 
-    assert len(prior_probabilities) == len(actions)
-    assert sum(prior_probabilities) == pytest.approx(0)
+    assert len(prior_distribution) == len(actions)
+    assert sum(prior_distribution) == pytest.approx(0)
     assert state_value == estimator.STATE_VALUE_WIN
     assert game_finished is True
 
@@ -103,7 +103,7 @@ def test_evaluate_win_loss_draw(state, actions, estimator, true_condition, false
         win_condition=false_condition,
         loss_condition=true_condition,
         draw_condition=false_condition)
-    prior_probabilities, state_value, game_finished = evaluation_model(actions, state)
+    prior_distribution, state_value, game_finished = evaluation_model(actions, state)
 
     assert state_value == estimator.STATE_VALUE_LOSS
     assert game_finished is True
@@ -116,7 +116,7 @@ def test_evaluate_win_loss_draw(state, actions, estimator, true_condition, false
         win_condition=false_condition,
         loss_condition=false_condition,
         draw_condition=true_condition)
-    prior_probabilities, state_value, game_finished = evaluation_model(actions, state)
+    prior_distribution, state_value, game_finished = evaluation_model(actions, state)
 
     assert state_value == estimator.STATE_VALUE_DRAW
     assert game_finished is True
@@ -130,10 +130,10 @@ def test_evaluate_not_win_loss_draw(state, actions, estimator, true_condition, f
         win_condition=false_condition,
         loss_condition=false_condition,
         draw_condition=false_condition)
-    prior_probabilities, state_value, game_finished = evaluation_model(actions, state)
+    prior_distribution, state_value, game_finished = evaluation_model(actions, state)
 
-    assert len(prior_probabilities) == len(actions)
-    assert sum(prior_probabilities) == pytest.approx(1)
+    assert len(prior_distribution) == len(actions)
+    assert sum(prior_distribution) == pytest.approx(1)
     # from DummyEstimator
     assert state_value == 0.5
     assert game_finished is False
