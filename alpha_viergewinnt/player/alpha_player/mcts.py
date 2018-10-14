@@ -23,7 +23,6 @@ class Mcts(object):
         state = source
         while not self._is_leaf(state):
             selected_action = self._select_action(state)
-            self.graph.get_attributes(state).visit_counts[selected_action] += 1
             successor = self.graph.get_successor(state, selected_action)
             path.add_successor(successor, selected_action)
             state = successor
@@ -74,22 +73,30 @@ class Mcts(object):
         Backpropagate the state value up a (previously selected) path, by updating the action values and visit count
         """
         path_state = path.leaf
-        subtree_value = self.graph.get_attributes(path.leaf).state_value
+        leaf_value = self.graph.get_attributes(path.leaf).state_value
         while path_state is not path.root:
             path_state = path.get_predecessor(path_state)
             path_action = path.get_action(path_state)
-            action_values = self.graph.get_attributes(path_state).action_values
-            action_values[path_action] = subtree_value
-            subtree_value = np.mean(action_values)
+            self._update_attributes(path_state, path_action, action_value_update=leaf_value)
+
+    def _update_attributes(self, state, action, action_value_update):
+        visit_counts = self.graph.get_attributes(state).visit_counts
+        action_values = self.graph.get_attributes(state).action_values
+
+        total_action_value = action_values[action] * visit_counts[action]
+        total_action_value += action_value_update
+        visit_counts[action] += 1
+        action_values[action] = total_action_value / visit_counts[action]
+
+    def get_prior_probabilities(self, state):
+        self.graph.get_attributes(state).prior_probabilities
 
     def get_search_probabilities(self, state, exploration_factor):
         visit_counts = self.graph.get_attributes(state).visit_counts
         masked_visit_counts = self._mask_invalid_actions(visit_counts, state, fill_value=0)
         assert np.sum(masked_visit_counts) != 0
-        if exploration_factor == 0:
-            probabilities = np.zeros_like(masked_visit_counts)
-            probabilities[np.argmax(masked_visit_counts)] = 1.0
-        else:
-            likelihoods = np.power(masked_visit_counts, 1 / exploration_factor)
-            probabilities = likelihoods / sum(likelihoods)
+        # smaller exploration factor leads to numerical wierdness
+        assert exploration_factor >= 0.01
+        likelihoods = np.power(masked_visit_counts, 1 / exploration_factor)
+        probabilities = likelihoods / sum(likelihoods)
         return probabilities

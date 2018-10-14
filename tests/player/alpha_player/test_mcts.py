@@ -72,19 +72,17 @@ def test_select_path(empty_dummy_state_mcts):
     path = mcts._select_path(root)
     assert len(path) == 2
     assert path.leaf.step == 1
-    selected_action = path.get_action(root)
-    assert graph.get_attributes(root).visit_counts[selected_action] == 1
+    assert path.get_predecessor(path.leaf) == root
+    assert path.get_action(root) == 0
 
     mcts._expand(path.leaf)
     path = mcts._select_path(root)
     assert len(path) == 3
     assert path.leaf.step == 2
-    selected_action1 = path.get_action(root)
-    leaf_predecessor = path.get_predecessor(path.leaf)
-    selected_action2 = path.get_action(leaf_predecessor)
-
-    assert graph.get_attributes(root).visit_counts[selected_action1] == 2
-    assert graph.get_attributes(leaf_predecessor).visit_counts[selected_action2] == 1
+    predecessor = path.get_predecessor(path.leaf)
+    assert predecessor.step == 1
+    assert path.get_action(predecessor) == 0
+    assert path.get_predecessor(predecessor) == root
 
 
 def test_select_action(empty_dummy_state_mcts):
@@ -105,42 +103,57 @@ def test_select_action(empty_dummy_state_mcts):
 def test_backup():
     graph = GameStateGraph('r')
 
-    # expand root node
-    attributes = Attributes(state_value=None, prior_probabilities=[None, None])
-    # add common node
-    graph.add_successor('r.0', source='r', action=0)
-    attributes.action_values[0] = -0.3
-    graph.set_attributes(attributes, state='r')
+    common_node_state_value = 0.4
+    expanded_node_state_value = -0.6
+    selected_node_state_value = 1.0
 
-    # expand common node
-    attributes = Attributes(state_value=None, prior_probabilities=[None, None])
+    # add root node
+    root_node_attributes = Attributes(state_value=0.0, prior_probabilities=[None, None])
+    graph.set_attributes(root_node_attributes, state='r')
+
+    # add common node
+    common_node_attributes = Attributes(state_value=common_node_state_value, prior_probabilities=[None, None])
+    graph.add_successor('r.0', source='r', action=0)
+    graph.set_attributes(common_node_attributes, state='r.0')
+    root_node_attributes.visit_counts[0] = 2
+    root_node_attributes.action_values[0] = (common_node_state_value + expanded_node_state_value) / 2
+
     # add expanded leaf node
+    expanded_node_attributes = Attributes(state_value=expanded_node_state_value, prior_probabilities=[None, None])
     graph.add_successor('r.0.0', source='r.0', action=0)
-    attributes.action_values[0] = -0.6
+    graph.set_attributes(expanded_node_attributes, state='r.0.0')
+    common_node_attributes.visit_counts[0] = 1
+    common_node_attributes.action_values[0] = expanded_node_state_value
+
     # add unvisited leaf node
     graph.add_successor('r.0.1', source='r.0', action=1)
-    graph.set_attributes(attributes, state='r.0')
 
-    # simulate selection state 'r.0.1'
+    # simulate selection of unvisited leaf node
     path = GameStatePath('r')
     path.add_successor('r.0', action=0)
     path.add_successor('r.0.1', action=1)
 
-    # simulate expansion of state 'r.0.1' which turn out to be a winning state
-    attributes = Attributes(state_value=1.0, prior_probabilities=[None, None])
-    graph.set_attributes(attributes, state='r.0.1')
+    # simulate expansion of selected leaf node
+    selected_node_attributes = Attributes(state_value=selected_node_state_value, prior_probabilities=[None, None])
+    graph.set_attributes(selected_node_attributes, state='r.0.1')
 
     mcts = Mcts(graph, evaluation_model=None)
     mcts._backup(path)
 
-    # expect the action_value of an action which was not selected to be unmodified
-    assert graph.get_attributes(state='r.0').action_values[0] == pytest.approx(-0.6)
+    # expect the attributes of an action which was not selected to be unmodified
+    assert graph.get_attributes(state='r.0').action_values[0] == pytest.approx(expanded_node_state_value)
+    assert graph.get_attributes(state='r.0').visit_counts[0] == 1
 
     # expect the action_value of an action resulting in a leaf state to equal to the state_value
-    assert graph.get_attributes(state='r.0').action_values[1] == pytest.approx(1.0)
+    assert graph.get_attributes(state='r.0').action_values[1] == pytest.approx(selected_node_state_value)
+    # expect the visit count of an expanded state to be 1
+    assert graph.get_attributes(state='r.0').visit_counts[1] == 1
 
-    # expect the action_value of an action resulting in a non-leaf state to equal to the mean of sub action values
-    assert graph.get_attributes(state='r').action_values[0] == pytest.approx(0.2)
+    # expect the action_value of an action resulting in a non-leaf state to equal to be the mean
+    # of its state value and its subtree action values
+    mean_action_value = (common_node_state_value + expanded_node_state_value + selected_node_state_value) / 3
+    assert graph.get_attributes(state='r').action_values[0] == pytest.approx(mean_action_value)
+    assert graph.get_attributes(state='r').visit_counts[0] == 3
 
 
 def test_simulate_step(empty_dummy_state_mcts):

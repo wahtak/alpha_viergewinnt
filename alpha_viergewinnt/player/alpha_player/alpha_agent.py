@@ -35,7 +35,7 @@ class AlphaAgent(object):
 
 class AlphaPlayer(AlphaAgent):
     def __init__(self, evaluation_model, mcts_steps, random_seed=None):
-        super().__init__(evaluation_model, mcts_steps, random_seed, exploration_factor=0.0)
+        super().__init__(evaluation_model, mcts_steps, random_seed, exploration_factor=0.1)
 
 
 class AlphaTrainer(AlphaAgent):
@@ -44,7 +44,8 @@ class AlphaTrainer(AlphaAgent):
         self.states_and_selected_actions = []
 
     def get_next_move(self, state):
-        selected_action = super().get_next_move(state)
+        search_probabilities = self._get_search_probabilities(state)
+        selected_action = self._sample_action(search_probabilities)
         self._record(state, selected_action)
         return selected_action
 
