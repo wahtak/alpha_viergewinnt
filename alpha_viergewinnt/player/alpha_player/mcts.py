@@ -5,10 +5,6 @@ import numpy as np
 from .attributes import Attributes
 
 
-class AlreadyExpandedException(Exception):
-    pass
-
-
 class Mcts(object):
     def __init__(self, graph, evaluation_model):
         self.graph = graph
@@ -59,8 +55,7 @@ class Mcts(object):
         Evaluate the state value and prior probabilities for all actions with the evaluation model
         and add resulting actions and states.
         """
-        if not self._is_leaf(leaf):
-            raise AlreadyExpandedException()
+        assert self._is_leaf(leaf)
 
         actions = leaf.get_possible_moves()
         prior_probabilities, state_value, game_finished = self.evaluation_model(actions, leaf)

@@ -64,9 +64,6 @@ def test_expand(empty_dummy_state_mcts):
     assert all(attributes.prior_probabilities[1:] == 0)
     assert attributes.state_value == 1
 
-    with pytest.raises(AlreadyExpandedException):
-        mcts._expand(root)
-
 
 def test_select_path(empty_dummy_state_mcts):
     root, graph, mcts = empty_dummy_state_mcts
