@@ -48,16 +48,16 @@ class EvaluationModel(object):
             opponent=self.opponent,
             opponent_value=self.estimator.STATE_ARRAY_OPPONENT)
 
-    def learn(self, states_and_selected_actions, final_state):
+    def learn(self, states_and_search_distributions, final_state):
         final_state_value = self._get_final_state_value(final_state)
 
         if final_state_value is None:
             raise GameNotFinishedException()
 
         losses = []
-        for state, selected_action in states_and_selected_actions:
+        for state, target_distribution in states_and_search_distributions:
             state_array = self._get_array_from_state(state)
-            loss = self.estimator.learn(state_array, selected_action, final_state_value)
+            loss = self.estimator.learn(state_array, target_distribution, final_state_value)
             losses.append(loss)
 
         return np.mean(losses)

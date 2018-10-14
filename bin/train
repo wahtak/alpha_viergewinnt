@@ -3,6 +3,7 @@ import click
 import logging
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game import tictactoe, viergewinnt
@@ -71,9 +72,19 @@ def cmd(game, estimator, mcts_steps, training_iterations, comparison_iterations)
 
         training_estimator.load()
 
+        losses = []
+        plt.ion()
+        plt.show()
         for i in range(training_iterations):
-            training_match.train()
-            training_estimator.save()
+            result, loss = training_match.train()
+            losses.append(loss)
+            if i % 10 == 0:
+                plt.clf()
+                plt.plot(losses)
+                plt.plot(
+                    np.convolve(([losses[0]] * 16) + losses + ([losses[-1]] * 16), np.ones((32, )) / 32, mode='valid'))
+                plt.pause(0.001)
+                training_estimator.save()
 
     if comparison_iterations > 0:
         logger.info('Starting comparison')

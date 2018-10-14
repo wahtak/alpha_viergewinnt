@@ -41,18 +41,18 @@ class AlphaPlayer(AlphaAgent):
 class AlphaTrainer(AlphaAgent):
     def __init__(self, evaluation_model, mcts_steps, random_seed=None):
         super().__init__(evaluation_model, mcts_steps, random_seed, exploration_factor=1.0)
-        self.states_and_selected_actions = []
+        self.states_and_search_distributions = []
 
     def get_next_move(self, state):
         search_distribution = self._get_search_distribution(state)
+        self._record(state, search_distribution)
         selected_action = self._sample_action(search_distribution)
-        self._record(state, selected_action)
         return selected_action
 
     def _record(self, state, selected_action):
-        self.states_and_selected_actions.append((deepcopy(state), selected_action))
+        self.states_and_search_distributions.append((deepcopy(state), selected_action))
 
     def learn(self, final_state):
-        loss = self.evaluation_model.learn(self.states_and_selected_actions, final_state)
-        self.states_and_selected_actions = []
+        loss = self.evaluation_model.learn(self.states_and_search_distributions, final_state)
+        self.states_and_search_distributions = []
         return loss
