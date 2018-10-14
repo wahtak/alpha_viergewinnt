@@ -42,7 +42,7 @@ def max_first_model():
 def empty_dummy_state_mcts(max_first_model):
     root = DummyState()
     graph = GameStateGraph(root)
-    mcts = Mcts(graph, GameStatePath, evaluation_model=max_first_model)
+    mcts = Mcts(graph, evaluation_model=max_first_model)
 
     return root, graph, mcts
 
@@ -101,7 +101,7 @@ def test_select_action(empty_dummy_state_mcts):
     attributes.visit_counts = np.array([10, 1, 0, 0])
     graph.set_attributes(attributes, state='r')
 
-    mcts = Mcts(graph, GameStatePath, evaluation_model=None)
+    mcts = Mcts(graph, evaluation_model=None)
     assert mcts._select_action(state='r') == 1
 
 
@@ -133,7 +133,7 @@ def test_backup():
     attributes = Attributes(state_value=1.0, prior_probabilities=[None, None])
     graph.set_attributes(attributes, state='r.0.1')
 
-    mcts = Mcts(graph, GameStatePath, evaluation_model=None)
+    mcts = Mcts(graph, evaluation_model=None)
     mcts._backup(path)
 
     # expect the action_value of an action which was not selected to be unmodified

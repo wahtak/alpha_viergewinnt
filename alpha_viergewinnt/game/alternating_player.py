@@ -20,3 +20,14 @@ class AlternatingPlayer(object):
 
     def get_state_from_active_player_perspective(self):
         return self.get_state_from_player_perspective(self.active_player)
+
+
+class MoveRecorder(object):
+    def __init__(self):
+        self.recorded_moves = tuple()
+
+    def record_move(self, move):
+        self.recorded_moves += (move, )
+
+    def __hash__(self):
+        return hash(self.recorded_moves)

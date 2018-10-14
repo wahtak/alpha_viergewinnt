@@ -1,5 +1,4 @@
 import pytest
-from copy import deepcopy
 
 from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game.tictactoe import Game, WinCondition, DrawCondition
@@ -31,44 +30,49 @@ def evaluation_model(estimator):
         draw_condition=draw_condition)
 
 
-def test_get_any_next_move(game, evaluation_model):
-    alpha_player = AlphaPlayer(evaluation_model, mcts_steps=3)
+@pytest.fixture
+def alpha_player(evaluation_model):
+    return AlphaPlayer(evaluation_model, mcts_steps=30, random_seed=0)
+
+
+@pytest.fixture
+def alpha_trainer(evaluation_model):
+    return AlphaTrainer(evaluation_model, mcts_steps=30, random_seed=0)
+
+
+def test_get_any_next_move(game, alpha_player):
     selected_move = alpha_player.get_next_move(game)
     assert selected_move in game.get_possible_moves()
 
 
-def test_select_winning_move(game, evaluation_model):
+def test_select_winning_move(game, alpha_player):
     game.play_move(player=Player.X, move=0)
     game.play_move(player=Player.O, move=3)
     game.play_move(player=Player.X, move=4)
     game.play_move(player=Player.O, move=1)
     print(game)
 
-    alpha_player = AlphaPlayer(evaluation_model, mcts_steps=10)
     selected_move = alpha_player.get_next_move(game)
     assert selected_move == 8
 
 
-def test_select_non_losing_move(game, evaluation_model):
+def test_select_non_losing_move(game, alpha_player):
     game.play_move(player=Player.X, move=3)
     game.play_move(player=Player.O, move=0)
     game.play_move(player=Player.X, move=1)
     game.play_move(player=Player.O, move=4)
     print(game)
 
-    alpha_player = AlphaPlayer(evaluation_model, mcts_steps=30)
     selected_move = alpha_player.get_next_move(game)
     assert selected_move == 8
 
 
-def test_learn_after_finished_game(game, evaluation_model):
+def test_learn_after_finished_game(game, alpha_trainer):
     game.play_move(player=Player.X, move=0)
     game.play_move(player=Player.O, move=3)
     game.play_move(player=Player.X, move=4)
     game.play_move(player=Player.O, move=1)
     print(game)
-
-    alpha_trainer = AlphaTrainer(evaluation_model, mcts_steps=30)
 
     selected_move = alpha_trainer.get_next_move(game)
     assert selected_move == 8

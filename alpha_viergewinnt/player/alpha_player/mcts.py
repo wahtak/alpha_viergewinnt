@@ -10,9 +10,8 @@ class AlreadyExpandedException(Exception):
 
 
 class Mcts(object):
-    def __init__(self, graph, path_factory, evaluation_model):
+    def __init__(self, graph, evaluation_model):
         self.graph = graph
-        self.path_factory = path_factory
         self.evaluation_model = evaluation_model
 
     def simulate_step(self, source):
@@ -24,15 +23,18 @@ class Mcts(object):
         """
         Select a path from source to a leaf state in graph according to selection strategy.
         """
-        path = self.path_factory(source)
+        path = self.graph.create_path(source)
         state = source
-        while self.graph.has_successors(state):
+        while not self._is_leaf(state):
             selected_action = self._select_action(state)
             self.graph.get_attributes(state).visit_counts[selected_action] += 1
             successor = self.graph.get_successor(state, selected_action)
             path.add_successor(successor, selected_action)
             state = successor
         return path
+
+    def _is_leaf(self, state):
+        return not self.graph.has_successors(state)
 
     def _select_action(self, state):
         potential_values = self._get_potential_values(state)
@@ -57,7 +59,7 @@ class Mcts(object):
         Evaluate the state value and prior probabilities for all actions with the evaluation model
         and add resulting actions and states.
         """
-        if self.graph.has_successors(leaf):
+        if not self._is_leaf(leaf):
             raise AlreadyExpandedException()
 
         actions = leaf.get_possible_moves()

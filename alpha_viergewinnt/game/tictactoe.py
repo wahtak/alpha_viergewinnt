@@ -3,6 +3,7 @@ import numpy as np
 from .board import Board, Player, RowOrder
 from .condition import ConditionChecker, NStonessInRowCondition
 from .alternating_player import AlternatingPlayer
+from .move_recorder import MoveRecorder
 
 
 class IllegalMoveException(Exception):
@@ -47,17 +48,25 @@ class DrawCondition(object):
         return len(board.get_possible_moves()) == 0
 
 
-class Game(Board, FreeplayBoard, AlternatingPlayer, ConditionChecker):
-    '''Combination of board, condition checker and alternating player with parameters of the game Tictactoe.'''
+class Game(Board, FreeplayBoard, AlternatingPlayer, ConditionChecker, MoveRecorder):
+    '''
+    Combination of board, condition checker, alternating player and move recorder
+    with parameters of the game Tictactoe.
+    '''
 
     def __init__(self):
         self.board_size = (3, 3)
         Board.__init__(self, size=self.board_size, output_row_order=RowOrder.NORMAL)
         AlternatingPlayer.__init__(self, starting_player=Player.X)
+        MoveRecorder.__init__(self)
 
     def __hash__(self):
-        return Board.__hash__(self)
+        return Board.__hash__(self) ^ MoveRecorder.__hash__(self)
+
+    def __eq__(self, other):
+        return hash(self) == hash(other)
 
     def play_move(self, player, move):
         AlternatingPlayer.register_player_turn(self, player)
         FreeplayBoard.play_move(self, player, move)
+        MoveRecorder.record_move(self, move)

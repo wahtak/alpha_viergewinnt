@@ -8,7 +8,12 @@ class ActionAlreadyExistsException(Exception):
 class GameStateGraph(nx.DiGraph):
     def __init__(self, root):
         super().__init__()
+        self.Path = GameStatePath
         self.add_node(root, attributes=None)
+
+    @classmethod
+    def create_path(cls, root):
+        return GameStatePath(root)
 
     @property
     def states(self):
@@ -45,6 +50,8 @@ class GameStateGraph(nx.DiGraph):
         pos = nx.nx_pydot.graphviz_layout(self, prog='dot')
         nx.draw_networkx(self, pos=pos, labels=state_labels, arrows=False, font_family='monospace', font_size=8)
         nx.draw_networkx_edge_labels(self, pos=pos, edge_labels=action_labels, font_family='monospace', font_size=8)
+        import matplotlib.pyplot as plt
+        plt.show()
 
     def _get_state_label(self, node):
         return str(self.get_attributes(node)) + '\n\n' + str(node)

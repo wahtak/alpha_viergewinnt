@@ -1,5 +1,6 @@
 import pytest
 import random
+from copy import deepcopy
 
 from alpha_viergewinnt.game.board import *
 from alpha_viergewinnt.game.tictactoe import *
@@ -82,3 +83,23 @@ def test_random_playout_until_full(game):
         game.play_move(player=game.active_player, move=random_move)
 
     assert game.check(draw_condition) is True
+
+
+def test_move_history_inequality(game):
+    game1 = deepcopy(game)
+    game2 = deepcopy(game)
+
+    game1.play_move(player=Player.X, move=0)
+    game2.play_move(player=Player.X, move=0)
+
+    assert game1 == game2
+
+    game1.play_move(player=Player.O, move=1)
+    game1.play_move(player=Player.X, move=2)
+    game1.play_move(player=Player.O, move=3)
+
+    game2.play_move(player=Player.O, move=3)
+    game2.play_move(player=Player.X, move=2)
+    game2.play_move(player=Player.O, move=1)
+
+    assert game1 != game2
