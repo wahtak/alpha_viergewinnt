@@ -44,7 +44,7 @@ def test_select_winning_move(game, evaluation_model):
     game.play_move(player=Player.O, move=1)
     print(game)
 
-    alpha_player = AlphaPlayer(evaluation_model, mcts_steps=10, exploration_factor=0)
+    alpha_player = AlphaPlayer(evaluation_model, mcts_steps=10)
     selected_move = alpha_player.get_next_move(game)
     assert selected_move == 8
 
@@ -56,7 +56,7 @@ def test_select_non_losing_move(game, evaluation_model):
     game.play_move(player=Player.O, move=4)
     print(game)
 
-    alpha_player = AlphaPlayer(evaluation_model, mcts_steps=30, exploration_factor=0)
+    alpha_player = AlphaPlayer(evaluation_model, mcts_steps=30)
     selected_move = alpha_player.get_next_move(game)
     assert selected_move == 8
 
@@ -68,12 +68,10 @@ def test_learn_after_finished_game(game, evaluation_model):
     game.play_move(player=Player.O, move=1)
     print(game)
 
-    alpha_player = AlphaPlayer(evaluation_model, mcts_steps=10, exploration_factor=0)
-    alpha_trainer = AlphaTrainer(evaluation_model)
+    alpha_trainer = AlphaTrainer(evaluation_model, mcts_steps=30)
 
-    selected_move = alpha_player.get_next_move(game)
+    selected_move = alpha_trainer.get_next_move(game)
     assert selected_move == 8
 
-    alpha_trainer.record(state=deepcopy(game), selected_action=selected_move)
     game.play_move(player=Player.X, move=selected_move)
     alpha_trainer.learn(final_state=game)

@@ -7,7 +7,7 @@ import numpy as np
 from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game import tictactoe, viergewinnt
 from alpha_viergewinnt.player.alpha_player import \
-    AlphaPlayer, AlphaTrainer, GenericEstimator, MlpEstimator, EvaluationModel, SamplingSelectionStrategy
+    AlphaPlayer, AlphaTrainer, GenericEstimator, MlpEstimator, EvaluationModel
 from alpha_viergewinnt.match import Match
 
 logger = logging.getLogger(__name__)
@@ -34,22 +34,20 @@ def cmd(game, estimator, mcts_steps, training_iterations, comparison_iterations)
     TrainingEstimator = ESTIMATOR_FACTORIES[estimator]
 
     game = Game()
-    player_x_win_condition = WinCondition(Player.X)
-    player_o_win_condition = WinCondition(Player.O)
+    win_condition_x = WinCondition(Player.X)
+    win_condition_o = WinCondition(Player.O)
     draw_condition = DrawCondition()
 
-    selection_stategy = SamplingSelectionStrategy(exploration_factor=1)
     training_estimator = TrainingEstimator(board_size=game.board_size, actions=game.get_all_moves(), filename=filename)
 
     evaluation_model_x = EvaluationModel(
         estimator=training_estimator,
         player=Player.X,
         opponent=Player.O,
-        win_condition=player_x_win_condition,
-        loss_condition=player_o_win_condition,
+        win_condition=win_condition_x,
+        loss_condition=win_condition_o,
         draw_condition=draw_condition)
-    player_x = AlphaPlayer(selection_stategy, evaluation_model_x, mcts_steps)
-    trainer_x = AlphaTrainer(evaluation_model_x)
+    player_x = AlphaTrainer(evaluation_model_x, mcts_steps)
 
     if training_iterations > 0:
         logger.info('Starting training')
@@ -58,23 +56,18 @@ def cmd(game, estimator, mcts_steps, training_iterations, comparison_iterations)
             estimator=training_estimator,
             player=Player.O,
             opponent=Player.X,
-            win_condition=player_o_win_condition,
-            loss_condition=player_x_win_condition,
+            win_condition=win_condition_o,
+            loss_condition=win_condition_x,
             draw_condition=draw_condition)
-        player_o = AlphaPlayer(selection_stategy, evaluation_model_o, mcts_steps)
-        trainer_o = AlphaTrainer(evaluation_model_o)
+        player_o = AlphaTrainer(evaluation_model_o, mcts_steps)
 
         training_match = Match(
             game=game,
             players={Player.X: player_x,
                      Player.O: player_o},
-            win_conditions={Player.X: player_x_win_condition,
-                            Player.O: player_o_win_condition},
-            draw_condition=draw_condition,
-            trainers={
-                Player.X: trainer_x,
-                Player.O: trainer_o
-            })
+            win_conditions={Player.X: win_condition_x,
+                            Player.O: win_condition_o},
+            draw_condition=draw_condition)
 
         training_estimator.load()
 
@@ -85,22 +78,24 @@ def cmd(game, estimator, mcts_steps, training_iterations, comparison_iterations)
     if comparison_iterations > 0:
         logger.info('Starting comparison')
 
+        player_x_comparison = AlphaPlayer(evaluation_model_x, mcts_steps)
+
         comparison_estimator = GenericEstimator(board_size=game.board_size, actions=game.get_all_moves(), filename=None)
         evaluation_model_o_comparison = EvaluationModel(
             estimator=comparison_estimator,
             player=Player.O,
             opponent=Player.X,
-            win_condition=player_o_win_condition,
-            loss_condition=player_x_win_condition,
+            win_condition=win_condition_o,
+            loss_condition=win_condition_x,
             draw_condition=draw_condition)
-        player_o_comparison = AlphaPlayer(selection_stategy, evaluation_model_o_comparison, mcts_steps)
+        player_o_comparison = AlphaPlayer(evaluation_model_o_comparison, mcts_steps)
 
         comparison_match = Match(
             game=game,
-            players={Player.X: player_x,
+            players={Player.X: player_x_comparison,
                      Player.O: player_o_comparison},
-            win_conditions={Player.X: player_x_win_condition,
-                            Player.O: player_o_win_condition},
+            win_conditions={Player.X: win_condition_x,
+                            Player.O: win_condition_o},
             draw_condition=draw_condition)
 
         results = comparison_match.compare(comparison_iterations)

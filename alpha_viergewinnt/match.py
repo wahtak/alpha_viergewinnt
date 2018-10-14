@@ -5,13 +5,12 @@ import numpy as np
 
 
 class Match(object):
-    def __init__(self, game, players, win_conditions, draw_condition, trainers=None):
+    def __init__(self, game, players, win_conditions, draw_condition):
         self.logger = logging.getLogger(self.__class__.__module__ + '.' + self.__class__.__name__)
         self.game = game
         self.players = players
         self.win_conditions = win_conditions
         self.draw_condition = draw_condition
-        self.trainers = trainers
 
     def compare(self, iterations):
         results = {player: 0 for player in self.players}
@@ -49,16 +48,14 @@ class Match(object):
         self.logger.debug(game)
         current_player = game.active_player
         next_move = self.players[current_player].get_next_move(game)
-        if record_moves:
-            self.trainers[current_player].record(deepcopy(game), next_move)
         game.play_move(player=current_player, move=next_move)
         self.logger.debug('Player %s plays %s' % (current_player.name, next_move))
         return next_move
 
     def _learn(self, game):
         losses = []
-        for player, trainer in self.trainers.items():
-            loss = trainer.learn(game)
+        for player in self.players.values():
+            loss = player.learn(game)
             losses.append(loss)
         self.logger.info('Training loss %.4f' % np.mean(losses))
 

@@ -62,10 +62,13 @@ def evaluation_models():
 
 def test_correct_learning_inputs(game, evaluation_models):
     evaluation_model_x, evaluation_model_o = evaluation_models
-    trainers = {Player.X: AlphaTrainer(evaluation_model_x), Player.O: AlphaTrainer(evaluation_model_o)}
+    trainers = {
+        Player.X: AlphaTrainer(evaluation_model_x, mcts_steps=None),
+        Player.O: AlphaTrainer(evaluation_model_o, mcts_steps=None)
+    }
 
     def record_and_play(player, move):
-        trainers[player].record(state=deepcopy(game), selected_action=move)
+        trainers[player]._record(state=deepcopy(game), selected_action=move)
         game.play_move(player=player, move=move)
 
     record_and_play(player=Player.X, move=0)
