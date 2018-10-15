@@ -5,7 +5,7 @@ from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game import tictactoe, viergewinnt
 from alpha_viergewinnt.player.random_player import RandomPlayer
 from alpha_viergewinnt.player.pure_mcts_player import PureMctsPlayer, create_random_choice_strategy
-from alpha_viergewinnt.player.alpha_player import AlphaPlayer, MlpEstimator, EvaluationModel
+from alpha_viergewinnt.player.alpha_player import AlphaPlayer, MlpEstimator, Evaluator
 from alpha_viergewinnt.match import Match
 
 
@@ -43,14 +43,14 @@ def create_pure_mcts_player(game_and_conditions, random):
 def create_alpha_player(game_and_conditions, _):
     game, player_x_win_condition, player_o_win_condition, draw_condition = game_and_conditions
     estimator = MlpEstimator(board_size=game.board_size, actions=game.get_all_moves())
-    evaluation_model = EvaluationModel(
+    evaluator = Evaluator(
         estimator=estimator,
         player=Player.X,
         opponent=Player.O,
         win_condition=player_x_win_condition,
         loss_condition=player_o_win_condition,
         draw_condition=draw_condition)
-    return AlphaPlayer(evaluation_model, mcts_steps=2)
+    return AlphaPlayer(evaluator, mcts_steps=2)
 
 
 TEST_PLAYER_FACTORIES = [create_pure_mcts_player, create_alpha_player]

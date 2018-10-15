@@ -2,9 +2,11 @@ import pytest
 from copy import deepcopy
 from collections import namedtuple
 
+import numpy as np
+
 from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game.tictactoe import Game, WinCondition, DrawCondition
-from alpha_viergewinnt.player.alpha_player import AlphaTrainer, EvaluationModel
+from alpha_viergewinnt.player.alpha_player import AlphaTrainer, Evaluator
 
 
 @pytest.fixture
@@ -20,28 +22,25 @@ class DummyEstimator(object):
     STATE_ARRAY_PLAYER = 1
     STATE_ARRAY_OPPONENT = -1
 
-    KnowledgeEntry = namedtuple('KnowledgeEntry', ['state_array', 'selected_action', 'final_state_value'])
+    KnowledgeEntry = namedtuple('KnowledgeEntry', ['state_array', 'target_distribution', 'target_state_value'])
 
     def __init__(self):
         self.knowledge = []
 
-    def infer(self, state_array):
-        raise NotImplementedError()
-
-    def learn(self, state_array, selected_action, final_state_value):
-        knowledge_entry = DummyEstimator.KnowledgeEntry(state_array, selected_action, final_state_value)
+    def train(self, state_array, target_distribution, target_state_value):
+        knowledge_entry = DummyEstimator.KnowledgeEntry(state_array, target_distribution, target_state_value)
         self.knowledge.append(knowledge_entry)
         dummy_loss = 0
         return dummy_loss
 
 
 @pytest.fixture
-def evaluation_models():
+def evaluators():
     win_condition_x = WinCondition(Player.X)
     win_condition_o = WinCondition(Player.O)
     draw_condition = DrawCondition()
 
-    evaluation_model_x = EvaluationModel(
+    evaluator_x = Evaluator(
         estimator=DummyEstimator(),
         player=Player.X,
         opponent=Player.O,
@@ -49,7 +48,7 @@ def evaluation_models():
         loss_condition=win_condition_o,
         draw_condition=draw_condition)
 
-    evaluation_model_o = EvaluationModel(
+    evaluator_o = Evaluator(
         estimator=DummyEstimator(),
         player=Player.O,
         opponent=Player.X,
@@ -57,18 +56,20 @@ def evaluation_models():
         loss_condition=win_condition_x,
         draw_condition=draw_condition)
 
-    return evaluation_model_x, evaluation_model_o
+    return evaluator_x, evaluator_o
 
 
-def test_correct_learning_inputs(game, evaluation_models):
-    evaluation_model_x, evaluation_model_o = evaluation_models
+def test_correct_training_inputs(game, evaluators):
+    evaluator_x, evaluator_o = evaluators
     trainers = {
-        Player.X: AlphaTrainer(evaluation_model_x, mcts_steps=None),
-        Player.O: AlphaTrainer(evaluation_model_o, mcts_steps=None)
+        Player.X: AlphaTrainer(evaluator_x, mcts_steps=None),
+        Player.O: AlphaTrainer(evaluator_o, mcts_steps=None)
     }
 
     def record_and_play(player, move):
-        trainers[player]._record(state=deepcopy(game), selected_action=move)
+        search_distribution = np.zeros(len(game.get_all_moves()))
+        search_distribution[move] = 1
+        trainers[player]._record(state=deepcopy(game), search_distribution=search_distribution)
         game.play_move(player=player, move=move)
 
     record_and_play(player=Player.X, move=0)
@@ -77,38 +78,47 @@ def test_correct_learning_inputs(game, evaluation_models):
     record_and_play(player=Player.O, move=1)
     record_and_play(player=Player.X, move=8)
 
-    trainers[Player.X].learn(final_state=game)
-    trainers[Player.O].learn(final_state=game)
+    trainers[Player.X].train(final_state=game)
+    trainers[Player.O].train(final_state=game)
 
-    estimator_x = trainers[Player.X].evaluation_model.estimator
-    estimator_o = trainers[Player.O].evaluation_model.estimator
+    estimator_x = trainers[Player.X].evaluator.estimator
+    estimator_o = trainers[Player.O].evaluator.estimator
 
     PL = estimator_x.STATE_ARRAY_PLAYER
     OP = estimator_x.STATE_ARRAY_OPPONENT
 
-    assert len(estimator_x.knowledge) == 3
+    # 1 batch with batch-size 3
+    assert len(estimator_x.knowledge) == 1
+    assert len(estimator_x.knowledge[0].state_array) == 3
+    assert len(estimator_x.knowledge[0].target_distribution) == 3
+    assert len(estimator_x.knowledge[0].target_state_value) == 3
 
-    assert estimator_x.knowledge[0].state_array.tolist() == [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
-    assert estimator_x.knowledge[0].selected_action == 0
-    assert estimator_x.knowledge[0].final_state_value == estimator_x.STATE_VALUE_WIN
+    knowledge_batch = estimator_x.knowledge[0]
+    assert knowledge_batch.state_array[0].tolist() == [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+    assert np.argmax(knowledge_batch.target_distribution[0]) == 0
+    assert knowledge_batch.target_state_value[0] == estimator_x.STATE_VALUE_WIN
 
-    assert estimator_x.knowledge[1].state_array.tolist() == [[PL, 0, 0], [OP, 0, 0], [0, 0, 0]]
-    assert estimator_x.knowledge[1].selected_action == 4
-    assert estimator_x.knowledge[1].final_state_value == estimator_x.STATE_VALUE_WIN
+    assert knowledge_batch.state_array[1].tolist() == [[PL, 0, 0], [OP, 0, 0], [0, 0, 0]]
+    assert np.argmax(knowledge_batch.target_distribution[1]) == 4
+    assert knowledge_batch.target_state_value[1] == estimator_x.STATE_VALUE_WIN
 
-    assert estimator_x.knowledge[2].state_array.tolist() == [[PL, OP, 0], [OP, PL, 0], [0, 0, 0]]
-    assert estimator_x.knowledge[2].selected_action == 8
-    assert estimator_x.knowledge[2].final_state_value == estimator_x.STATE_VALUE_WIN
+    assert knowledge_batch.state_array[2].tolist() == [[PL, OP, 0], [OP, PL, 0], [0, 0, 0]]
+    assert np.argmax(knowledge_batch.target_distribution[2]) == 8
+    assert knowledge_batch.target_state_value[2] == estimator_x.STATE_VALUE_WIN
 
     PL = estimator_o.STATE_ARRAY_PLAYER
     OP = estimator_o.STATE_ARRAY_OPPONENT
 
-    assert len(estimator_o.knowledge) == 2
+    assert len(estimator_o.knowledge) == 1
+    assert len(estimator_o.knowledge[0].state_array) == 2
+    assert len(estimator_o.knowledge[0].target_distribution) == 2
+    assert len(estimator_o.knowledge[0].target_state_value) == 2
 
-    assert estimator_o.knowledge[0].state_array.tolist() == [[OP, 0, 0], [0, 0, 0], [0, 0, 0]]
-    assert estimator_o.knowledge[0].selected_action == 3
-    assert estimator_o.knowledge[0].final_state_value == estimator_o.STATE_VALUE_LOSS
+    knowledge_batch = estimator_o.knowledge[0]
+    assert knowledge_batch.state_array[0].tolist() == [[OP, 0, 0], [0, 0, 0], [0, 0, 0]]
+    assert np.argmax(knowledge_batch.target_distribution[0]) == 3
+    assert knowledge_batch.target_state_value[0] == estimator_o.STATE_VALUE_LOSS
 
-    assert estimator_o.knowledge[1].state_array.tolist() == [[OP, 0, 0], [PL, OP, 0], [0, 0, 0]]
-    assert estimator_o.knowledge[1].selected_action == 1
-    assert estimator_o.knowledge[1].final_state_value == estimator_o.STATE_VALUE_LOSS
+    assert knowledge_batch.state_array[1].tolist() == [[OP, 0, 0], [PL, OP, 0], [0, 0, 0]]
+    assert np.argmax(knowledge_batch.target_distribution[1]) == 1
+    assert knowledge_batch.target_state_value[1] == estimator_o.STATE_VALUE_LOSS

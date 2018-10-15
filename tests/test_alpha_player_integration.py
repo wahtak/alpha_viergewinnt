@@ -2,8 +2,7 @@ import pytest
 
 from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game.tictactoe import Game, WinCondition, DrawCondition
-from alpha_viergewinnt.player.alpha_player import \
-    AlphaPlayer, AlphaTrainer, EvaluationModel, GenericEstimator
+from alpha_viergewinnt.player.alpha_player import AlphaPlayer, AlphaTrainer, Evaluator, GenericEstimator
 
 
 @pytest.fixture
@@ -17,11 +16,11 @@ def estimator(game):
 
 
 @pytest.fixture
-def evaluation_model(estimator):
+def evaluator(estimator):
     win_condition = WinCondition(Player.X)
     loss_condition = WinCondition(Player.O)
     draw_condition = DrawCondition()
-    return EvaluationModel(
+    return Evaluator(
         estimator=estimator,
         player=Player.X,
         opponent=Player.O,
@@ -31,13 +30,13 @@ def evaluation_model(estimator):
 
 
 @pytest.fixture
-def alpha_player(evaluation_model):
-    return AlphaPlayer(evaluation_model, mcts_steps=30, random_seed=0)
+def alpha_player(evaluator):
+    return AlphaPlayer(evaluator, mcts_steps=30, random_seed=0)
 
 
 @pytest.fixture
-def alpha_trainer(evaluation_model):
-    return AlphaTrainer(evaluation_model, mcts_steps=30, random_seed=0)
+def alpha_trainer(evaluator):
+    return AlphaTrainer(evaluator, mcts_steps=30, random_seed=0)
 
 
 def test_get_any_next_move(game, alpha_player):
@@ -67,7 +66,7 @@ def test_select_non_losing_move(game, alpha_player):
     assert selected_move == 8
 
 
-def test_learn_after_finished_game(game, alpha_trainer):
+def test_train_after_finished_game(game, alpha_trainer):
     game.play_move(player=Player.X, move=0)
     game.play_move(player=Player.O, move=3)
     game.play_move(player=Player.X, move=4)
@@ -78,4 +77,4 @@ def test_learn_after_finished_game(game, alpha_trainer):
     assert selected_move == 8
 
     game.play_move(player=Player.X, move=selected_move)
-    alpha_trainer.learn(final_state=game)
+    alpha_trainer.train(final_state=game)

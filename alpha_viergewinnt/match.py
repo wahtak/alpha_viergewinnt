@@ -33,7 +33,7 @@ class Match(object):
         while not self._is_game_finished(game):
             self._play_move(game, record_moves=True)
         result = self._get_result(game)
-        loss = self._learn(game)
+        loss = self._train(game)
         return result, loss
 
     def _is_game_finished(self, game):
@@ -52,10 +52,10 @@ class Match(object):
         self.logger.debug('Player %s plays %s' % (current_player.name, next_move))
         return next_move
 
-    def _learn(self, game):
+    def _train(self, game):
         losses = []
         for player in self.players.values():
-            loss = player.learn(game)
+            loss = player.train(game)
             losses.append(loss)
         mean_loss = np.mean(losses)
         self.logger.info('Training loss %.4f' % mean_loss)

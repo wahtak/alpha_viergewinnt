@@ -54,7 +54,7 @@ class MlpEstimator(Module):
         state_value = tanh(self.layer_state_value(hidden3))
         return action_distribution, state_value
 
-    def learn(self, state_array, target_distribution_array, target_state_value_array):
+    def train(self, state_array, target_distribution_array, target_state_value_array):
         state = tensor(state_array).float().view(-1, self.state_size)
         target_state_value = tensor(target_state_value_array).view(-1, 1).float()
         target_distribution = tensor(target_distribution_array).float().view(-1, self.action_size)

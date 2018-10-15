@@ -18,8 +18,8 @@ class GenericEstimator(object):
         uniform_action_value = np.ones(len(self.actions)) / len(self.actions)
         return uniform_action_value, 0
 
-    def learn(self, state_array, state_distribution, final_state_value):
-        # dummy learning
+    def train(self, state_array, target_distribution, target_state_value):
+        # dummy training
         dummy_loss = 0
         return dummy_loss
 

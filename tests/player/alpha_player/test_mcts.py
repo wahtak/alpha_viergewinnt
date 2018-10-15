@@ -28,9 +28,9 @@ class DummyState(object):
 
 
 @pytest.fixture
-def max_first_model():
-    def evaluate(actions, state):
-        max_first_prior_distribution = np.array([1] + ([0] * (len(actions) - 1)))
+def max_first_evaluator():
+    def evaluate(state):
+        max_first_prior_distribution = np.array([1] + ([0] * 2))
         dummy_state_value = 1
         game_finished = False
         return max_first_prior_distribution, dummy_state_value, game_finished
@@ -39,10 +39,10 @@ def max_first_model():
 
 
 @pytest.fixture
-def empty_dummy_state_mcts(max_first_model):
+def empty_dummy_state_mcts(max_first_evaluator):
     root = DummyState()
     graph = GameStateGraph(root)
-    mcts = Mcts(graph, evaluation_model=max_first_model)
+    mcts = Mcts(graph, evaluator=max_first_evaluator)
 
     return root, graph, mcts
 
@@ -96,7 +96,7 @@ def test_select_action(empty_dummy_state_mcts):
     attributes.visit_count = np.array([10, 1, 0, 0])
     graph.set_attributes(attributes, state='r')
 
-    mcts = Mcts(graph, evaluation_model=None)
+    mcts = Mcts(graph, evaluator=None)
     assert mcts._select_action(state='r') == 1
 
 
@@ -137,7 +137,7 @@ def test_backup():
     selected_node_attributes = Attributes(state_value=selected_node_state_value, prior_distribution=[None, None])
     graph.set_attributes(selected_node_attributes, state='r.0.1')
 
-    mcts = Mcts(graph, evaluation_model=None)
+    mcts = Mcts(graph, evaluator=None)
     mcts._backup(path)
 
     # expect the attributes of an action which was not selected to be unmodified

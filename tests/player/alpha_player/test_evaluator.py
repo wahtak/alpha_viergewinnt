@@ -1,7 +1,9 @@
+from collections import namedtuple
+
 import pytest
 
 from alpha_viergewinnt.game.board import Player
-from alpha_viergewinnt.player.alpha_player.evaluation_model import *
+from alpha_viergewinnt.player.alpha_player.evaluator import *
 
 
 class DummyState(object):
@@ -31,6 +33,8 @@ class DummyEstimator(object):
     STATE_ARRAY_PLAYER = 1
     STATE_ARRAY_OPPONENT = -1
 
+    KnowledgeEntry = namedtuple('KnowledgeEntry', ['state_array', 'target_distribution', 'target_state_value'])
+
     def __init__(self, actions):
         self.actions = actions
         self.knowledge = []
@@ -40,8 +44,9 @@ class DummyEstimator(object):
         state_value = 0.5
         return uniform_prior_distribution, state_value
 
-    def learn(self, state_array, selected_action, final_state_value):
-        self.knowledge.append((state_array, selected_action, final_state_value))
+    def train(self, state_array, target_distribution, target_state_value):
+        knowledge_entry = DummyEstimator.KnowledgeEntry(state_array, target_distribution, target_state_value)
+        self.knowledge.append(knowledge_entry)
         dummy_loss = 0
         return dummy_loss
 
@@ -81,14 +86,14 @@ def estimator(actions):
 
 def test_evaluate_win_loss_draw(state, actions, estimator, true_condition, false_condition):
     # win
-    evaluation_model = EvaluationModel(
+    evaluator = Evaluator(
         estimator=estimator,
         player=Player.X,
         opponent=Player.O,
         win_condition=true_condition,
         loss_condition=false_condition,
         draw_condition=false_condition)
-    prior_distribution, state_value, game_finished = evaluation_model(actions, state)
+    prior_distribution, state_value, game_finished = evaluator(state)
 
     assert len(prior_distribution) == len(actions)
     assert sum(prior_distribution) == pytest.approx(0)
@@ -96,41 +101,41 @@ def test_evaluate_win_loss_draw(state, actions, estimator, true_condition, false
     assert game_finished is True
 
     # loss
-    evaluation_model = EvaluationModel(
+    evaluator = Evaluator(
         estimator=estimator,
         player=Player.X,
         opponent=Player.O,
         win_condition=false_condition,
         loss_condition=true_condition,
         draw_condition=false_condition)
-    prior_distribution, state_value, game_finished = evaluation_model(actions, state)
+    prior_distribution, state_value, game_finished = evaluator(state)
 
     assert state_value == estimator.STATE_VALUE_LOSS
     assert game_finished is True
 
     # draw
-    evaluation_model = EvaluationModel(
+    evaluator = Evaluator(
         estimator=estimator,
         player=Player.X,
         opponent=Player.O,
         win_condition=false_condition,
         loss_condition=false_condition,
         draw_condition=true_condition)
-    prior_distribution, state_value, game_finished = evaluation_model(actions, state)
+    prior_distribution, state_value, game_finished = evaluator(state)
 
     assert state_value == estimator.STATE_VALUE_DRAW
     assert game_finished is True
 
 
 def test_evaluate_not_win_loss_draw(state, actions, estimator, true_condition, false_condition):
-    evaluation_model = EvaluationModel(
+    evaluator = Evaluator(
         estimator=estimator,
         player=Player.X,
         opponent=Player.O,
         win_condition=false_condition,
         loss_condition=false_condition,
         draw_condition=false_condition)
-    prior_distribution, state_value, game_finished = evaluation_model(actions, state)
+    prior_distribution, state_value, game_finished = evaluator(state)
 
     assert len(prior_distribution) == len(actions)
     assert sum(prior_distribution) == pytest.approx(1)
@@ -139,24 +144,33 @@ def test_evaluate_not_win_loss_draw(state, actions, estimator, true_condition, f
     assert game_finished is False
 
 
-def test_learn_when_finished(state, actions, estimator, true_condition, false_condition):
+def test_train_when_finished(state, actions, estimator, true_condition, false_condition):
     # game finished with win
-    evaluation_model = EvaluationModel(
+    evaluator = Evaluator(
         estimator=estimator,
         player=Player.X,
         opponent=Player.O,
         win_condition=true_condition,
         loss_condition=false_condition,
         draw_condition=false_condition)
-    selected_action = 0
-    evaluation_model.learn(states_and_selected_actions=[(state, selected_action)], final_state=state)
+    search_distribution = np.array([0.1, 0.2, 0.7])
+    evaluator.train(states_and_search_distributions=[(state, search_distribution)], final_state=state)
 
-    assert estimator.knowledge == [(state.get_array_view(), selected_action, estimator.STATE_VALUE_WIN)]
+    # 1 batch with batch-size 1
+    assert len(estimator.knowledge) == 1
+    assert len(estimator.knowledge[0].state_array) == 1
+    assert len(estimator.knowledge[0].target_distribution) == 1
+    assert len(estimator.knowledge[0].target_state_value) == 1
+
+    knowledge_batch = estimator.knowledge[0]
+    assert knowledge_batch.state_array[0] == state.get_array_view()
+    assert np.all(knowledge_batch.target_distribution[0] == search_distribution)
+    assert knowledge_batch.target_state_value[0] == estimator.STATE_VALUE_WIN
 
 
-def test_learn_when_not_finished(state, actions, estimator, true_condition, false_condition):
+def test_train_when_not_finished(state, actions, estimator, true_condition, false_condition):
     # game not finished
-    evaluation_model = EvaluationModel(
+    evaluator = Evaluator(
         estimator=estimator,
         player=Player.X,
         opponent=Player.O,
@@ -165,4 +179,4 @@ def test_learn_when_not_finished(state, actions, estimator, true_condition, fals
         draw_condition=false_condition)
 
     with pytest.raises(GameNotFinishedException):
-        evaluation_model.learn(states_and_selected_actions=[], final_state=state)
+        evaluator.train(states_and_search_distributions=[], final_state=state)

@@ -5,7 +5,7 @@ class GameNotFinishedException(Exception):
     pass
 
 
-class EvaluationModel(object):
+class Evaluator(object):
     def __init__(self, estimator, player, opponent, win_condition, loss_condition, draw_condition):
         self.estimator = estimator
         self.player = player
@@ -14,10 +14,10 @@ class EvaluationModel(object):
         self.loss_condition = loss_condition
         self.draw_condition = draw_condition
 
-    def __call__(self, actions, state):
-        return self.get_prior_distribution_and_state_value(actions, state)
+    def __call__(self, state):
+        return self.get_prior_distribution_and_state_value(state)
 
-    def get_prior_distribution_and_state_value(self, actions, state):
+    def get_prior_distribution_and_state_value(self, state):
         state_value = self._get_final_state_value(state)
 
         if state_value is not None:
@@ -48,7 +48,7 @@ class EvaluationModel(object):
             opponent=self.opponent,
             opponent_value=self.estimator.STATE_ARRAY_OPPONENT)
 
-    def learn(self, states_and_search_distributions, final_state):
+    def train(self, states_and_search_distributions, final_state):
         target_state_value = self._get_final_state_value(final_state)
 
         if target_state_value is None:
@@ -57,5 +57,5 @@ class EvaluationModel(object):
         state_batch, target_distribution_batch = zip(*states_and_search_distributions)
         state_array_batch = [self._get_array_from_state(state) for state in state_batch]
         target_state_value_batch = [target_state_value] * len(states_and_search_distributions)
-        loss = self.estimator.learn(state_array_batch, target_distribution_batch, target_state_value_batch)
+        loss = self.estimator.train(state_array_batch, target_distribution_batch, target_state_value_batch)
         return loss

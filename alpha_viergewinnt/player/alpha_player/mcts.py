@@ -6,11 +6,14 @@ from .attributes import Attributes
 
 
 class Mcts(object):
-    def __init__(self, graph, evaluation_model):
+    def __init__(self, graph, evaluator):
         self.graph = graph
-        self.evaluation_model = evaluation_model
+        self.evaluator = evaluator
 
     def simulate_step(self, source):
+        """
+        Run a single MCTS iteration.
+        """
         selected_path = self._select_path(source)
         self._expand(selected_path.leaf)
         self._backup(selected_path)
@@ -37,9 +40,10 @@ class Mcts(object):
         return np.argmax(masked_potential_value)
 
     def _get_potential_value(self, state):
-        exploration_factor = 1
         attributes = self.graph.get_attributes(state)
-        upper_confidence_bound = exploration_factor * attributes.prior_distribution * np.sqrt(
+        # no better idea for this factor
+        confidence_factor = 1.0
+        upper_confidence_bound = confidence_factor * attributes.prior_distribution * np.sqrt(
             np.sum(attributes.visit_count)) / (1 + attributes.visit_count)
         return attributes.action_value + upper_confidence_bound
 
@@ -56,14 +60,13 @@ class Mcts(object):
         """
         assert self._is_leaf(leaf)
 
-        actions = leaf.get_possible_moves()
-        prior_distribution, state_value, game_finished = self.evaluation_model(actions, leaf)
+        prior_distribution, state_value, game_finished = self.evaluator(leaf)
 
         attributes = Attributes(state_value, prior_distribution)
         self.graph.set_attributes(attributes, state=leaf)
 
         if not game_finished:
-            for action in actions:
+            for action in leaf.get_possible_moves():
                 successor = deepcopy(leaf)
                 successor.play_move(player=leaf.active_player, move=action)
                 self.graph.add_successor(successor, source=leaf, action=action)

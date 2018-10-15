@@ -7,8 +7,8 @@ from .mcts import Mcts
 
 
 class AlphaAgent(object):
-    def __init__(self, evaluation_model, mcts_steps, random_seed, exploration_factor):
-        self.evaluation_model = evaluation_model
+    def __init__(self, evaluator, mcts_steps, random_seed, exploration_factor):
+        self.evaluator = evaluator
         self.mcts_steps = mcts_steps
         self.exploration_factor = exploration_factor
         self._random_state = np.random.RandomState(random_seed)
@@ -22,7 +22,7 @@ class AlphaAgent(object):
     def _get_search_distribution(self, state):
         # TODO: recycle graph from last call
         self.graph = GameStateGraph(state)
-        mcts = Mcts(self.graph, self.evaluation_model)
+        mcts = Mcts(self.graph, self.evaluator)
 
         for _ in range(self.mcts_steps):
             mcts.simulate_step(state)
@@ -34,13 +34,13 @@ class AlphaAgent(object):
 
 
 class AlphaPlayer(AlphaAgent):
-    def __init__(self, evaluation_model, mcts_steps, random_seed=None):
-        super().__init__(evaluation_model, mcts_steps, random_seed, exploration_factor=0.1)
+    def __init__(self, evaluator, mcts_steps, random_seed=None):
+        super().__init__(evaluator, mcts_steps, random_seed, exploration_factor=0.1)
 
 
 class AlphaTrainer(AlphaAgent):
-    def __init__(self, evaluation_model, mcts_steps, random_seed=None):
-        super().__init__(evaluation_model, mcts_steps, random_seed, exploration_factor=1.0)
+    def __init__(self, evaluator, mcts_steps, random_seed=None):
+        super().__init__(evaluator, mcts_steps, random_seed, exploration_factor=1.0)
         self.states_and_search_distributions = []
 
     def get_next_move(self, state):
@@ -52,7 +52,7 @@ class AlphaTrainer(AlphaAgent):
     def _record(self, state, search_distribution):
         self.states_and_search_distributions.append((deepcopy(state), search_distribution))
 
-    def learn(self, final_state):
-        loss = self.evaluation_model.learn(self.states_and_search_distributions, final_state)
+    def train(self, final_state):
+        loss = self.evaluator.train(self.states_and_search_distributions, final_state)
         self.states_and_search_distributions = []
         return loss

@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game import tictactoe, viergewinnt
 from alpha_viergewinnt.player.alpha_player import \
-    AlphaPlayer, AlphaTrainer, GenericEstimator, MlpEstimator, EvaluationModel
+    AlphaPlayer, AlphaTrainer, GenericEstimator, MlpEstimator, Evaluator
 from alpha_viergewinnt.match import Match
 
 logger = logging.getLogger(__name__)
@@ -41,26 +41,26 @@ def cmd(game, estimator, mcts_steps, training_iterations, comparison_iterations)
 
     training_estimator = TrainingEstimator(board_size=game.board_size, actions=game.get_all_moves(), filename=filename)
 
-    training_evaluation_model_x = EvaluationModel(
+    training_evaluator_x = Evaluator(
         estimator=training_estimator,
         player=Player.X,
         opponent=Player.O,
         win_condition=win_condition_x,
         loss_condition=win_condition_o,
         draw_condition=draw_condition)
-    trainer_x = AlphaTrainer(training_evaluation_model_x, mcts_steps)
+    trainer_x = AlphaTrainer(training_evaluator_x, mcts_steps)
 
     if training_iterations > 0:
         logger.info('Starting training')
 
-        training_evaluation_model_o = EvaluationModel(
+        training_evaluator_o = Evaluator(
             estimator=training_estimator,
             player=Player.O,
             opponent=Player.X,
             win_condition=win_condition_o,
             loss_condition=win_condition_x,
             draw_condition=draw_condition)
-        trainer_o = AlphaTrainer(training_evaluation_model_o, mcts_steps)
+        trainer_o = AlphaTrainer(training_evaluator_o, mcts_steps)
 
         training_match = Match(
             game=game,
@@ -89,17 +89,17 @@ def cmd(game, estimator, mcts_steps, training_iterations, comparison_iterations)
     if comparison_iterations > 0:
         logger.info('Starting comparison')
 
-        player_x = AlphaPlayer(training_evaluation_model_x, mcts_steps)
+        player_x = AlphaPlayer(training_evaluator_x, mcts_steps)
 
         comparison_estimator = GenericEstimator(board_size=game.board_size, actions=game.get_all_moves(), filename=None)
-        comparison_evaluation_model_o = EvaluationModel(
+        comparison_evaluator_o = Evaluator(
             estimator=comparison_estimator,
             player=Player.O,
             opponent=Player.X,
             win_condition=win_condition_o,
             loss_condition=win_condition_x,
             draw_condition=draw_condition)
-        player_o = AlphaPlayer(comparison_evaluation_model_o, mcts_steps)
+        player_o = AlphaPlayer(comparison_evaluator_o, mcts_steps)
 
         comparison_match = Match(
             game=game,
