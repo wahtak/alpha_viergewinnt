@@ -55,9 +55,9 @@ class MlpEstimator(Module):
         return action_distribution, state_value
 
     def learn(self, state_array, target_distribution_array, target_state_value_array):
-        state = tensor(state_array).float().view(1, self.state_size)
-        target_state_value = tensor(target_state_value_array).view(1, 1).float()
-        target_distribution = tensor(target_distribution_array).float().view(1, self.action_size)
+        state = tensor(state_array).float().view(-1, self.state_size)
+        target_state_value = tensor(target_state_value_array).view(-1, 1).float()
+        target_distribution = tensor(target_distribution_array).float().view(-1, self.action_size)
 
         self.optimizer.zero_grad()
         action_distribution, state_value = self.forward(state)

@@ -49,8 +49,8 @@ class AlphaTrainer(AlphaAgent):
         selected_action = self._sample_action(search_distribution)
         return selected_action
 
-    def _record(self, state, selected_action):
-        self.states_and_search_distributions.append((deepcopy(state), selected_action))
+    def _record(self, state, search_distribution):
+        self.states_and_search_distributions.append((deepcopy(state), search_distribution))
 
     def learn(self, final_state):
         loss = self.evaluation_model.learn(self.states_and_search_distributions, final_state)
