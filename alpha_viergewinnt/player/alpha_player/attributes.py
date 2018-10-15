@@ -9,20 +9,20 @@ class Attributes(object):
         self.visit_count = np.zeros(len(prior_distribution))
 
     def __str__(self):
-        return 'state_value=' + _try_format_float(self.state_value) + '\nprior_distribution=' + _try_format_float(
-            self.prior_distribution) + '\naction_value=' + _try_format_float(
-                self.action_value) + '\nvisit_count=' + _try_format_int(self.visit_count)
+        return 'state_value=%d\nprior_distribution=%s\naction_value=%s\nvisit_count=%s' % (
+            self.state_value, _try_format_float_array(self.prior_distribution),
+            _try_format_float_array(self.action_value), _try_format_float_array(self.visit_count))
 
 
-def _try_format_float(value):
+def _try_format_float_array(array):
     try:
-        return '%.02f' % value
+        return np.array_str(array, precision=2, suppress_small=True)
     except TypeError:
-        return '%s' % value
+        return str(array)
 
 
-def _try_format_int(value):
+def _try_format_int_array(array):
     try:
-        return '%d' % value
+        return np.array_str(array)
     except TypeError:
-        return '%s' % value
+        return str(array)
