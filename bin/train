@@ -14,8 +14,8 @@ from alpha_viergewinnt.match import ComparisonMatch, TrainingMatch
 logger = logging.getLogger(__name__)
 
 GAME_FACTORIES = {
-    'tictactoe': (tictactoe.Game, tictactoe.WinCondition, tictactoe.DrawCondition),
-    'viergewinnt': (viergewinnt.Game, viergewinnt.WinCondition, viergewinnt.DrawCondition)
+    'tictactoe': tictactoe.Game,
+    'viergewinnt': viergewinnt.Game,
 }
 
 ESTIMATOR_FACTORIES = {'generic': GenericEstimator, 'mlp': MlpEstimator}
@@ -31,46 +31,19 @@ ESTIMATOR_FACTORIES = {'generic': GenericEstimator, 'mlp': MlpEstimator}
 def cmd(game, estimator, mcts_steps, training_iterations, comparison_iterations):
     filename = 'resources/{}_{}'.format(game, estimator)
 
-    Game, WinCondition, DrawCondition = GAME_FACTORIES[game]
+    Game = GAME_FACTORIES[game]
     TrainingEstimator = ESTIMATOR_FACTORIES[estimator]
 
     game = Game()
-    win_condition_x = WinCondition(Player.X)
-    win_condition_o = WinCondition(Player.O)
-    draw_condition = DrawCondition()
-
     training_estimator = TrainingEstimator(board_size=game.board_size, actions=game.get_all_moves(), filename=filename)
-
-    training_evaluator_x = Evaluator(
-        estimator=training_estimator,
-        player=Player.X,
-        opponent=Player.O,
-        win_condition=win_condition_x,
-        loss_condition=win_condition_o,
-        draw_condition=draw_condition)
-    trainer_x = AlphaTrainer(training_evaluator_x, mcts_steps)
+    training_estimator.load()
+    trainer_x = AlphaTrainer(Evaluator(estimator=training_estimator, player=Player.X), mcts_steps)
 
     if training_iterations > 0:
         logger.info('Starting training')
 
-        training_evaluator_o = Evaluator(
-            estimator=training_estimator,
-            player=Player.O,
-            opponent=Player.X,
-            win_condition=win_condition_o,
-            loss_condition=win_condition_x,
-            draw_condition=draw_condition)
-        trainer_o = AlphaTrainer(training_evaluator_o, mcts_steps)
-
-        training_match = TrainingMatch(
-            game=game,
-            players={Player.X: trainer_x,
-                     Player.O: trainer_o},
-            win_conditions={Player.X: win_condition_x,
-                            Player.O: win_condition_o},
-            draw_condition=draw_condition)
-
-        training_estimator.load()
+        trainer_o = AlphaTrainer(Evaluator(estimator=training_estimator, player=Player.O), mcts_steps)
+        training_match = TrainingMatch(game=game, players={Player.X: trainer_x, Player.O: trainer_o})
 
         losses = []
         plt.ion()
@@ -89,25 +62,11 @@ def cmd(game, estimator, mcts_steps, training_iterations, comparison_iterations)
     if comparison_iterations > 0:
         logger.info('Starting comparison')
 
-        player_x = AlphaPlayer(training_evaluator_x, mcts_steps)
-
+        player_x = AlphaPlayer(Evaluator(estimator=training_estimator, player=Player.X), mcts_steps)
         comparison_estimator = GenericEstimator(board_size=game.board_size, actions=game.get_all_moves(), filename=None)
-        comparison_evaluator_o = Evaluator(
-            estimator=comparison_estimator,
-            player=Player.O,
-            opponent=Player.X,
-            win_condition=win_condition_o,
-            loss_condition=win_condition_x,
-            draw_condition=draw_condition)
-        player_o = AlphaPlayer(comparison_evaluator_o, mcts_steps)
+        player_o = AlphaPlayer(Evaluator(estimator=comparison_estimator, player=Player.O), mcts_steps)
 
-        comparison_match = ComparisonMatch(
-            game=game,
-            players={Player.X: player_x,
-                     Player.O: player_o},
-            win_conditions={Player.X: win_condition_x,
-                            Player.O: win_condition_o},
-            draw_condition=draw_condition)
+        comparison_match = ComparisonMatch(game=game, players={Player.X: player_x, Player.O: player_o})
 
         results = comparison_match.compare(comparison_iterations)
         outcome_percentages = tuple(

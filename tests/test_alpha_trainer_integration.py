@@ -5,7 +5,7 @@ from collections import namedtuple
 import numpy as np
 
 from alpha_viergewinnt.game.board import Player
-from alpha_viergewinnt.game.tictactoe import Game, WinCondition, DrawCondition
+from alpha_viergewinnt.game.tictactoe import Game
 from alpha_viergewinnt.player.alpha_player import AlphaTrainer, Evaluator
 
 
@@ -29,26 +29,8 @@ class DummyEstimator(object):
 
 @pytest.fixture
 def evaluators():
-    win_condition_x = WinCondition(Player.X)
-    win_condition_o = WinCondition(Player.O)
-    draw_condition = DrawCondition()
-
-    evaluator_x = Evaluator(
-        estimator=DummyEstimator(),
-        player=Player.X,
-        opponent=Player.O,
-        win_condition=win_condition_x,
-        loss_condition=win_condition_o,
-        draw_condition=draw_condition)
-
-    evaluator_o = Evaluator(
-        estimator=DummyEstimator(),
-        player=Player.O,
-        opponent=Player.X,
-        win_condition=win_condition_o,
-        loss_condition=win_condition_x,
-        draw_condition=draw_condition)
-
+    evaluator_x = Evaluator(estimator=DummyEstimator(), player=Player.X)
+    evaluator_o = Evaluator(estimator=DummyEstimator(), player=Player.O)
     return evaluator_x, evaluator_o
 
 

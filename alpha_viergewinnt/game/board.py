@@ -7,9 +7,9 @@ class Player(enum.Enum):
     X = 1
     O = 2  # noqa E741
 
-    @classmethod
-    def opponent(cls, player):
-        return cls.X if player == cls.O else cls.O
+    def opponent(self):
+        print(self)
+        return Player.X if self == Player.O else Player.O
 
 
 class RowOrder(enum.Enum):

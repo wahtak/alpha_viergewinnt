@@ -4,6 +4,19 @@ from alpha_viergewinnt.player.alpha_player.graph import *
 from alpha_viergewinnt.player.alpha_player.mcts import *
 
 
+class MaxFirstEvaluator():
+    def evaluate(self, state):
+        max_first_prior_distribution = np.array([1] + ([0] * 2))
+        dummy_state_value = 1
+        game_finished = False
+        return max_first_prior_distribution, dummy_state_value, game_finished
+
+
+@pytest.fixture
+def max_first_evaluator():
+    return MaxFirstEvaluator()
+
+
 class DummyState(object):
     def __init__(self):
         self.active_player = None
@@ -25,17 +38,6 @@ class DummyState(object):
     def play_move(self, player, move):
         self.step += 1
         self.played_moves.append(move)
-
-
-@pytest.fixture
-def max_first_evaluator():
-    def evaluate(state):
-        max_first_prior_distribution = np.array([1] + ([0] * 2))
-        dummy_state_value = 1
-        game_finished = False
-        return max_first_prior_distribution, dummy_state_value, game_finished
-
-    return evaluate
 
 
 @pytest.fixture

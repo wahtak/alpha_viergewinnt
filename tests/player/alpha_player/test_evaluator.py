@@ -10,6 +10,8 @@ class DummyState(object):
     def __init__(self):
         self.board_size = (4, 4)
         self.state = 0
+        self.winner = None
+        self.draw = False
 
     def get_all_moves(self):
         return [0, 1, 2, 3]
@@ -17,8 +19,11 @@ class DummyState(object):
     def get_possible_moves(self):
         return [0, 2, 3]
 
-    def check(self, condition):
-        return condition.check(self)
+    def is_winner(self, player):
+        return self.winner == player
+
+    def is_draw(self):
+        return self.draw
 
     def get_array_view(self, *args, **kwargs):
         return self.state
@@ -44,24 +49,6 @@ class DummyEstimator(object):
 
 
 @pytest.fixture
-def false_condition():
-    class FalseCondition(object):
-        def check(self, _):
-            return False
-
-    return FalseCondition()
-
-
-@pytest.fixture
-def true_condition():
-    class TrueCondition(object):
-        def check(self, _):
-            return True
-
-    return TrueCondition()
-
-
-@pytest.fixture
 def state():
     return DummyState()
 
@@ -72,62 +59,39 @@ def actions(state):
 
 
 @pytest.fixture
-def estimator(actions):
-    return DummyEstimator(actions=actions)
+def evaluator(actions):
+    estimator = DummyEstimator(actions=actions)
+    return Evaluator(estimator=estimator, player=Player.X)
 
 
-def test_evaluate_win_loss_draw(state, actions, estimator, true_condition, false_condition):
-    # win
-    evaluator = Evaluator(
-        estimator=estimator,
-        player=Player.X,
-        opponent=Player.O,
-        win_condition=true_condition,
-        loss_condition=false_condition,
-        draw_condition=false_condition)
-    prior_distribution, state_value, game_finished = evaluator(state)
+def test_evaluate_win_loss_draw(state, actions, evaluator):
+    state.winner = Player.X
+    prior_distribution, state_value, game_finished = evaluator.evaluate(state)
 
     assert len(prior_distribution) == len(actions)
     assert sum(prior_distribution) == pytest.approx(0)
     assert state_value == evaluator.STATE_VALUE_WIN
     assert game_finished is True
 
-    # loss
-    evaluator = Evaluator(
-        estimator=estimator,
-        player=Player.X,
-        opponent=Player.O,
-        win_condition=false_condition,
-        loss_condition=true_condition,
-        draw_condition=false_condition)
-    prior_distribution, state_value, game_finished = evaluator(state)
+
+def test_evaluate_loss(state, actions, evaluator):
+    state.winner = Player.O
+    prior_distribution, state_value, game_finished = evaluator.evaluate(state)
 
     assert state_value == evaluator.STATE_VALUE_LOSS
     assert game_finished is True
 
-    # draw
-    evaluator = Evaluator(
-        estimator=estimator,
-        player=Player.X,
-        opponent=Player.O,
-        win_condition=false_condition,
-        loss_condition=false_condition,
-        draw_condition=true_condition)
-    prior_distribution, state_value, game_finished = evaluator(state)
+
+def test_evaluate_draw(state, actions, evaluator):
+    state.draw = True
+    prior_distribution, state_value, game_finished = evaluator.evaluate(state)
 
     assert state_value == evaluator.STATE_VALUE_DRAW
     assert game_finished is True
 
 
-def test_evaluate_not_win_loss_draw(state, actions, estimator, true_condition, false_condition):
-    evaluator = Evaluator(
-        estimator=estimator,
-        player=Player.X,
-        opponent=Player.O,
-        win_condition=false_condition,
-        loss_condition=false_condition,
-        draw_condition=false_condition)
-    prior_distribution, state_value, game_finished = evaluator(state)
+def test_evaluate_not_win_loss_draw(state, actions, evaluator):
+    prior_distribution, state_value, game_finished = evaluator.evaluate(state)
 
     assert len(prior_distribution) == len(actions)
     assert sum(prior_distribution) == pytest.approx(1)
@@ -136,39 +100,23 @@ def test_evaluate_not_win_loss_draw(state, actions, estimator, true_condition, f
     assert game_finished is False
 
 
-def test_train_when_finished(state, actions, estimator, true_condition, false_condition):
-    # game finished with win
-    evaluator = Evaluator(
-        estimator=estimator,
-        player=Player.X,
-        opponent=Player.O,
-        win_condition=true_condition,
-        loss_condition=false_condition,
-        draw_condition=false_condition)
+def test_train_when_finished(state, actions, evaluator):
+    state.winner = Player.X
     search_distribution = np.array([0.1, 0.2, 0.7])
     evaluator.train(states_and_search_distributions=[(state, search_distribution)], final_state=state)
 
     # 1 batch with batch-size 1
-    assert len(estimator.knowledge) == 1
-    assert len(estimator.knowledge[0].state_array) == 1
-    assert len(estimator.knowledge[0].target_distribution) == 1
-    assert len(estimator.knowledge[0].target_state_value) == 1
+    assert len(evaluator.estimator.knowledge) == 1
+    assert len(evaluator.estimator.knowledge[0].state_array) == 1
+    assert len(evaluator.estimator.knowledge[0].target_distribution) == 1
+    assert len(evaluator.estimator.knowledge[0].target_state_value) == 1
 
-    knowledge_batch = estimator.knowledge[0]
+    knowledge_batch = evaluator.estimator.knowledge[0]
     assert knowledge_batch.state_array[0] == state.get_array_view()
     assert np.all(knowledge_batch.target_distribution[0] == search_distribution)
     assert knowledge_batch.target_state_value[0] == evaluator.STATE_VALUE_WIN
 
 
-def test_train_when_not_finished(state, actions, estimator, true_condition, false_condition):
-    # game not finished
-    evaluator = Evaluator(
-        estimator=estimator,
-        player=Player.X,
-        opponent=Player.O,
-        win_condition=false_condition,
-        loss_condition=false_condition,
-        draw_condition=false_condition)
-
+def test_train_when_not_finished(state, actions, evaluator):
     with pytest.raises(GameNotFinishedException):
         evaluator.train(states_and_search_distributions=[], final_state=state)

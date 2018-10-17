@@ -1,5 +1,5 @@
 from .board import Board, Player, RowOrder
-from .condition import ConditionChecker, NStonessInRowCondition
+from .condition import ConditionChecker, NStonessInRowCondition, NoMovesPossibleCondition
 from .alternating_player import AlternatingPlayer
 from .move_recorder import MoveRecorder
 
@@ -35,18 +35,6 @@ class DropdownBoard(object):
         return [column for column, column_vector in enumerate(self.state.T) if (column_vector == 0).any()]
 
 
-class WinCondition(NStonessInRowCondition):
-    '''Winning condition for the game Viergewinnt.'''
-
-    def __init__(self, player):
-        super().__init__(num_stones_in_row=4, player=player)
-
-
-class DrawCondition(object):
-    def check(self, board):
-        return len(board.get_possible_moves()) == 0
-
-
 class Game(Board, DropdownBoard, AlternatingPlayer, ConditionChecker, MoveRecorder):
     '''
     Combination of board, condition checker, alternating player and move recorder
@@ -58,6 +46,13 @@ class Game(Board, DropdownBoard, AlternatingPlayer, ConditionChecker, MoveRecord
         Board.__init__(self, size=self.board_size, output_row_order=RowOrder.REVERSED)
         AlternatingPlayer.__init__(self, starting_player=Player.X)
         MoveRecorder.__init__(self)
+        ConditionChecker.__init__(
+            self,
+            win_conditions={
+                Player.X: NStonessInRowCondition(num_stones_in_row=4, player=Player.X),
+                Player.O: NStonessInRowCondition(num_stones_in_row=4, player=Player.O)
+            },
+            draw_condition=NoMovesPossibleCondition())
 
     def __hash__(self):
         return Board.__hash__(self) ^ MoveRecorder.__hash__(self)

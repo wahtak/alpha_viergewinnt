@@ -52,24 +52,22 @@ class TreeSearch(object):
 
 
 class Simulator(object):
-    def __init__(self, strategy, win_condition, loss_condition, draw_condition):
+    def __init__(self, strategy, player):
         self.strategy = strategy
-        self.win_condition = win_condition
-        self.loss_condition = loss_condition
-        self.draw_condition = draw_condition
+        self.player = player
 
     def get_rollout_value(self, state):
         assert self._is_final_state(state) is True
 
         rollout_value = 0
-        if state.check(self.win_condition):
+        if state.is_winner(self.player):
             rollout_value += 1
-        if state.check(self.loss_condition):
+        if state.is_winner(self.player.opponent()):
             rollout_value -= 1
         return rollout_value
 
     def _is_final_state(self, state):
-        return state.check(self.win_condition) or state.check(self.loss_condition) or state.check(self.draw_condition)
+        return state.is_winner(self.player) or state.is_winner(self.player.opponent()) or state.is_draw()
 
     def rollout(self, initial_state):
         state = initial_state

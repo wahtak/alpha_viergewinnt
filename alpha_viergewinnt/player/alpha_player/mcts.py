@@ -60,7 +60,7 @@ class Mcts(object):
         """
         assert self._is_leaf(leaf)
 
-        prior_distribution, state_value, game_finished = self.evaluator(leaf)
+        prior_distribution, state_value, game_finished = self.evaluator.evaluate(leaf)
 
         attributes = Attributes(state_value, prior_distribution)
         self.graph.set_attributes(attributes, state=leaf)

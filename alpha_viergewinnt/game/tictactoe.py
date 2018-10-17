@@ -1,7 +1,7 @@
 import numpy as np
 
 from .board import Board, Player, RowOrder
-from .condition import ConditionChecker, NStonessInRowCondition
+from .condition import ConditionChecker, NStonessInRowCondition, NoMovesPossibleCondition
 from .alternating_player import AlternatingPlayer
 from .move_recorder import MoveRecorder
 
@@ -36,18 +36,6 @@ class FreeplayBoard(object):
         return np.flatnonzero(self.state.reshape(-1) == 0).tolist()
 
 
-class WinCondition(NStonessInRowCondition):
-    '''Winning condition for the game Tictactoe.'''
-
-    def __init__(self, player):
-        super().__init__(num_stones_in_row=3, player=player)
-
-
-class DrawCondition(object):
-    def check(self, board):
-        return len(board.get_possible_moves()) == 0
-
-
 class Game(Board, FreeplayBoard, AlternatingPlayer, ConditionChecker, MoveRecorder):
     '''
     Combination of board, condition checker, alternating player and move recorder
@@ -59,6 +47,13 @@ class Game(Board, FreeplayBoard, AlternatingPlayer, ConditionChecker, MoveRecord
         Board.__init__(self, size=self.board_size, output_row_order=RowOrder.NORMAL)
         AlternatingPlayer.__init__(self, starting_player=Player.X)
         MoveRecorder.__init__(self)
+        ConditionChecker.__init__(
+            self,
+            win_conditions={
+                Player.X: NStonessInRowCondition(num_stones_in_row=3, player=Player.X),
+                Player.O: NStonessInRowCondition(num_stones_in_row=3, player=Player.O)
+            },
+            draw_condition=NoMovesPossibleCondition())
 
     def __hash__(self):
         return Board.__hash__(self) ^ MoveRecorder.__hash__(self)

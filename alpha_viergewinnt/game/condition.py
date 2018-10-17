@@ -5,8 +5,15 @@ from scipy.signal import convolve2d
 class ConditionChecker(object):
     '''Functionality for checking board conditions.'''
 
-    def check(self, condition):
-        return condition.check(self)
+    def __init__(self, win_conditions, draw_condition):
+        self.win_conditions = win_conditions
+        self.draw_condition = draw_condition
+
+    def is_winner(self, player):
+        return self.win_conditions[player].check(self)
+
+    def is_draw(self):
+        return self.draw_condition.check(self)
 
 
 class NStonessInRowCondition(object):
@@ -28,3 +35,8 @@ class NStonessInRowCondition(object):
             if (convolution == self.num_stones_in_row).any():
                 return True
         return False
+
+
+class NoMovesPossibleCondition(object):
+    def check(self, board):
+        return len(board.get_possible_moves()) == 0

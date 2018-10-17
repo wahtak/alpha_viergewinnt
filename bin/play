@@ -12,11 +12,9 @@ from alpha_viergewinnt.player.alpha_player import AlphaPlayer, MlpEstimator, Eva
 from alpha_viergewinnt.match import ComparisonMatch
 
 
-def create_pure_mcts_player(win_condition, loss_condition, draw_condition, **kwargs):
+def create_pure_mcts_player(player, **kwargs):
     return PureMctsPlayer(
-        win_condition=win_condition,
-        loss_condition=loss_condition,
-        draw_condition=draw_condition,
+        player=player,
         selection_strategy=create_random_choice_strategy(),
         expansion_strategy=create_random_choice_strategy(),
         simulation_strategy=create_random_choice_strategy(),
@@ -24,17 +22,16 @@ def create_pure_mcts_player(win_condition, loss_condition, draw_condition, **kwa
         rollouts=30)
 
 
-def create_alpha_player(game, player, opponent, win_condition, loss_condition, draw_condition, filename, mcts_steps,
-                        **kwargs):
+def create_alpha_player(game, player, win_condition, loss_condition, draw_condition, filename, mcts_steps, **kwargs):
     estimator = MlpEstimator(board_size=game.board_size, actions=game.get_all_moves(), filename=filename)
     estimator.load()
-    evaluator = Evaluator(estimator, player, opponent, win_condition, loss_condition, draw_condition)
+    evaluator = Evaluator(estimator, player)
     return AlphaPlayer(evaluator, mcts_steps=mcts_steps)
 
 
 GAME_FACTORIES = {
-    'tictactoe': (tictactoe.Game, tictactoe.WinCondition, tictactoe.DrawCondition),
-    'viergewinnt': (viergewinnt.Game, viergewinnt.WinCondition, viergewinnt.DrawCondition)
+    'tictactoe': tictactoe.Game,
+    'viergewinnt': viergewinnt.Game,
 }
 
 PLAYER_FACTORIES = {
@@ -53,40 +50,15 @@ PLAYER_FACTORIES = {
 def cmd(game, x, o, mcts_steps):
     filename = 'resources/{}_mlp'.format(game)
 
-    Game, WinCondition, DrawCondition = GAME_FACTORIES[game]
+    Game = GAME_FACTORIES[game]
     PlayerX = PLAYER_FACTORIES[x]
     PlayerO = PLAYER_FACTORIES[o]
 
     game = Game()
-    player_x_win_condition = WinCondition(Player.X)
-    player_o_win_condition = WinCondition(Player.O)
-    draw_condition = DrawCondition()
-    player_x = PlayerX(
-        game=game,
-        player=Player.X,
-        opponent=Player.O,
-        win_condition=player_x_win_condition,
-        loss_condition=player_o_win_condition,
-        draw_condition=draw_condition,
-        filename=filename,
-        mcts_steps=mcts_steps)
-    player_o = PlayerO(
-        game=game,
-        player=Player.O,
-        opponent=Player.X,
-        win_condition=player_o_win_condition,
-        loss_condition=player_x_win_condition,
-        draw_condition=draw_condition,
-        filename=filename,
-        mcts_steps=mcts_steps)
+    player_x = PlayerX(game=game, player=Player.X, filename=filename, mcts_steps=mcts_steps)
+    player_o = PlayerO(game=game, player=Player.O, filename=filename, mcts_steps=mcts_steps)
 
-    match = ComparisonMatch(
-        game=game,
-        players={Player.X: player_x,
-                 Player.O: player_o},
-        win_conditions={Player.X: player_x_win_condition,
-                        Player.O: player_o_win_condition},
-        draw_condition=draw_condition)
+    match = ComparisonMatch(game=game, players={Player.X: player_x, Player.O: player_o})
     match.play()
 
 

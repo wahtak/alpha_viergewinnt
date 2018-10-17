@@ -13,16 +13,6 @@ def game():
     return Game()
 
 
-@pytest.fixture
-def player_x_win_condition():
-    return WinCondition(Player.X)
-
-
-@pytest.fixture
-def player_o_win_condition():
-    return WinCondition(Player.O)
-
-
 def test_get_all_moves(game):
     game.play_move(player=Player.X, move=1)
     game.play_move(player=Player.O, move=1)
@@ -64,7 +54,7 @@ def test_play_move(game):
         game.play_move(player=Player.X, move=2)
 
 
-def test_win(game, player_x_win_condition, player_o_win_condition):
+def test_win(game):
     game.play_move(player=Player.X, move=2)
     game.play_move(player=Player.O, move=3)
     game.play_move(player=Player.X, move=3)
@@ -78,18 +68,18 @@ def test_win(game, player_x_win_condition, player_o_win_condition):
     game.play_move(player=Player.X, move=0)
     game.play_move(player=Player.O, move=5)
     print(game)
-    assert game.check(player_x_win_condition) is False
-    assert game.check(player_o_win_condition) is False
+    assert not game.is_winner(Player.X)
+    assert not game.is_winner(Player.O)
 
     game.play_move(player=Player.X, move=5)
     print(game)
-    assert game.check(player_x_win_condition) is True
-    assert game.check(player_o_win_condition) is False
+    assert game.is_winner(Player.X)
+    assert not game.is_winner(Player.O)
 
     game.play_move(player=Player.O, move=6)
     print(game)
-    assert game.check(player_x_win_condition) is True
-    assert game.check(player_o_win_condition) is True
+    assert game.is_winner(Player.X) is True
+    assert game.is_winner(Player.O) is True
 
 
 def test_alternating_turn(game):
@@ -99,14 +89,13 @@ def test_alternating_turn(game):
 
 
 def test_random_playout_until_full(game):
-    draw_condition = DrawCondition()
     max_number_of_moves = 6 * 7
     for move in range(max_number_of_moves):
-        assert game.check(draw_condition) is False
+        assert not game.is_draw()
         random_move = random.choice(game.get_possible_moves())
         game.play_move(player=game.active_player, move=random_move)
 
-    assert game.check(draw_condition) is True
+    assert game.is_draw()
 
 
 def test_move_history_inequality(game):

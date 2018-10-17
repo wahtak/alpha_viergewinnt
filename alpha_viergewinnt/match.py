@@ -5,18 +5,16 @@ import numpy as np
 
 
 class Match(object):
-    def __init__(self, game, players, win_conditions, draw_condition):
+    def __init__(self, game, players):
         self.logger = logging.getLogger(self.__class__.__module__ + '.' + self.__class__.__name__)
         self.game = game
         self.players = players
-        self.win_conditions = win_conditions
-        self.draw_condition = draw_condition
 
     def _is_game_finished(self, game):
-        if game.check(self.draw_condition):
+        if game.is_draw():
             return True
         for player in self.players:
-            if game.check(self.win_conditions[player]):
+            if game.is_winner(player):
                 return True
         return False
 
@@ -49,7 +47,7 @@ class ComparisonMatch(Match):
     def _get_result(self, game):
         self.logger.debug(game)
         for player in self.players:
-            if game.check(self.win_conditions[player]):
+            if game.is_winner(player):
                 self.logger.debug('Player %s wins!' % player.name)
                 return player
 

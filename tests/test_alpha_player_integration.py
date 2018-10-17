@@ -1,7 +1,7 @@
 import pytest
 
 from alpha_viergewinnt.game.board import Player
-from alpha_viergewinnt.game.tictactoe import Game, WinCondition, DrawCondition
+from alpha_viergewinnt.game.tictactoe import Game
 from alpha_viergewinnt.player.alpha_player import AlphaPlayer, AlphaTrainer, Evaluator, GenericEstimator
 
 
@@ -17,16 +17,7 @@ def estimator(game):
 
 @pytest.fixture
 def evaluator(estimator):
-    win_condition = WinCondition(Player.X)
-    loss_condition = WinCondition(Player.O)
-    draw_condition = DrawCondition()
-    return Evaluator(
-        estimator=estimator,
-        player=Player.X,
-        opponent=Player.O,
-        win_condition=win_condition,
-        loss_condition=loss_condition,
-        draw_condition=draw_condition)
+    return Evaluator(estimator=estimator, player=Player.X)
 
 
 @pytest.fixture

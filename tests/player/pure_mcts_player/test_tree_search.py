@@ -1,5 +1,6 @@
 import pytest
 
+from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.player.pure_mcts_player.tree import *
 from alpha_viergewinnt.player.pure_mcts_player.tree_search import *
 
@@ -8,6 +9,8 @@ class DummyState(object):
     def __init__(self):
         self.active_player = None
         self.step = 0
+        self.winner = None
+        self.draw = False
 
     def get_possible_moves(self):
         if self.step <= 3:
@@ -18,8 +21,11 @@ class DummyState(object):
     def play_move(self, *args, **kwargs):
         self.step += 1
 
-    def check(self, condition):
-        return condition.check(self)
+    def is_winner(self, player):
+        return self.winner == player
+
+    def is_draw(self):
+        return self.step > 3
 
 
 @pytest.fixture
@@ -68,61 +74,20 @@ def test_select_leaf(empty_dummy_state_tree_search):
 
 
 @pytest.fixture
-def no_possible_moves_condition():
-    class NoPossibleMovesCondition(object):
-        def check(self, state):
-            return len(state.get_possible_moves()) == 0
-
-    return NoPossibleMovesCondition()
+def simulator(dummy_strategy):
+    return Simulator(strategy=dummy_strategy, player=Player.X)
 
 
-@pytest.fixture
-def false_condition():
-    class FalseCondition(object):
-        def check(self, _):
-            return False
-
-    return FalseCondition()
-
-
-@pytest.fixture
-def true_condition():
-    class TrueCondition(object):
-        def check(self, _):
-            return True
-
-    return TrueCondition()
-
-
-@pytest.fixture
-def rollout_until_draw_simulator(dummy_strategy, no_possible_moves_condition, false_condition):
-    return Simulator(
-        strategy=dummy_strategy,
-        win_condition=false_condition,
-        loss_condition=false_condition,
-        draw_condition=no_possible_moves_condition)
-
-
-@pytest.fixture
-def immediate_win_simulator(dummy_strategy, no_possible_moves_condition, false_condition, true_condition):
-    return Simulator(
-        strategy=dummy_strategy,
-        win_condition=true_condition,
-        loss_condition=false_condition,
-        draw_condition=no_possible_moves_condition)
-
-
-def test_rollout_until_draw(rollout_until_draw_simulator):
+def test_rollout_until_draw(simulator):
     initial_state = DummyState()
-    simulator = rollout_until_draw_simulator
     final_state = simulator.rollout(initial_state)
     assert final_state.step == 4
     assert simulator.get_rollout_value(final_state) == 0
 
 
-def test_calculate_rollout_value(immediate_win_simulator):
+def test_calculate_rollout_value(simulator):
     initial_state = DummyState()
-    simulator = immediate_win_simulator
+    initial_state.winner = Player.X
     assert simulator.get_rollout_value(initial_state) == 1
 
 
