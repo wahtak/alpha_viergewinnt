@@ -8,7 +8,6 @@ class Player(enum.Enum):
     O = 2  # noqa E741
 
     def opponent(self):
-        print(self)
         return Player.X if self == Player.O else Player.O
 
 
