@@ -25,14 +25,6 @@ class DummyState(object):
 
 
 class DummyEstimator(object):
-    # constants for state values and state array
-    STATE_VALUE_WIN = 1
-    STATE_VALUE_LOSS = -1
-    STATE_VALUE_DRAW = 0
-
-    STATE_ARRAY_PLAYER = 1
-    STATE_ARRAY_OPPONENT = -1
-
     KnowledgeEntry = namedtuple('KnowledgeEntry', ['state_array', 'target_distribution', 'target_state_value'])
 
     def __init__(self, actions):
@@ -97,7 +89,7 @@ def test_evaluate_win_loss_draw(state, actions, estimator, true_condition, false
 
     assert len(prior_distribution) == len(actions)
     assert sum(prior_distribution) == pytest.approx(0)
-    assert state_value == estimator.STATE_VALUE_WIN
+    assert state_value == evaluator.STATE_VALUE_WIN
     assert game_finished is True
 
     # loss
@@ -110,7 +102,7 @@ def test_evaluate_win_loss_draw(state, actions, estimator, true_condition, false
         draw_condition=false_condition)
     prior_distribution, state_value, game_finished = evaluator(state)
 
-    assert state_value == estimator.STATE_VALUE_LOSS
+    assert state_value == evaluator.STATE_VALUE_LOSS
     assert game_finished is True
 
     # draw
@@ -123,7 +115,7 @@ def test_evaluate_win_loss_draw(state, actions, estimator, true_condition, false
         draw_condition=true_condition)
     prior_distribution, state_value, game_finished = evaluator(state)
 
-    assert state_value == estimator.STATE_VALUE_DRAW
+    assert state_value == evaluator.STATE_VALUE_DRAW
     assert game_finished is True
 
 
@@ -165,7 +157,7 @@ def test_train_when_finished(state, actions, estimator, true_condition, false_co
     knowledge_batch = estimator.knowledge[0]
     assert knowledge_batch.state_array[0] == state.get_array_view()
     assert np.all(knowledge_batch.target_distribution[0] == search_distribution)
-    assert knowledge_batch.target_state_value[0] == estimator.STATE_VALUE_WIN
+    assert knowledge_batch.target_state_value[0] == evaluator.STATE_VALUE_WIN
 
 
 def test_train_when_not_finished(state, actions, estimator, true_condition, false_condition):

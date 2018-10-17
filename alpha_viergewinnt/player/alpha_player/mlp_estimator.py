@@ -8,14 +8,6 @@ from torch.optim import Adam
 
 
 class MlpEstimator(Module):
-    # constants for state values and state array
-    STATE_VALUE_WIN = 1
-    STATE_VALUE_LOSS = -1
-    STATE_VALUE_DRAW = 0
-
-    STATE_ARRAY_PLAYER = 1
-    STATE_ARRAY_OPPONENT = -1
-
     def __init__(self, board_size, actions, hidden_layer_scale=10, filename=None, **kwargs):
         super().__init__()
         self.logger = logging.getLogger(self.__class__.__module__ + '.' + self.__class__.__name__)
@@ -39,12 +31,12 @@ class MlpEstimator(Module):
 
     def infer(self, state_array):
         state = tensor(state_array).float().view(1, self.state_size)
-        action_distribution, state_value = self.forward(state)
+        action_distribution, state_value = self._forward(state)
         action_distribution_array = action_distribution.view(-1).detach().numpy()
         state_value_array = state_value.view(-1).detach().item()
         return action_distribution_array, state_value_array
 
-    def forward(self, state):
+    def _forward(self, state):
         input_ = relu(self.layer_input(state))
         hidden1 = relu(self.layer_hidden1(input_))
         hidden2 = relu(self.layer_hidden2(hidden1))
@@ -56,11 +48,11 @@ class MlpEstimator(Module):
 
     def train(self, state_array, target_distribution_array, target_state_value_array):
         state = tensor(state_array).float().view(-1, self.state_size)
-        target_state_value = tensor(target_state_value_array).view(-1, 1).float()
+        target_state_value = tensor(target_state_value_array).float().view(-1, 1)
         target_distribution = tensor(target_distribution_array).float().view(-1, self.action_size)
 
         self.optimizer.zero_grad()
-        action_distribution, state_value = self.forward(state)
+        action_distribution, state_value = self._forward(state)
         state_value_loss = mse_loss(state_value, target_state_value)
         action_value_loss = mean(sum(target_distribution * -log(action_distribution), dim=1))
         loss = state_value_loss + action_value_loss

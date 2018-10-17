@@ -6,6 +6,14 @@ class GameNotFinishedException(Exception):
 
 
 class Evaluator(object):
+    # constants for state values and state array
+    STATE_VALUE_WIN = 1
+    STATE_VALUE_LOSS = -1
+    STATE_VALUE_DRAW = 0
+
+    STATE_ARRAY_PLAYER = 1
+    STATE_ARRAY_OPPONENT = -1
+
     def __init__(self, estimator, player, opponent, win_condition, loss_condition, draw_condition):
         self.estimator = estimator
         self.player = player
@@ -32,11 +40,11 @@ class Evaluator(object):
 
     def _get_final_state_value(self, state):
         if state.check(self.win_condition):
-            return self.estimator.STATE_VALUE_WIN
+            return self.STATE_VALUE_WIN
         elif state.check(self.loss_condition):
-            return self.estimator.STATE_VALUE_LOSS
+            return self.STATE_VALUE_LOSS
         elif state.check(self.draw_condition):
-            return self.estimator.STATE_VALUE_DRAW
+            return self.STATE_VALUE_DRAW
         else:
             # game not yet finished
             return None
@@ -44,9 +52,9 @@ class Evaluator(object):
     def _get_array_from_state(self, state):
         return state.get_array_view(
             player=self.player,
-            player_value=self.estimator.STATE_ARRAY_PLAYER,
+            player_value=self.STATE_ARRAY_PLAYER,
             opponent=self.opponent,
-            opponent_value=self.estimator.STATE_ARRAY_OPPONENT)
+            opponent_value=self.STATE_ARRAY_OPPONENT)
 
     def train(self, states_and_search_distributions, final_state):
         target_state_value = self._get_final_state_value(final_state)
@@ -54,8 +62,9 @@ class Evaluator(object):
         if target_state_value is None:
             raise GameNotFinishedException()
 
-        state_batch, target_distribution_batch = zip(*states_and_search_distributions)
-        state_array_batch = [self._get_array_from_state(state) for state in state_batch]
-        target_state_value_batch = [target_state_value] * len(states_and_search_distributions)
+        states, target_distributions = zip(*states_and_search_distributions)
+        target_distribution_batch = np.stack(target_distributions)
+        state_array_batch = np.stack([self._get_array_from_state(state) for state in states])
+        target_state_value_batch = np.full(len(states_and_search_distributions), target_state_value)
         loss = self.estimator.train(state_array_batch, target_distribution_batch, target_state_value_batch)
         return loss

@@ -15,13 +15,6 @@ def game():
 
 
 class DummyEstimator(object):
-    STATE_VALUE_WIN = 1
-    STATE_VALUE_LOSS = -1
-    STATE_VALUE_DRAW = 0
-
-    STATE_ARRAY_PLAYER = 1
-    STATE_ARRAY_OPPONENT = -1
-
     KnowledgeEntry = namedtuple('KnowledgeEntry', ['state_array', 'target_distribution', 'target_state_value'])
 
     def __init__(self):
@@ -84,8 +77,8 @@ def test_correct_training_inputs(game, evaluators):
     estimator_x = trainers[Player.X].evaluator.estimator
     estimator_o = trainers[Player.O].evaluator.estimator
 
-    PL = estimator_x.STATE_ARRAY_PLAYER
-    OP = estimator_x.STATE_ARRAY_OPPONENT
+    PL = evaluator_x.STATE_ARRAY_PLAYER
+    OP = evaluator_x.STATE_ARRAY_OPPONENT
 
     # 1 batch with batch-size 3
     assert len(estimator_x.knowledge) == 1
@@ -96,18 +89,18 @@ def test_correct_training_inputs(game, evaluators):
     knowledge_batch = estimator_x.knowledge[0]
     assert knowledge_batch.state_array[0].tolist() == [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
     assert np.argmax(knowledge_batch.target_distribution[0]) == 0
-    assert knowledge_batch.target_state_value[0] == estimator_x.STATE_VALUE_WIN
+    assert knowledge_batch.target_state_value[0] == evaluator_x.STATE_VALUE_WIN
 
     assert knowledge_batch.state_array[1].tolist() == [[PL, 0, 0], [OP, 0, 0], [0, 0, 0]]
     assert np.argmax(knowledge_batch.target_distribution[1]) == 4
-    assert knowledge_batch.target_state_value[1] == estimator_x.STATE_VALUE_WIN
+    assert knowledge_batch.target_state_value[1] == evaluator_x.STATE_VALUE_WIN
 
     assert knowledge_batch.state_array[2].tolist() == [[PL, OP, 0], [OP, PL, 0], [0, 0, 0]]
     assert np.argmax(knowledge_batch.target_distribution[2]) == 8
-    assert knowledge_batch.target_state_value[2] == estimator_x.STATE_VALUE_WIN
+    assert knowledge_batch.target_state_value[2] == evaluator_x.STATE_VALUE_WIN
 
-    PL = estimator_o.STATE_ARRAY_PLAYER
-    OP = estimator_o.STATE_ARRAY_OPPONENT
+    PL = evaluator_o.STATE_ARRAY_PLAYER
+    OP = evaluator_o.STATE_ARRAY_OPPONENT
 
     assert len(estimator_o.knowledge) == 1
     assert len(estimator_o.knowledge[0].state_array) == 2
@@ -117,8 +110,8 @@ def test_correct_training_inputs(game, evaluators):
     knowledge_batch = estimator_o.knowledge[0]
     assert knowledge_batch.state_array[0].tolist() == [[OP, 0, 0], [0, 0, 0], [0, 0, 0]]
     assert np.argmax(knowledge_batch.target_distribution[0]) == 3
-    assert knowledge_batch.target_state_value[0] == estimator_o.STATE_VALUE_LOSS
+    assert knowledge_batch.target_state_value[0] == evaluator_o.STATE_VALUE_LOSS
 
     assert knowledge_batch.state_array[1].tolist() == [[OP, 0, 0], [PL, OP, 0], [0, 0, 0]]
     assert np.argmax(knowledge_batch.target_distribution[1]) == 1
-    assert knowledge_batch.target_state_value[1] == estimator_o.STATE_VALUE_LOSS
+    assert knowledge_batch.target_state_value[1] == evaluator_o.STATE_VALUE_LOSS

@@ -49,7 +49,7 @@ PLAYER_FACTORIES = {
 @click.option('--game', required=True, type=click.Choice(GAME_FACTORIES.keys()), help='Game to be played')
 @click.option('-x', required=True, type=click.Choice(PLAYER_FACTORIES.keys()), help='Strategy for player X')
 @click.option('-o', required=True, type=click.Choice(PLAYER_FACTORIES.keys()), help='Strategy for player O')
-@click.option('--mcts-steps', required=True, type=int, help='Number of MCTS steps per move for alpha player')
+@click.option('--mcts-steps', type=int, default=100, help='Number of MCTS steps per move for alpha player')
 def cmd(game, x, o, mcts_steps):
     filename = 'resources/{}_mlp'.format(game)
 
