@@ -9,7 +9,7 @@ from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game import tictactoe, viergewinnt
 from alpha_viergewinnt.player.alpha_player import \
     AlphaPlayer, AlphaTrainer, GenericEstimator, MlpEstimator, Evaluator
-from alpha_viergewinnt.match import Match
+from alpha_viergewinnt.match import ComparisonMatch, TrainingMatch
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +62,7 @@ def cmd(game, estimator, mcts_steps, training_iterations, comparison_iterations)
             draw_condition=draw_condition)
         trainer_o = AlphaTrainer(training_evaluator_o, mcts_steps)
 
-        training_match = Match(
+        training_match = TrainingMatch(
             game=game,
             players={Player.X: trainer_x,
                      Player.O: trainer_o},
@@ -76,7 +76,7 @@ def cmd(game, estimator, mcts_steps, training_iterations, comparison_iterations)
         plt.ion()
         plt.show()
         for i in range(training_iterations):
-            result, loss = training_match.train()
+            loss = training_match.train()
             losses.append(loss)
             if i % 10 == 0:
                 plt.clf()
@@ -101,7 +101,7 @@ def cmd(game, estimator, mcts_steps, training_iterations, comparison_iterations)
             draw_condition=draw_condition)
         player_o = AlphaPlayer(comparison_evaluator_o, mcts_steps)
 
-        comparison_match = Match(
+        comparison_match = ComparisonMatch(
             game=game,
             players={Player.X: player_x,
                      Player.O: player_o},

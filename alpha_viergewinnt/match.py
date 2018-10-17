@@ -12,30 +12,6 @@ class Match(object):
         self.win_conditions = win_conditions
         self.draw_condition = draw_condition
 
-    def compare(self, iterations):
-        results = {player: 0 for player in self.players}
-        results[None] = 0
-
-        for iteration in range(iterations):
-            winner = self.play()
-            results[winner] += 1
-
-        return results
-
-    def play(self):
-        game = deepcopy(self.game)
-        while not self._is_game_finished(game):
-            self._play_move(game)
-        return self._get_result(game)
-
-    def train(self):
-        game = deepcopy(self.game)
-        while not self._is_game_finished(game):
-            self._play_move(game, record_moves=True)
-        result = self._get_result(game)
-        loss = self._train(game)
-        return result, loss
-
     def _is_game_finished(self, game):
         if game.check(self.draw_condition):
             return True
@@ -52,14 +28,23 @@ class Match(object):
         self.logger.debug('Player %s plays %s' % (current_player.name, next_move))
         return next_move
 
-    def _train(self, game):
-        losses = []
-        for player in self.players.values():
-            loss = player.train(game)
-            losses.append(loss)
-        mean_loss = np.mean(losses)
-        self.logger.info('Training loss %.4f' % mean_loss)
-        return mean_loss
+
+class ComparisonMatch(Match):
+    def compare(self, iterations):
+        results = {player: 0 for player in self.players}
+        results[None] = 0
+
+        for iteration in range(iterations):
+            winner = self.play()
+            results[winner] += 1
+
+        return results
+
+    def play(self):
+        game = deepcopy(self.game)
+        while not self._is_game_finished(game):
+            self._play_move(game)
+        return self._get_result(game)
 
     def _get_result(self, game):
         self.logger.debug(game)
@@ -70,3 +55,21 @@ class Match(object):
 
         self.logger.debug('Draw!')
         return None
+
+
+class TrainingMatch(Match):
+    def train(self):
+        game = deepcopy(self.game)
+        while not self._is_game_finished(game):
+            self._play_move(game, record_moves=True)
+        loss = self._train(game)
+        return loss
+
+    def _train(self, game):
+        losses = []
+        for player in self.players.values():
+            loss = player.train(game)
+            losses.append(loss)
+        mean_loss = np.mean(losses)
+        self.logger.info('Training loss %.4f' % mean_loss)
+        return mean_loss

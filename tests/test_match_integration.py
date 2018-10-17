@@ -6,7 +6,7 @@ from alpha_viergewinnt.game import tictactoe, viergewinnt
 from alpha_viergewinnt.player.random_player import RandomPlayer
 from alpha_viergewinnt.player.pure_mcts_player import PureMctsPlayer, create_random_choice_strategy
 from alpha_viergewinnt.player.alpha_player import AlphaPlayer, MlpEstimator, Evaluator
-from alpha_viergewinnt.match import Match
+from alpha_viergewinnt.match import ComparisonMatch
 
 
 @pytest.fixture()
@@ -67,7 +67,7 @@ def setup(request, game_and_conditions, random):
 
 def test_single_match_smoketest(setup):
     game, players, win_conditions, draw_condition = setup
-    match = Match(game=game, players=players, win_conditions=win_conditions, draw_condition=draw_condition)
+    match = ComparisonMatch(game=game, players=players, win_conditions=win_conditions, draw_condition=draw_condition)
     winner = match.play()
     assert isinstance(winner, Player) or winner is None
 
@@ -75,6 +75,6 @@ def test_single_match_smoketest(setup):
 def test_comparison_smoketest(setup):
     game, players, win_conditions, draw_condition = setup
     iterations = 3
-    match = Match(game=game, players=players, win_conditions=win_conditions, draw_condition=draw_condition)
+    match = ComparisonMatch(game=game, players=players, win_conditions=win_conditions, draw_condition=draw_condition)
     results = match.compare(iterations)
     assert sum(results.values()) == iterations

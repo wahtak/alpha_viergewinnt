@@ -9,7 +9,7 @@ from alpha_viergewinnt.player.random_player import RandomPlayer
 from alpha_viergewinnt.player.human_player import HumanPlayer
 from alpha_viergewinnt.player.pure_mcts_player import PureMctsPlayer, create_random_choice_strategy
 from alpha_viergewinnt.player.alpha_player import AlphaPlayer, MlpEstimator, Evaluator
-from alpha_viergewinnt.match import Match
+from alpha_viergewinnt.match import ComparisonMatch
 
 
 def create_pure_mcts_player(win_condition, loss_condition, draw_condition, **kwargs):
@@ -80,7 +80,7 @@ def cmd(game, x, o, mcts_steps):
         filename=filename,
         mcts_steps=mcts_steps)
 
-    match = Match(
+    match = ComparisonMatch(
         game=game,
         players={Player.X: player_x,
                  Player.O: player_o},
