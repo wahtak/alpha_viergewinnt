@@ -46,17 +46,13 @@ def cmd(game, estimator, mcts_steps, training_iterations, comparison_iterations)
         training_match = TrainingMatch(game=game, players={Player.X: trainer_x, Player.O: trainer_o})
 
         losses = []
-        plt.ion()
-        plt.show()
+
+        loss_plotter = LossPlotter(window_size=128)
         for i in range(training_iterations):
             loss = training_match.train()
             losses.append(loss)
             if i % 10 == 0:
-                plt.clf()
-                plt.plot(losses)
-                plt.plot(
-                    np.convolve(([losses[0]] * 16) + losses + ([losses[-1]] * 16), np.ones((32, )) / 32, mode='valid'))
-                plt.pause(0.001)
+                loss_plotter.plot(losses)
                 training_estimator.save()
 
     if comparison_iterations > 0:
@@ -73,6 +69,27 @@ def cmd(game, estimator, mcts_steps, training_iterations, comparison_iterations)
             100 * np.array([results[Player.X], results[Player.O], results[None]]) / comparison_iterations)
         logger.info(
             'Comparison results: %.2f%% player X wins, %.2f%% player O wins, %.2f%% draws.' % outcome_percentages)
+
+
+class LossPlotter(object):
+    def __init__(self, window_size):
+        self.window_size = window_size
+        plt.ion()
+        plt.show()
+
+    def plot(self, loss):
+        plt.clf()
+        plt.plot(loss)
+        plt.plot(self._filter_loss(loss))
+        plt.pause(0.001)
+
+    def _filter_loss(self, loss):
+        padded_loss = np.concatenate(
+            [np.full(self.window_size // 2, loss[0]),
+             np.array(loss),
+             np.full(self.window_size // 2, loss[-1])])
+        filter_kernel = np.ones((self.window_size, )) / self.window_size
+        return np.convolve(padded_loss, filter_kernel, mode='valid')
 
 
 if __name__ == '__main__':

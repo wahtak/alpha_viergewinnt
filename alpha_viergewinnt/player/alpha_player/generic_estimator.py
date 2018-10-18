@@ -2,7 +2,7 @@ import numpy as np
 
 
 class GenericEstimator(object):
-    def __init__(self, board_size, actions, **kwargs):
+    def __init__(self, actions, **kwargs):
         self.actions = actions
 
     def infer(self, state_array):

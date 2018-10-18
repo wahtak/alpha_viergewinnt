@@ -22,7 +22,7 @@ def create_pure_mcts_player(player, **kwargs):
         rollouts=30)
 
 
-def create_alpha_player(game, player, win_condition, loss_condition, draw_condition, filename, mcts_steps, **kwargs):
+def create_alpha_player(game, player, filename, mcts_steps, **kwargs):
     estimator = MlpEstimator(board_size=game.board_size, actions=game.get_all_moves(), filename=filename)
     estimator.load()
     evaluator = Evaluator(estimator, player)
