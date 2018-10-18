@@ -2,7 +2,8 @@ import pytest
 
 from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game.tictactoe import Game
-from alpha_viergewinnt.player.alpha_player import AlphaPlayer, AlphaTrainer, Evaluator, GenericEstimator
+from alpha_viergewinnt.player.alpha_player.factory import \
+    create_generic_estimator, create_alpha_player, create_alpha_trainer
 
 
 @pytest.fixture
@@ -11,23 +12,15 @@ def game():
 
 
 @pytest.fixture
-def estimator(game):
-    return GenericEstimator(board_size=game.board_size, actions=game.get_all_moves())
+def alpha_player(game):
+    estimator = create_generic_estimator(game)
+    return create_alpha_player(estimator=estimator, player=Player.X, mcts_steps=30, random_seed=0)
 
 
 @pytest.fixture
-def evaluator(estimator):
-    return Evaluator(estimator=estimator, player=Player.X)
-
-
-@pytest.fixture
-def alpha_player(evaluator):
-    return AlphaPlayer(evaluator, mcts_steps=30, random_seed=0)
-
-
-@pytest.fixture
-def alpha_trainer(evaluator):
-    return AlphaTrainer(evaluator, mcts_steps=30, random_seed=0)
+def alpha_trainer(game):
+    estimator = create_generic_estimator(game)
+    return create_alpha_trainer(estimator=estimator, player=Player.X, mcts_steps=30, random_seed=0)
 
 
 def test_get_any_next_move(game, alpha_player):

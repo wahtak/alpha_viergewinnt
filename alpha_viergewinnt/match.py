@@ -27,7 +27,7 @@ class Match(object):
         return next_move
 
 
-class ComparisonMatch(Match):
+class CompetitionMatch(Match):
     def compare(self, iterations):
         results = {player: 0 for player in self.players}
         results[None] = 0

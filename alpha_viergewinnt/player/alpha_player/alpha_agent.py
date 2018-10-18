@@ -7,14 +7,11 @@ from .mcts import Mcts
 
 
 class AlphaAgent(object):
-    def __init__(self, evaluator, mcts_steps, random_seed, exploration_factor):
+    def __init__(self, evaluator, mcts_steps, exploration_factor, random_seed):
         self.evaluator = evaluator
         self.mcts_steps = mcts_steps
         self.exploration_factor = exploration_factor
         self._random_state = np.random.RandomState(random_seed)
-
-    def get_next_move(self, state):
-        return self._sample_action(self._get_search_distribution(state))
 
     def _sample_action(self, search_distribution):
         return self._random_state.choice(len(search_distribution), p=search_distribution)
@@ -34,13 +31,16 @@ class AlphaAgent(object):
 
 
 class AlphaPlayer(AlphaAgent):
-    def __init__(self, evaluator, mcts_steps, random_seed=None):
-        super().__init__(evaluator, mcts_steps, random_seed, exploration_factor=0.1)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def get_next_move(self, state):
+        return self._sample_action(self._get_search_distribution(state))
 
 
 class AlphaTrainer(AlphaAgent):
-    def __init__(self, evaluator, mcts_steps, random_seed=None):
-        super().__init__(evaluator, mcts_steps, random_seed, exploration_factor=1.0)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.states_and_search_distributions = []
 
     def get_next_move(self, state):

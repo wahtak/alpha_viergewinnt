@@ -6,7 +6,7 @@ import numpy as np
 
 from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game.tictactoe import Game
-from alpha_viergewinnt.player.alpha_player import AlphaTrainer, Evaluator
+from alpha_viergewinnt.player.alpha_player.factory import create_alpha_trainer
 
 
 @pytest.fixture
@@ -27,18 +27,12 @@ class DummyEstimator(object):
         return dummy_loss
 
 
-@pytest.fixture
-def evaluators():
-    evaluator_x = Evaluator(estimator=DummyEstimator(), player=Player.X)
-    evaluator_o = Evaluator(estimator=DummyEstimator(), player=Player.O)
-    return evaluator_x, evaluator_o
-
-
-def test_correct_training_inputs(game, evaluators):
-    evaluator_x, evaluator_o = evaluators
+def test_correct_training_inputs(game):
+    estimator_x = DummyEstimator()
+    estimator_o = DummyEstimator()
     trainers = {
-        Player.X: AlphaTrainer(evaluator_x, mcts_steps=None),
-        Player.O: AlphaTrainer(evaluator_o, mcts_steps=None)
+        Player.X: create_alpha_trainer(estimator=estimator_x, player=Player.X, mcts_steps=None),
+        Player.O: create_alpha_trainer(estimator=estimator_o, player=Player.O, mcts_steps=None)
     }
 
     def record_and_play(player, move):
@@ -56,9 +50,7 @@ def test_correct_training_inputs(game, evaluators):
     trainers[Player.X].train(final_state=game)
     trainers[Player.O].train(final_state=game)
 
-    estimator_x = trainers[Player.X].evaluator.estimator
-    estimator_o = trainers[Player.O].evaluator.estimator
-
+    evaluator_x = trainers[Player.X].evaluator
     PL = evaluator_x.STATE_ARRAY_PLAYER
     OP = evaluator_x.STATE_ARRAY_OPPONENT
 
@@ -81,6 +73,7 @@ def test_correct_training_inputs(game, evaluators):
     assert np.argmax(knowledge_batch.target_distribution[2]) == 8
     assert knowledge_batch.target_state_value[2] == evaluator_x.STATE_VALUE_WIN
 
+    evaluator_o = trainers[Player.O].evaluator
     PL = evaluator_o.STATE_ARRAY_PLAYER
     OP = evaluator_o.STATE_ARRAY_OPPONENT
 

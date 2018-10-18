@@ -8,7 +8,7 @@ from torch.optim import Adam
 
 
 class MlpEstimator(Module):
-    def __init__(self, board_size, actions, hidden_layer_scale=10, filename=None, **kwargs):
+    def __init__(self, board_size, actions, hidden_layer_scale=10, filename=None):
         super().__init__()
         self.logger = logging.getLogger(self.__class__.__module__ + '.' + self.__class__.__name__)
 

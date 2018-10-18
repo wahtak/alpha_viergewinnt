@@ -7,26 +7,19 @@ from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game import tictactoe, viergewinnt
 from alpha_viergewinnt.player.random_player import RandomPlayer
 from alpha_viergewinnt.player.human_player import HumanPlayer
-from alpha_viergewinnt.player.pure_mcts_player import PureMctsPlayer, create_random_choice_strategy
-from alpha_viergewinnt.player.alpha_player import AlphaPlayer, MlpEstimator, Evaluator
-from alpha_viergewinnt.match import ComparisonMatch
+from alpha_viergewinnt.player.pure_mcts_player.factory import create_pure_mcts_player
+from alpha_viergewinnt.player.alpha_player.factory import create_mlp_estimator, create_alpha_player
+from alpha_viergewinnt.match import CompetitionMatch
 
 
-def create_pure_mcts_player(player, **kwargs):
-    return PureMctsPlayer(
-        player=player,
-        selection_strategy=create_random_choice_strategy(),
-        expansion_strategy=create_random_choice_strategy(),
-        simulation_strategy=create_random_choice_strategy(),
-        iterations=30,
-        rollouts=30)
-
-
-def create_alpha_player(game, player, filename, mcts_steps, **kwargs):
-    estimator = MlpEstimator(board_size=game.board_size, actions=game.get_all_moves(), filename=filename)
+def create_competition_alpha_player(game, player, mcts_steps, *args, **kwargs):
+    estimator = create_mlp_estimator(game)
     estimator.load()
-    evaluator = Evaluator(estimator, player)
-    return AlphaPlayer(evaluator, mcts_steps=mcts_steps)
+    return create_alpha_player(estimator, player, mcts_steps)
+
+
+def create_competition_pure_mcts_player(game, player, mcts_steps, mcts_rollouts, *args, **kwargs):
+    return create_pure_mcts_player(player, mcts_steps, mcts_rollouts)
 
 
 GAME_FACTORIES = {
@@ -37,8 +30,8 @@ GAME_FACTORIES = {
 PLAYER_FACTORIES = {
     'random': RandomPlayer,
     'human': HumanPlayer,
-    'pure_mcts': create_pure_mcts_player,
-    'alpha': create_alpha_player
+    'pure_mcts': create_competition_pure_mcts_player,
+    'alpha': create_competition_alpha_player
 }
 
 
@@ -46,19 +39,18 @@ PLAYER_FACTORIES = {
 @click.option('--game', required=True, type=click.Choice(GAME_FACTORIES.keys()), help='Game to be played')
 @click.option('-x', required=True, type=click.Choice(PLAYER_FACTORIES.keys()), help='Strategy for player X')
 @click.option('-o', required=True, type=click.Choice(PLAYER_FACTORIES.keys()), help='Strategy for player O')
-@click.option('--mcts-steps', type=int, default=100, help='Number of MCTS steps per move for alpha player')
-def cmd(game, x, o, mcts_steps):
-    filename = 'resources/{}_mlp'.format(game)
+@click.option('--mcts-steps', type=int, default=100, help='Number of MCTS steps per move (alpha & pure mcts)')
+@click.option('--mcts-rollouts', type=int, default=30, help='Number of MCTS rollouts per iteration (pure mcts)')
+def cmd(game, x, o, mcts_steps, mcts_rollouts):
+    create_game = GAME_FACTORIES[game]
+    create_player_x = PLAYER_FACTORIES[x]
+    create_player_o = PLAYER_FACTORIES[o]
 
-    Game = GAME_FACTORIES[game]
-    PlayerX = PLAYER_FACTORIES[x]
-    PlayerO = PLAYER_FACTORIES[o]
+    game = create_game()
+    player_x = create_player_x(game=game, player=Player.X, mcts_steps=mcts_steps, mcts_rollouts=mcts_rollouts)
+    player_o = create_player_o(game=game, player=Player.O, mcts_steps=mcts_steps, mcts_rollouts=mcts_rollouts)
 
-    game = Game()
-    player_x = PlayerX(game=game, player=Player.X, filename=filename, mcts_steps=mcts_steps)
-    player_o = PlayerO(game=game, player=Player.O, filename=filename, mcts_steps=mcts_steps)
-
-    match = ComparisonMatch(game=game, players={Player.X: player_x, Player.O: player_o})
+    match = CompetitionMatch(game=game, players={Player.X: player_x, Player.O: player_o})
     match.play()
 
 
