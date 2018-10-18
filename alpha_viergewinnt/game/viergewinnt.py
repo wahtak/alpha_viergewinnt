@@ -35,7 +35,7 @@ class DropdownBoard(object):
         return [column for column, column_vector in enumerate(self.state.T) if (column_vector == 0).any()]
 
 
-class Game(Board, DropdownBoard, AlternatingPlayer, ConditionChecker, MoveRecorder):
+class Viergewinnt(Board, DropdownBoard, AlternatingPlayer, ConditionChecker, MoveRecorder):
     '''
     Combination of board, condition checker, alternating player and move recorder
     with parameters of the game Viergewinnt.

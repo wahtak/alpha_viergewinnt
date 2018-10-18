@@ -9,7 +9,7 @@ def create_generic_estimator(game):
 
 
 def create_mlp_estimator(game):
-    filename = 'resources/mlp_estimator_{}.parameter'.format(game)
+    filename = 'resources/mlp_estimator_{}.parameter'.format(game.__class__.__name__)
     return MlpEstimator(board_size=game.board_size, actions=game.get_all_moves(), filename=filename)
 
 

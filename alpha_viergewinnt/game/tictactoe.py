@@ -36,7 +36,7 @@ class FreeplayBoard(object):
         return np.flatnonzero(self.state.reshape(-1) == 0).tolist()
 
 
-class Game(Board, FreeplayBoard, AlternatingPlayer, ConditionChecker, MoveRecorder):
+class Tictactoe(Board, FreeplayBoard, AlternatingPlayer, ConditionChecker, MoveRecorder):
     '''
     Combination of board, condition checker, alternating player and move recorder
     with parameters of the game Tictactoe.

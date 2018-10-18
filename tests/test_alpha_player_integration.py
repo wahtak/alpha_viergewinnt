@@ -1,14 +1,14 @@
 import pytest
 
 from alpha_viergewinnt.game.board import Player
-from alpha_viergewinnt.game.tictactoe import Game
+from alpha_viergewinnt.game.tictactoe import Tictactoe
 from alpha_viergewinnt.player.alpha_player.factory import \
     create_generic_estimator, create_alpha_player, create_alpha_trainer
 
 
 @pytest.fixture
 def game():
-    return Game()
+    return Tictactoe()
 
 
 @pytest.fixture

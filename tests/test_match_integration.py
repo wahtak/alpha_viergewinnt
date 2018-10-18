@@ -1,13 +1,14 @@
 import pytest
 
 from alpha_viergewinnt.game.board import Player
-from alpha_viergewinnt.game import tictactoe, viergewinnt
+from alpha_viergewinnt.game.tictactoe import Tictactoe
+from alpha_viergewinnt.game.viergewinnt import Viergewinnt
 from alpha_viergewinnt.player.random_player import RandomPlayer
 from alpha_viergewinnt.player.pure_mcts_player.factory import create_pure_mcts_player
 from alpha_viergewinnt.player.alpha_player.factory import create_mlp_estimator, create_alpha_player
 from alpha_viergewinnt.match import CompetitionMatch
 
-GAME_FACTORIES = [tictactoe.Game, viergewinnt.Game]
+GAME_FACTORIES = [Tictactoe, Viergewinnt]
 GAME_FACTORIES_IDS = ['tictactoe', 'viergewinnt']
 
 

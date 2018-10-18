@@ -4,7 +4,8 @@ import logging
 
 from alpha_viergewinnt.game import board
 from alpha_viergewinnt.game.board import Player
-from alpha_viergewinnt.game import tictactoe, viergewinnt
+from alpha_viergewinnt.game.tictactoe import Tictactoe
+from alpha_viergewinnt.game.viergewinnt import Viergewinnt
 from alpha_viergewinnt.player.random_player import RandomPlayer
 from alpha_viergewinnt.player.human_player import HumanPlayer
 from alpha_viergewinnt.player.pure_mcts_player.factory import create_pure_mcts_player
@@ -22,11 +23,7 @@ def create_competition_pure_mcts_player(game, player, mcts_steps, mcts_rollouts,
     return create_pure_mcts_player(player, mcts_steps, mcts_rollouts)
 
 
-GAME_FACTORIES = {
-    'tictactoe': tictactoe.Game,
-    'viergewinnt': viergewinnt.Game,
-}
-
+GAME_FACTORIES = {'tictactoe': Tictactoe, 'viergewinnt': Viergewinnt}
 PLAYER_FACTORIES = {
     'random': RandomPlayer,
     'human': HumanPlayer,

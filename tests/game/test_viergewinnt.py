@@ -10,7 +10,7 @@ from alpha_viergewinnt.game.alternating_player import *
 
 @pytest.fixture
 def game():
-    return Game()
+    return Viergewinnt()
 
 
 def test_get_all_moves(game):
