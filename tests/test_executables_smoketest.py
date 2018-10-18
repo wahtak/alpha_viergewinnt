@@ -4,15 +4,18 @@ import pytest
 
 
 @pytest.mark.skip()
-def test_train_smoketest():
+@pytest.mark.parametrize('game,estimator', [('viergewinnt', 'generic'), ('tictactoe', 'mlp'), ('viergewinnt', 'mlp')])
+def test_train_smoketest(game, estimator):
     command = [
-        'bin/train', '--game=viergewinnt', '--estimator=mlp', '--mcts-steps=3', '--training-iterations=3',
+        'bin/train', '--game', game, '--estimator', estimator, '--mcts-steps=3', '--training-iterations=3',
         '--comparison-iterations=3'
     ]
     assert run(command).returncode == 0
 
 
 @pytest.mark.skip()
-def test_play_smoketest():
-    command = ['bin/play', '--game=viergewinnt', '-x', 'random', '-o', 'random']
+@pytest.mark.parametrize('game,player_x,player_o', [('viergewinnt', 'random', 'random'),
+                                                    ('tictactoe', 'alpha', 'random')])
+def test_play_smoketest(game, player_x, player_o):
+    command = ['bin/play', '--game={}'.format(game), '-x', player_x, '-o', player_o, '--mcts-steps=3']
     assert run(command).returncode == 0
