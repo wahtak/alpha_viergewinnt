@@ -33,11 +33,11 @@ def cmd(game, estimator, mcts_steps, training_iterations, comparison_iterations,
     game = create_game()
     training_estimator = create_training_estimator(game=game)
     training_estimator.load()
-    trainer_x = create_alpha_trainer(estimator=training_estimator, player=Player.X, mcts_steps=mcts_steps)
 
     if training_iterations > 0:
         logger.info('Starting training')
 
+        trainer_x = create_alpha_trainer(estimator=training_estimator, player=Player.X, mcts_steps=mcts_steps)
         trainer_o = create_alpha_trainer(estimator=training_estimator, player=Player.O, mcts_steps=mcts_steps)
         training_match = TrainingMatch(game=game, players={Player.X: trainer_x, Player.O: trainer_o})
 

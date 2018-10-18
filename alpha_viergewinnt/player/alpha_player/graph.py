@@ -8,12 +8,22 @@ class ActionAlreadyExistsException(Exception):
 class GameStateGraph(nx.DiGraph):
     def __init__(self, root):
         super().__init__()
-        self.Path = GameStatePath
+        self.root = root
         self.add_node(root, attributes=None)
 
     @classmethod
     def create_path(cls, root):
         return GameStatePath(root)
+
+    def reset_root(self, root):
+        self.root = root
+        if root in self.nodes:
+            nodes_for_pruning = set(self.nodes) - nx.descendants(self, root) - {root}
+            self.remove_nodes_from(nodes_for_pruning)
+            self.set_attributes(None, state=root)
+        else:
+            self.clear()
+            self.add_node(root, attributes=None)
 
     @property
     def states(self):
@@ -63,7 +73,6 @@ class GameStateGraph(nx.DiGraph):
 class GameStatePath(GameStateGraph):
     def __init__(self, root):
         super().__init__(root)
-        self.root = root
         self.leaf = root
 
     def add_successor(self, successor, action):

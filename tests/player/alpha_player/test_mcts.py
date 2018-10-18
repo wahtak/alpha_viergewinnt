@@ -41,16 +41,16 @@ class DummyState(object):
 
 
 @pytest.fixture
-def empty_dummy_state_mcts(max_first_evaluator):
+def dummy_state_mcts(max_first_evaluator):
     root = DummyState()
-    graph = GameStateGraph(root)
+    graph = GameStateGraph(root=root)
     mcts = Mcts(graph, evaluator=max_first_evaluator)
 
     return root, graph, mcts
 
 
-def test_expand(empty_dummy_state_mcts):
-    root, graph, mcts = empty_dummy_state_mcts
+def test_expand(dummy_state_mcts):
+    root, graph, mcts = dummy_state_mcts
 
     mcts._expand(root)
     actions = graph.get_actions(root)
@@ -67,8 +67,8 @@ def test_expand(empty_dummy_state_mcts):
     assert attributes.state_value == 1
 
 
-def test_select_path(empty_dummy_state_mcts):
-    root, graph, mcts = empty_dummy_state_mcts
+def test_select_path(dummy_state_mcts):
+    root, graph, mcts = dummy_state_mcts
 
     mcts._expand(root)
     path = mcts._select_path(root)
@@ -87,8 +87,15 @@ def test_select_path(empty_dummy_state_mcts):
     assert path.get_predecessor(predecessor) == root
 
 
-def test_select_action(empty_dummy_state_mcts):
-    graph = GameStateGraph('r')
+@pytest.fixture
+def simple_state_mcts():
+    graph = GameStateGraph(root='r')
+    mcts = Mcts(graph, evaluator=None)
+    return graph, mcts
+
+
+def test_select_action(simple_state_mcts):
+    graph, mcts = simple_state_mcts
 
     graph.add_successor('r.0', source='r', action=0)
     graph.add_successor('r.1', source='r', action=1)
@@ -98,12 +105,11 @@ def test_select_action(empty_dummy_state_mcts):
     attributes.visit_count = np.array([10, 1, 0, 0])
     graph.set_attributes(attributes, state='r')
 
-    mcts = Mcts(graph, evaluator=None)
     assert mcts._select_action(state='r') == 1
 
 
-def test_backup():
-    graph = GameStateGraph('r')
+def test_backup(simple_state_mcts):
+    graph, mcts = simple_state_mcts
 
     common_node_state_value = 0.4
     expanded_node_state_value = -0.6
@@ -131,7 +137,7 @@ def test_backup():
     graph.add_successor('r.0.1', source='r.0', action=1)
 
     # simulate selection of unvisited leaf node
-    path = GameStatePath('r')
+    path = graph.create_path(root='r')
     path.add_successor('r.0', action=0)
     path.add_successor('r.0.1', action=1)
 
@@ -139,7 +145,6 @@ def test_backup():
     selected_node_attributes = Attributes(state_value=selected_node_state_value, prior_distribution=[None, None])
     graph.set_attributes(selected_node_attributes, state='r.0.1')
 
-    mcts = Mcts(graph, evaluator=None)
     mcts._backup(path)
 
     # expect the attributes of an action which was not selected to be unmodified
@@ -158,8 +163,8 @@ def test_backup():
     assert graph.get_attributes(state='r').visit_count[0] == 3
 
 
-def test_simulate_step(empty_dummy_state_mcts):
-    root, graph, mcts = empty_dummy_state_mcts
+def test_simulate_step(dummy_state_mcts):
+    root, graph, mcts = dummy_state_mcts
 
     mcts.simulate_step(source=root)
     mcts.simulate_step(source=root)

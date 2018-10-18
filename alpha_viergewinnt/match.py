@@ -18,7 +18,7 @@ class Match(object):
                 return True
         return False
 
-    def _play_move(self, game, record_moves=False):
+    def _play_move(self, game):
         self.logger.debug(game)
         current_player = game.active_player
         next_move = self.players[current_player].get_next_move(game)
@@ -59,7 +59,7 @@ class TrainingMatch(Match):
     def train(self):
         game = deepcopy(self.game)
         while not self._is_game_finished(game):
-            self._play_move(game, record_moves=True)
+            self._play_move(game)
         loss = self._train(game)
         return loss
 

@@ -11,13 +11,14 @@ class AlphaAgent(object):
         self.evaluator = evaluator
         self.mcts_steps = mcts_steps
         self.exploration_factor = exploration_factor
-        self._random_state = np.random.RandomState(random_seed)
+        self.random_state = np.random.RandomState(random_seed)
+        self.graph = GameStateGraph(root=None)
 
     def _sample_action(self, search_distribution):
-        return self._random_state.choice(len(search_distribution), p=search_distribution)
+        return self.random_state.choice(len(search_distribution), p=search_distribution)
 
     def _get_search_distribution(self, state):
-        # TODO: recycle graph from last call
+        # TODO: instead only reset root: self.graph.reset_root(state)
         self.graph = GameStateGraph(state)
         mcts = Mcts(self.graph, self.evaluator)
 
