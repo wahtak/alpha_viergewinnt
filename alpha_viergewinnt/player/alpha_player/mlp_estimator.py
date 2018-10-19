@@ -2,7 +2,7 @@ import logging
 
 import torch
 from torch import tensor, tanh, sum, mean, log
-from torch.nn import Linear, Module
+from torch.nn import Linear, Module, BatchNorm1d
 from torch.nn.functional import mse_loss, softmax, relu
 from torch.optim import Adam
 
@@ -14,42 +14,61 @@ class MlpEstimator(Module):
 
         self.actions = actions
         board_width, board_height = board_size
-        self.state_size = board_width * board_height
+        self.input_size = board_width * board_height
         self.filename = filename
 
-        self.hidden_size = self.state_size * hidden_layer_scale
-        self.action_size = len(actions)
+        self.hidden_size = self.input_size * hidden_layer_scale
+        self.distr_size = len(actions)
+        self.value_size = 1
 
-        self.layer_input = Linear(self.state_size, self.hidden_size)
-        self.layer_hidden1 = Linear(self.hidden_size, self.hidden_size)
-        self.layer_hidden2 = Linear(self.hidden_size, self.hidden_size)
-        self.layer_hidden3 = Linear(self.hidden_size, self.hidden_size)
-        self.layer_action_distribution = Linear(self.hidden_size, self.action_size)
-        self.layer_state_value = Linear(self.hidden_size, 1)
+        # common hidden layers
+        self.fc_common1 = Linear(self.input_size, self.hidden_size)
+        self.bn_common1 = BatchNorm1d(self.hidden_size, track_running_stats=False)
+        self.fc_common2 = Linear(self.hidden_size, self.hidden_size)
+        self.bn_common2 = BatchNorm1d(self.hidden_size, track_running_stats=False)
+        self.fc_common3 = Linear(self.hidden_size, self.hidden_size)
+        self.bn_common3 = BatchNorm1d(self.hidden_size, track_running_stats=False)
 
-        self.optimizer = Adam(self.parameters())
+        # action distribution layers
+        self.fc_distr1 = Linear(self.hidden_size, self.hidden_size)
+        self.bn_distr1 = BatchNorm1d(self.hidden_size, track_running_stats=False)
+        self.fc_distr2 = Linear(self.hidden_size, self.distr_size)
+
+        # state value layers
+        self.fc_value1 = Linear(self.hidden_size, self.hidden_size)
+        self.bn_value1 = BatchNorm1d(self.hidden_size, track_running_stats=False)
+        self.fc_value2 = Linear(self.hidden_size, self.value_size)
+
+        self.optimizer = Adam(self.parameters(), weight_decay=5e-4)
 
     def infer(self, state_array):
-        state = tensor(state_array).float().view(1, self.state_size)
+        state = tensor(state_array).float().view(1, self.input_size)
         action_distribution, state_value = self._forward(state)
         action_distribution_array = action_distribution.view(-1).detach().numpy()
         state_value_array = state_value.view(-1).detach().item()
         return action_distribution_array, state_value_array
 
     def _forward(self, state):
-        input_ = relu(self.layer_input(state))
-        hidden1 = relu(self.layer_hidden1(input_))
-        hidden2 = relu(self.layer_hidden2(hidden1))
-        hidden3 = relu(self.layer_hidden3(hidden2))
-        # action_distribution = normalize(sigmoid(self.layer_action(hidden)), p=1, dim=1)
-        action_distribution = softmax(self.layer_action_distribution(hidden3), dim=1)
-        state_value = tanh(self.layer_state_value(hidden3))
+        # common
+        common = relu(self.fc_common1(state))
+        common = relu(self.fc_common2(common))
+        common = relu(self.fc_common3(common))
+
+        # action_distribution
+        distr = relu(self.fc_distr1(common))
+        action_distribution = softmax(self.fc_distr2(distr), dim=1)
+        # action_distribution = normalize(sigmoid(self.fc_distr2(distr)), p=1, dim=1)
+
+        # state_value
+        value = relu(self.fc_value1(common))
+        state_value = tanh(self.fc_value2(value))
+
         return action_distribution, state_value
 
     def train(self, state_array, target_distribution_array, target_state_value_array):
-        state = tensor(state_array).float().view(-1, self.state_size)
-        target_state_value = tensor(target_state_value_array).float().view(-1, 1)
-        target_distribution = tensor(target_distribution_array).float().view(-1, self.action_size)
+        state = tensor(state_array).float().view(-1, self.input_size)
+        target_state_value = tensor(target_state_value_array).float().view(-1, self.value_size)
+        target_distribution = tensor(target_distribution_array).float().view(-1, self.distr_size)
 
         self.optimizer.zero_grad()
         action_distribution, state_value = self._forward(state)
