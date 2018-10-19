@@ -3,6 +3,7 @@ import click
 import logging
 
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 
 from alpha_viergewinnt.game.board import Player
@@ -23,70 +24,136 @@ ESTIMATOR_FACTORIES = {'generic': create_generic_estimator, 'mlp': create_mlp_es
 @click.option(
     '--estimator', required=True, type=click.Choice(ESTIMATOR_FACTORIES.keys()), help='Estimator to be trained')
 @click.option('--mcts-steps', required=True, type=int, help='Number of MCTS steps per move')
-@click.option('--training-iterations', type=int, default=0, help='Number of training cycles to be run')
-@click.option('--comparison-iterations', type=int, default=0, help='Number of comparison cycles to be run')
-@click.option('--plot', type=bool, default=False, help='Plot loss during training')
-def cmd(game, estimator, mcts_steps, training_iterations, comparison_iterations, plot):
+@click.option('--num-training-games', type=int, default=0, help='Number of training games per epoch')
+@click.option('--num-comparison-games', type=int, default=0, help='Number of comparison games per epoch')
+@click.option('--disable-plotting', type=bool, default=False, help='Disable plotting loss and score')
+@click.option('--num-epochs', type=int, default=-1, help='Number of epochs to train, default=unlimited')
+def cmd(game, estimator, mcts_steps, num_training_games, num_comparison_games, disable_plotting, num_epochs):
     create_game = GAME_FACTORIES[game]
     create_training_estimator = ESTIMATOR_FACTORIES[estimator]
 
     game = create_game()
     training_estimator = create_training_estimator(game=game)
     training_estimator.load()
+    last_epoch_score = compare(game, training_estimator, mcts_steps, num_comparison_games)
 
-    if training_iterations > 0:
-        logger.info('Starting training')
+    if num_epochs == 0:
+        return
 
-        trainer_x = create_alpha_trainer(estimator=training_estimator, player=Player.X, mcts_steps=mcts_steps)
-        trainer_o = create_alpha_trainer(estimator=training_estimator, player=Player.O, mcts_steps=mcts_steps)
-        training_match = TrainingMatch(game=game, players={Player.X: trainer_x, Player.O: trainer_o})
+    ValuePlotter.init_plotting(disable_plotting=disable_plotting, num_plots=3)
+    epoch_loss_plotter = ValuePlotter(xlabel='game', ylabel='epoch loss', filter_size=32)
+    loss_plotter = ValuePlotter(xlabel='game', ylabel='loss', filter_size=128)
+    score_plotter = ValuePlotter(xlabel='epoch', ylabel='score')
 
-        losses = []
+    epoch = 0
+    losses = []
+    scores = []
+    while num_epochs > 0 and epoch < num_epochs:
+        logger.info('Epoch %d' % epoch)
+        epoch_losses = train_epoch(game, training_estimator, mcts_steps, num_training_games, epoch_loss_plotter)
+        losses.extend(epoch_losses)
 
-        loss_plotter = LossPlotter(window_size=128)
-        for i in range(training_iterations):
-            loss = training_match.train()
-            losses.append(loss)
-            if i % 10 == 0:
-                if plot:
-                    loss_plotter.plot(losses)
-                training_estimator.save()
+        loss_plotter.plot(losses)
 
-    if comparison_iterations > 0:
-        logger.info('Starting comparison')
+        epoch_score = compare(game, training_estimator, mcts_steps, num_comparison_games)
+        scores.append(epoch_score)
 
-        player_x = create_alpha_player(estimator=training_estimator, player=Player.X, mcts_steps=mcts_steps)
-        comparison_estimator = create_generic_estimator(game)
-        player_o = create_alpha_player(estimator=comparison_estimator, player=Player.O, mcts_steps=mcts_steps)
+        score_plotter.plot(scores)
 
-        comparison_match = CompetitionMatch(game=game, players={Player.X: player_x, Player.O: player_o})
+        score_increase = epoch_score - last_epoch_score
+        logger.info('Score increase since last epoch: %.4f%%.' % (epoch_score - last_epoch_score))
+        if score_increase >= 0:
+            logger.info('Saving parameters.')
+            training_estimator.save()
+            last_epoch_score = epoch_score
+        else:
+            logger.info('Loading last parameters.')
+            training_estimator.load()
 
-        results = comparison_match.compare(comparison_iterations)
-        outcome_percentages = tuple(
-            100 * np.array([results[Player.X], results[Player.O], results[None]]) / comparison_iterations)
-        logger.info(
-            'Comparison results: %.2f%% player X wins, %.2f%% player O wins, %.2f%% draws.' % outcome_percentages)
+        epoch += 1
 
 
-class LossPlotter(object):
-    def __init__(self, window_size):
-        self.window_size = window_size
+def train_epoch(game, training_estimator, mcts_steps, num_games, loss_plotter):
+    logger.info('Starting training')
+
+    trainer_x = create_alpha_trainer(estimator=training_estimator, player=Player.X, mcts_steps=mcts_steps)
+    trainer_o = create_alpha_trainer(estimator=training_estimator, player=Player.O, mcts_steps=mcts_steps)
+    training_match = TrainingMatch(game=game, players={Player.X: trainer_x, Player.O: trainer_o})
+
+    losses = []
+    for i in range(num_games):
+        loss = training_match.train()
+        losses.append(loss)
+        loss_plotter.plot(losses)
+
+    return losses
+
+
+def compare(game, training_estimator, mcts_steps, num_games):
+    if num_games == 0:
+        return
+
+    logger.info('Starting comparison')
+
+    player_x = create_alpha_player(estimator=training_estimator, player=Player.X, mcts_steps=mcts_steps)
+    comparison_estimator = create_generic_estimator(game)
+    player_o = create_alpha_player(estimator=comparison_estimator, player=Player.O, mcts_steps=mcts_steps)
+
+    comparison_match = CompetitionMatch(game=game, players={Player.X: player_x, Player.O: player_o})
+
+    results = comparison_match.compare(num_games)
+
+    num_wins = results[Player.X]
+    num_losses = results[Player.O]
+    num_draws = results[None]
+    score = (num_wins - num_losses) / num_games
+    logger.info('Comparison score: %.4f%% ' % score)
+    result_percentages = tuple(100 * np.array([num_wins, num_losses, num_draws]) / num_games)
+    logger.info('Comparison percentages: %.2f%% player X wins, %.2f%% player O wins, %.2f%% draws' % result_percentages)
+
+    return score
+
+
+class ValuePlotter(object):
+    plots_count = 0
+
+    def __init__(self, xlabel, ylabel, filter_size=0):
+        self.xlabel = xlabel
+        self.ylabel = ylabel
+        self.filter_size = filter_size
+        ValuePlotter.plots_count += 1
+        self.index = self.plots_count
+
+    @classmethod
+    def init_plotting(cls, disable_plotting, num_plots):
+        cls.disable_plotting = disable_plotting
+        if disable_plotting:
+            return
+
+        cls.num_plots = num_plots
         plt.ion()
         plt.show()
 
-    def plot(self, loss):
-        plt.clf()
-        plt.plot(loss)
-        plt.plot(self._filter_loss(loss))
+    def plot(self, values):
+        if self.disable_plotting:
+            return
+
+        plt.subplot(self.num_plots, 1, self.index)
+        plt.cla()
+        plt.xlabel(self.xlabel)
+        plt.ylabel(self.ylabel)
+        plt.plot(values)
+        if self.filter_size > 0:
+            plt.plot(self._filter_values(values))
         plt.pause(0.001)
 
-    def _filter_loss(self, loss):
-        padded_loss = np.concatenate(
-            [np.full(self.window_size // 2, loss[0]),
-             np.array(loss),
-             np.full(self.window_size // 2, loss[-1])])
-        filter_kernel = np.ones((self.window_size, )) / self.window_size
-        return np.convolve(padded_loss, filter_kernel, mode='valid')
+    def _filter_values(self, values):
+        padded_values = np.concatenate(
+            [np.full(self.filter_size // 2, values[0]),
+             np.array(values),
+             np.full(self.filter_size // 2, values[-1])])
+        filter_kernel = np.ones((self.filter_size, )) / self.filter_size
+        return np.convolve(padded_values, filter_kernel, mode='valid')
 
 
 if __name__ == '__main__':
