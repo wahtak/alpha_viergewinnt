@@ -27,7 +27,7 @@ ESTIMATOR_FACTORIES = {'generic': create_generic_estimator, 'mlp': create_mlp_es
 @click.option('--num-training-games', type=int, default=0, help='Number of training games per epoch')
 @click.option('--num-comparison-games', type=int, default=0, help='Number of comparison games per epoch')
 @click.option('--disable-plotting', type=bool, default=False, help='Disable plotting loss and score')
-@click.option('--num-epochs', type=int, default=-1, help='Number of epochs to train, default=unlimited')
+@click.option('--num-epochs', type=int, default=-1, help='Number of epochs to train, default=unlimited, 0=only compare')
 def cmd(game, estimator, mcts_steps, num_training_games, num_comparison_games, disable_plotting, num_epochs):
     create_game = GAME_FACTORIES[game]
     create_training_estimator = ESTIMATOR_FACTORIES[estimator]
@@ -35,9 +35,9 @@ def cmd(game, estimator, mcts_steps, num_training_games, num_comparison_games, d
     game = create_game()
     training_estimator = create_training_estimator(game=game)
     training_estimator.load()
-    last_epoch_score = compare(game, training_estimator, mcts_steps, num_comparison_games)
 
     if num_epochs == 0:
+        compare(game, training_estimator, mcts_steps, num_comparison_games)
         return
 
     ValuePlotter.init_plotting(disable_plotting=disable_plotting, num_plots=3)
@@ -46,9 +46,10 @@ def cmd(game, estimator, mcts_steps, num_training_games, num_comparison_games, d
     score_plotter = ValuePlotter(xlabel='epoch', ylabel='score')
 
     epoch = 0
+    last_epoch_score = -1
     losses = []
     scores = []
-    while num_epochs > 0 and epoch < num_epochs:
+    while num_epochs < 0 or epoch < num_epochs:
         logger.info('Epoch %d' % epoch)
         epoch_losses = train_epoch(game, training_estimator, mcts_steps, num_training_games, epoch_loss_plotter)
         losses.extend(epoch_losses)
