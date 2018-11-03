@@ -15,7 +15,8 @@ from alpha_viergewinnt.match import CompetitionMatch
 
 def create_competition_alpha_player(game, player, mcts_steps, *args, **kwargs):
     estimator = create_mlp_estimator(game)
-    estimator.load()
+    filename = '{}_{}.params'.format(estimator.__class__.__name__, game.__class__.__name__)
+    estimator.load(filename)
     return create_alpha_player(estimator, player, mcts_steps)
 
 

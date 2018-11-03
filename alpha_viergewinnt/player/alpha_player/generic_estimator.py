@@ -15,8 +15,8 @@ class GenericEstimator(object):
         dummy_loss = 0
         return dummy_loss
 
-    def load(self):
+    def load(self, filename):
         pass
 
-    def save(self):
+    def save(self, filename):
         pass

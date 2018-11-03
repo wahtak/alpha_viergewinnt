@@ -9,8 +9,7 @@ def create_generic_estimator(game):
 
 
 def create_mlp_estimator(game):
-    filename = 'MlpEstimator_{}.params'.format(game.__class__.__name__)
-    return MlpEstimator(board_size=game.board_size, actions=game.get_all_moves(), filename=filename)
+    return MlpEstimator(board_size=game.board_size, actions=game.get_all_moves())
 
 
 def create_alpha_player(estimator, player, mcts_steps, exploration_factor=0.1, random_seed=None):

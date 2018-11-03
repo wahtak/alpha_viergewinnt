@@ -36,7 +36,8 @@ def cmd(game, estimator, mcts_steps, num_training_games, num_comparison_games, d
 
     game = create_game()
     training_estimator = create_training_estimator(game=game)
-    training_estimator.load()
+    params_filename = '{}_{}.params'.format(training_estimator.__class__.__name__, game.__class__.__name__)
+    training_estimator.load(params_filename)
 
     if num_epochs == 0:
         compare(game, training_estimator, mcts_steps, num_comparison_games)
@@ -65,11 +66,11 @@ def cmd(game, estimator, mcts_steps, num_training_games, num_comparison_games, d
         logger.info('Score increase since last epoch: %.4f%%.' % score_increase)
         if reload_last_epoch is True and score_increase < 0:
             logger.info('Loading last parameters.')
-            training_estimator.load()
+            training_estimator.load(params_filename)
             scores.append((epoch, best_epoch_score))
         else:
             logger.info('Saving parameters.')
-            training_estimator.save()
+            training_estimator.save(params_filename)
             best_epoch_score = epoch_score
 
         score_plotter.plot(scores)
