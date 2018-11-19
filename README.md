@@ -1,6 +1,10 @@
 # AlphaViergewinnt
 Reimplementation of DeepMind's AlphaGo Zero for the game Viergewinnt (WIP)
 
+[![pipeline status](https://gitlab.com/alexander.metz/alpha-viergewinnt/badges/master/pipeline.svg)](https://gitlab.com/alexander.metz/alpha-viergewinnt/commits/master)
+
+[![coverage report](https://gitlab.com/alexander.metz/alpha-viergewinnt/badges/master/coverage.svg)](https://gitlab.com/alexander.metz/alpha-viergewinnt/commits/master)
+
 _WORK IN PROGRESS_
 
 ## Current state
