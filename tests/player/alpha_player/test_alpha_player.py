@@ -3,12 +3,12 @@ import pytest
 from alpha_viergewinnt.player.alpha_player import *
 
 from .test_mcts import DummyState
-from .test_mcts import max_first_evaluator as max_first_evaluator_
+from .test_mcts import MaxFirstEvaluator
 
 
 @pytest.fixture
 def max_first_evaluator():
-    return max_first_evaluator_()
+    return MaxFirstEvaluator()
 
 
 def test_get_next_move(max_first_evaluator):
