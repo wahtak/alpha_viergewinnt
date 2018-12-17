@@ -72,6 +72,16 @@ def test_reset_root(graph):
     assert graph.get_attributes(4) is not None
 
 
+def test_get_mean_node_depth(graph):
+    # root at depth 0
+    graph.add_successor(1, source=0, action=10)  # depth 1
+    graph.add_successor(5, source=0, action=50)  # depth 1
+    graph.add_successor(2, source=1, action=20)  # depth 2
+    graph.add_successor(3, source=2, action=20)  # depth 3
+
+    assert graph.get_mean_node_depth() == pytest.approx((0 + 1 + 1 + 2 + 3) / 5)
+
+
 def test_draw(graph):
     # use backend which does not require a display for CI
     matplotlib.use('Agg')

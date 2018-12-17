@@ -1,3 +1,4 @@
+import numpy as np
 import networkx as nx
 
 
@@ -53,6 +54,16 @@ class GameStateGraph(nx.DiGraph):
 
     def get_predecessors(self, state):
         return set(self.predecessors(state))
+
+    def get_mean_node_depth(self):
+        node_depths = self._get_node_depths(self.root, 0)
+        return np.mean(list(node_depths.values()))
+
+    def _get_node_depths(self, source, start_depth):
+        node_depths = {source: start_depth}
+        for _, successor in self.edges(source):
+            node_depths.update(self._get_node_depths(successor, start_depth + 1))
+        return node_depths
 
     def draw(self):
         visible = self.subgraph({node for node in self.nodes if self.get_attributes(node) is not None})

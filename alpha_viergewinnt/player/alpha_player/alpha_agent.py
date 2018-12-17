@@ -30,6 +30,7 @@ class AlphaAgent(object):
 
         search_distribution = mcts.get_search_distribution(state, self.exploration_factor)
 
+        self.logger.debug('mean node depth: %.2f' % self.graph.get_mean_node_depth())
         self.logger.debug('search distribution: %s' % search_distribution)
         if self.draw_graph:
             self.graph.draw()
