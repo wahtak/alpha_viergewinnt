@@ -12,11 +12,11 @@ def create_mlp_estimator(game):
     return MlpEstimator(board_size=game.board_size, actions=game.get_all_moves())
 
 
-def create_alpha_player(estimator, player, mcts_steps, exploration_factor=0.1, random_seed=None):
+def create_alpha_player(estimator, player, mcts_steps, exploration_factor=0.1, random_seed=None, draw_graph=False):
     evaluator = Evaluator(estimator, player)
-    return AlphaPlayer(evaluator, mcts_steps, exploration_factor, random_seed)
+    return AlphaPlayer(evaluator, mcts_steps, exploration_factor, random_seed, draw_graph)
 
 
-def create_alpha_trainer(estimator, player, mcts_steps, exploration_factor=1.0, random_seed=None):
+def create_alpha_trainer(estimator, player, mcts_steps, exploration_factor=1.0, random_seed=None, draw_graph=False):
     evaluator = Evaluator(estimator, player)
-    return AlphaTrainer(evaluator, mcts_steps, exploration_factor, random_seed)
+    return AlphaTrainer(evaluator, mcts_steps, exploration_factor, random_seed, draw_graph)

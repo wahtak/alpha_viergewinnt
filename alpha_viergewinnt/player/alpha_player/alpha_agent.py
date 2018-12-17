@@ -1,4 +1,5 @@
 from copy import deepcopy
+import logging
 
 import numpy as np
 
@@ -7,12 +8,14 @@ from .mcts import Mcts
 
 
 class AlphaAgent(object):
-    def __init__(self, evaluator, mcts_steps, exploration_factor, random_seed):
+    def __init__(self, evaluator, mcts_steps, exploration_factor, random_seed, draw_graph):
+        self.logger = logging.getLogger(self.__class__.__module__ + '.' + self.__class__.__name__)
         self.evaluator = evaluator
         self.mcts_steps = mcts_steps
         self.exploration_factor = exploration_factor
         self.random_state = np.random.RandomState(random_seed)
         self.graph = None
+        self.draw_graph = draw_graph
 
     def _sample_action(self, search_distribution):
         return self.random_state.choice(len(search_distribution), p=search_distribution)
@@ -25,10 +28,13 @@ class AlphaAgent(object):
         for _ in range(self.mcts_steps):
             mcts.simulate_step(state)
 
-        return mcts.get_search_distribution(state, self.exploration_factor)
+        search_distribution = mcts.get_search_distribution(state, self.exploration_factor)
 
-    def draw_graph(self):
-        self.graph.draw()
+        self.logger.debug('search distribution: %s' % search_distribution)
+        if self.draw_graph:
+            self.graph.draw()
+
+        return search_distribution
 
 
 class AlphaPlayer(AlphaAgent):

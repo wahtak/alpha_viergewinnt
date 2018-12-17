@@ -1,4 +1,5 @@
 import pytest
+import matplotlib
 
 from alpha_viergewinnt.player.alpha_player import *
 
@@ -12,7 +13,8 @@ def max_first_evaluator():
 
 
 def test_get_next_move(max_first_evaluator):
-    player = AlphaPlayer(max_first_evaluator, mcts_steps=10, exploration_factor=0.1, random_seed=0)
+    matplotlib.use('Agg')
+    player = AlphaPlayer(max_first_evaluator, mcts_steps=10, exploration_factor=0.1, random_seed=0, draw_graph=True)
     root = DummyState()
     action = player.get_next_move(root)
 
