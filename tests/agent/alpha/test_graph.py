@@ -2,7 +2,7 @@ import pytest
 
 import matplotlib
 
-from alpha_viergewinnt.player.alpha_player.graph import *
+from alpha_viergewinnt.agent.alpha.graph import *
 
 
 @pytest.fixture

@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game.tictactoe import Tictactoe
 from alpha_viergewinnt.game.viergewinnt import Viergewinnt
-from alpha_viergewinnt.player.alpha_player.factory import \
-    create_generic_estimator, create_mlp_estimator, create_alpha_player, create_alpha_trainer
+from alpha_viergewinnt.agent.alpha.factory import \
+    create_generic_estimator, create_mlp_estimator, create_alpha_agent, create_alpha_trainer
 from alpha_viergewinnt.match import CompetitionMatch, TrainingMatch
 
 logger = logging.getLogger(__name__)
@@ -82,7 +82,7 @@ def train_epoch(game, training_estimator, mcts_steps, num_games, loss_plotter):
 
     trainer_x = create_alpha_trainer(estimator=training_estimator, player=Player.X, mcts_steps=mcts_steps)
     trainer_o = create_alpha_trainer(estimator=training_estimator, player=Player.O, mcts_steps=mcts_steps)
-    training_match = TrainingMatch(game=game, players={Player.X: trainer_x, Player.O: trainer_o})
+    training_match = TrainingMatch(game=game, agents={Player.X: trainer_x, Player.O: trainer_o})
 
     losses = []
     for i in range(num_games):
@@ -99,11 +99,11 @@ def compare(game, training_estimator, mcts_steps, num_games):
 
     logger.info('Starting comparison')
 
-    player_x = create_alpha_player(estimator=training_estimator, player=Player.X, mcts_steps=mcts_steps)
+    agent_x = create_alpha_agent(estimator=training_estimator, player=Player.X, mcts_steps=mcts_steps)
     comparison_estimator = create_generic_estimator(game)
-    player_o = create_alpha_player(estimator=comparison_estimator, player=Player.O, mcts_steps=mcts_steps)
+    agent_o = create_alpha_agent(estimator=comparison_estimator, player=Player.O, mcts_steps=mcts_steps)
 
-    comparison_match = CompetitionMatch(game=game, players={Player.X: player_x, Player.O: player_o})
+    comparison_match = CompetitionMatch(game=game, agents={Player.X: agent_x, Player.O: agent_o})
 
     results = comparison_match.compare(num_games)
 

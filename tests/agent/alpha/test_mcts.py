@@ -1,7 +1,7 @@
 import pytest
 
-from alpha_viergewinnt.player.alpha_player.graph import *
-from alpha_viergewinnt.player.alpha_player.mcts import *
+from alpha_viergewinnt.agent.alpha.graph import *
+from alpha_viergewinnt.agent.alpha.mcts import *
 
 
 class MaxFirstEvaluator():

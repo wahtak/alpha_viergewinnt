@@ -3,7 +3,7 @@ from collections import namedtuple
 import pytest
 
 from alpha_viergewinnt.game.board import Player
-from alpha_viergewinnt.player.alpha_player.evaluator import *
+from alpha_viergewinnt.agent.alpha.evaluator import *
 
 
 class DummyState(object):

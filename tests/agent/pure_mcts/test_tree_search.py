@@ -1,8 +1,8 @@
 import pytest
 
 from alpha_viergewinnt.game.board import Player
-from alpha_viergewinnt.player.pure_mcts_player.tree import *
-from alpha_viergewinnt.player.pure_mcts_player.tree_search import *
+from alpha_viergewinnt.agent.pure_mcts.tree import *
+from alpha_viergewinnt.agent.pure_mcts.tree_search import *
 
 
 class DummyState(object):

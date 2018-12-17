@@ -1,7 +1,7 @@
 import re
 
 
-class HumanPlayer(object):
+class HumanAgent(object):
     def __init__(self, **kwargs):
         pass
 

@@ -6,49 +6,49 @@ from alpha_viergewinnt.game import board
 from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game.tictactoe import Tictactoe
 from alpha_viergewinnt.game.viergewinnt import Viergewinnt
-from alpha_viergewinnt.player.random_player import RandomPlayer
-from alpha_viergewinnt.player.human_player import HumanPlayer
-from alpha_viergewinnt.player.pure_mcts_player.factory import create_pure_mcts_player
-from alpha_viergewinnt.player.alpha_player.factory import create_mlp_estimator, create_alpha_player
+from alpha_viergewinnt.agent.random_agent import RandomAgent
+from alpha_viergewinnt.agent.human_agent import HumanAgent
+from alpha_viergewinnt.agent.pure_mcts.factory import create_pure_mcts_agent
+from alpha_viergewinnt.agent.alpha.factory import create_mlp_estimator, create_alpha_agent
 from alpha_viergewinnt.match import CompetitionMatch
 
 
-def create_competition_alpha_player(game, player, mcts_steps, *args, **kwargs):
+def create_competition_alpha_agent(game, player, mcts_steps, *args, **kwargs):
     estimator = create_mlp_estimator(game)
     filename = '{}_{}.params'.format(estimator.__class__.__name__, game.__class__.__name__)
     estimator.load(filename)
-    return create_alpha_player(estimator, player, mcts_steps)
+    return create_alpha_agent(estimator, player, mcts_steps)
 
 
-def create_competition_pure_mcts_player(game, player, mcts_steps, mcts_rollouts, *args, **kwargs):
-    return create_pure_mcts_player(player, mcts_steps, mcts_rollouts)
+def create_competition_pure_mcts_agent(game, player, mcts_steps, mcts_rollouts, *args, **kwargs):
+    return create_pure_mcts_agent(player, mcts_steps, mcts_rollouts)
 
 
 GAME_FACTORIES = {'tictactoe': Tictactoe, 'viergewinnt': Viergewinnt}
-PLAYER_FACTORIES = {
-    'random': RandomPlayer,
-    'human': HumanPlayer,
-    'pure_mcts': create_competition_pure_mcts_player,
-    'alpha': create_competition_alpha_player
+AGENT_FACTORIES = {
+    'random': RandomAgent,
+    'human': HumanAgent,
+    'pure_mcts': create_competition_pure_mcts_agent,
+    'alpha': create_competition_alpha_agent
 }
 
 
 @click.command()
 @click.option('--game', required=True, type=click.Choice(GAME_FACTORIES.keys()), help='Game to be played')
-@click.option('-x', required=True, type=click.Choice(PLAYER_FACTORIES.keys()), help='Strategy for player X')
-@click.option('-o', required=True, type=click.Choice(PLAYER_FACTORIES.keys()), help='Strategy for player O')
+@click.option('-x', required=True, type=click.Choice(AGENT_FACTORIES.keys()), help='Strategy for player X')
+@click.option('-o', required=True, type=click.Choice(AGENT_FACTORIES.keys()), help='Strategy for player O')
 @click.option('--mcts-steps', type=int, default=100, help='Number of MCTS steps per move (alpha & pure mcts)')
 @click.option('--mcts-rollouts', type=int, default=30, help='Number of MCTS rollouts per iteration (pure mcts)')
 def cmd(game, x, o, mcts_steps, mcts_rollouts):
     create_game = GAME_FACTORIES[game]
-    create_player_x = PLAYER_FACTORIES[x]
-    create_player_o = PLAYER_FACTORIES[o]
+    create_agent_x = AGENT_FACTORIES[x]
+    create_agent_o = AGENT_FACTORIES[o]
 
     game = create_game()
-    player_x = create_player_x(game=game, player=Player.X, mcts_steps=mcts_steps, mcts_rollouts=mcts_rollouts)
-    player_o = create_player_o(game=game, player=Player.O, mcts_steps=mcts_steps, mcts_rollouts=mcts_rollouts)
+    agent_x = create_agent_x(game=game, player=Player.X, mcts_steps=mcts_steps, mcts_rollouts=mcts_rollouts)
+    agent_o = create_agent_o(game=game, player=Player.O, mcts_steps=mcts_steps, mcts_rollouts=mcts_rollouts)
 
-    match = CompetitionMatch(game=game, players={Player.X: player_x, Player.O: player_o})
+    match = CompetitionMatch(game=game, agents={Player.X: agent_x, Player.O: agent_o})
     match.play()
 
 

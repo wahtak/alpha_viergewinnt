@@ -6,7 +6,7 @@ import numpy as np
 
 from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game.tictactoe import Tictactoe
-from alpha_viergewinnt.player.alpha_player.factory import create_alpha_trainer
+from alpha_viergewinnt.agent.alpha.factory import create_alpha_trainer
 
 
 @pytest.fixture

@@ -14,7 +14,7 @@ def create_random_choice_strategy(random_seed):
     return random_choice_strategy
 
 
-class PureMctsPlayer(object):
+class PureMctsAgent(object):
     def __init__(self, player, selection_strategy, expansion_strategy, simulation_strategy, mcts_steps, mcts_rollouts,
                  **kwargs):
 

@@ -7,7 +7,7 @@ from .graph import GameStateGraph
 from .mcts import Mcts
 
 
-class AlphaAgent(object):
+class Alpha(object):
     def __init__(self, evaluator, mcts_steps, exploration_factor, random_seed, draw_graph):
         self.logger = logging.getLogger(self.__class__.__module__ + '.' + self.__class__.__name__)
         self.evaluator = evaluator
@@ -38,7 +38,7 @@ class AlphaAgent(object):
         return search_distribution
 
 
-class AlphaPlayer(AlphaAgent):
+class AlphaAgent(Alpha):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -46,7 +46,7 @@ class AlphaPlayer(AlphaAgent):
         return self._sample_action(self._get_search_distribution(state))
 
 
-class AlphaTrainer(AlphaAgent):
+class AlphaTrainer(Alpha):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.states_and_search_distributions = []

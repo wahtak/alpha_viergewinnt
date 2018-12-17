@@ -1,7 +1,7 @@
 from random import Random
 
 
-class RandomPlayer(object):
+class RandomAgent(object):
     def __init__(self, random_seed=None, **kwargs):
         self.random = Random(random_seed)
 
