@@ -6,7 +6,7 @@ class ActionAlreadyExistsException(Exception):
 
 
 class GameStateGraph(nx.DiGraph):
-    def __init__(self, root):
+    def __init__(self, root=None):
         super().__init__()
         self.root = root
         self.add_node(root, attributes=None)
@@ -55,11 +55,12 @@ class GameStateGraph(nx.DiGraph):
         return set(self.predecessors(state))
 
     def draw(self):
-        state_labels = {node: self._get_state_label(node) for node in self.nodes()}
-        action_labels = {edge: self._get_action_label(edge) for edge in self.edges()}
-        pos = nx.nx_pydot.graphviz_layout(self, prog='dot')
-        nx.draw_networkx(self, pos=pos, labels=state_labels, arrows=False, font_family='monospace', font_size=8)
-        nx.draw_networkx_edge_labels(self, pos=pos, edge_labels=action_labels, font_family='monospace', font_size=8)
+        visible = self.subgraph({node for node in self.nodes if self.get_attributes(node) is not None})
+        state_labels = {node: self._get_state_label(node) for node in visible.nodes()}
+        action_labels = {edge: self._get_action_label(edge) for edge in visible.edges()}
+        pos = nx.nx_pydot.graphviz_layout(visible, prog='dot')
+        nx.draw_networkx(visible, pos=pos, labels=state_labels, arrows=False, font_family='monospace', font_size=8)
+        nx.draw_networkx_edge_labels(visible, pos=pos, edge_labels=action_labels, font_family='monospace', font_size=8)
         import matplotlib.pyplot as plt
         plt.show()
 
