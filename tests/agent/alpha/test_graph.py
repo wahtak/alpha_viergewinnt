@@ -82,7 +82,7 @@ def test_get_mean_node_depth(graph):
     assert graph.get_mean_node_depth() == pytest.approx((0 + 1 + 1 + 2 + 3) / 5)
 
 
-def test_draw(graph):
+def test_smoketest_draw(graph):
     # use backend which does not require a display for CI
     matplotlib.use('Agg')
     graph.add_successor(1, source=0, action=10)
