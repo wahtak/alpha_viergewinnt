@@ -8,7 +8,7 @@ class ValueLogger(object):
         if show:
             ValuePlotter.init_plotting()
 
-    def add_plot(self, name, xlabel, filter_size):
+    def add_plot(self, name, xlabel, filter_size=None):
         self.plotter[name] = ValuePlotter(xlabel=xlabel, ylabel=name, filter_size=filter_size)
 
     def __call__(self, **kwargs):
@@ -21,7 +21,7 @@ class ValueLogger(object):
 class ValuePlotter(object):
     plots_count = 0
 
-    def __init__(self, xlabel, ylabel, filter_size=0):
+    def __init__(self, xlabel, ylabel, filter_size=None):
         self.xlabel = xlabel
         self.ylabel = ylabel
         self.filter_size = filter_size
@@ -43,7 +43,7 @@ class ValuePlotter(object):
         plt.xlabel(self.xlabel)
         plt.ylabel(self.ylabel)
         plt.plot(self.values)
-        if self.filter_size > 0:
+        if self.filter_size is not None:
             plt.plot(self._filter_values(self.values))
         plt.pause(0.001)
 

@@ -11,6 +11,7 @@ from alpha_viergewinnt.game.viergewinnt import Viergewinnt
 from alpha_viergewinnt.agent.alpha.factory import \
     create_generic_estimator, create_mlp_estimator, create_alpha_agent, create_alpha_trainer
 from alpha_viergewinnt.match import CompetitionMatch, TrainingMatch
+from alpha_viergewinnt.logging import ValueLogger, set_logger, log
 
 logger = logging.getLogger(__name__)
 
@@ -43,54 +44,42 @@ def cmd(game, estimator, mcts_steps, num_training_games, num_comparison_games, d
         compare(game, training_estimator, mcts_steps, num_comparison_games)
         return
 
-    ValuePlotter.init_plotting(disable_plotting=disable_plotting, num_plots=3)
-    epoch_loss_plotter = ValuePlotter(xlabel='game', ylabel='epoch loss', filter_size=32)
-    loss_plotter = ValuePlotter(xlabel='game', ylabel='loss', filter_size=128)
-    score_plotter = ValuePlotter(xlabel='epoch', ylabel='score')
+    value_logger = ValueLogger()
+    value_logger.add_plot(name='loss', xlabel='game', filter_size=128)
+    value_logger.add_plot(name='score', xlabel='epoch')
+    set_logger(value_logger)
 
     epoch = 1
-    best_epoch_score = -1
-    losses = []
-    scores = [(0, best_epoch_score)]
+    best_score = -1
     while num_epochs < 0 or epoch < num_epochs:
         logger.info('Epoch %d' % epoch)
-        epoch_losses = train_epoch(game, training_estimator, mcts_steps, num_training_games, epoch_loss_plotter)
-        losses.extend(epoch_losses)
+        train_epoch(game, training_estimator, mcts_steps, num_training_games)
 
-        loss_plotter.plot(losses)
+        score = compare(game, training_estimator, mcts_steps, num_comparison_games)
 
-        epoch_score = compare(game, training_estimator, mcts_steps, num_comparison_games)
-        scores.append((epoch, epoch_score))
-
-        score_increase = epoch_score - best_epoch_score
+        score_increase = score - best_score
         logger.info('Score increase since last epoch: %.4f%%.' % score_increase)
         if reload_last_epoch is True and score_increase < 0:
             logger.info('Loading last parameters.')
             training_estimator.load(params_filename)
-            scores.append((epoch, best_epoch_score))
         else:
             logger.info('Saving parameters.')
             training_estimator.save(params_filename)
-            best_epoch_score = epoch_score
+            best_score = score
 
-        score_plotter.plot(scores)
         epoch += 1
 
 
-def train_epoch(game, training_estimator, mcts_steps, num_games, loss_plotter):
+def train_epoch(game, training_estimator, mcts_steps, num_games):
     logger.info('Starting training')
 
     trainer_x = create_alpha_trainer(estimator=training_estimator, player=Player.X, mcts_steps=mcts_steps)
     trainer_o = create_alpha_trainer(estimator=training_estimator, player=Player.O, mcts_steps=mcts_steps)
     training_match = TrainingMatch(game=game, agents={Player.X: trainer_x, Player.O: trainer_o})
 
-    losses = []
     for i in range(num_games):
         loss = training_match.train()
-        losses.append(loss)
-        loss_plotter.plot(losses)
-
-    return losses
+        log(loss=loss)
 
 
 def compare(game, training_estimator, mcts_steps, num_games):
@@ -114,56 +103,9 @@ def compare(game, training_estimator, mcts_steps, num_games):
     logger.info('Comparison score: %.4f%% ' % score)
     result_percentages = tuple(100 * np.array([num_wins, num_losses, num_draws]) / num_games)
     logger.info('Comparison percentages: %.2f%% player X wins, %.2f%% player O wins, %.2f%% draws' % result_percentages)
+    log(score=score)
 
     return score
-
-
-class ValuePlotter(object):
-    plots_count = 0
-
-    def __init__(self, xlabel, ylabel, filter_size=0):
-        self.xlabel = xlabel
-        self.ylabel = ylabel
-        self.filter_size = filter_size
-        ValuePlotter.plots_count += 1
-        self.index = self.plots_count
-
-    @classmethod
-    def init_plotting(cls, disable_plotting, num_plots):
-        cls.disable_plotting = disable_plotting
-        if disable_plotting:
-            return
-
-        cls.num_plots = num_plots
-        plt.ion()
-        plt.show()
-
-    def plot(self, values):
-        if self.disable_plotting:
-            return
-
-        if isinstance(values[0], tuple):
-            keys, values = zip(*values)
-        else:
-            keys = range(len(values))
-
-        plt.subplot(self.num_plots, 1, self.index)
-        plt.cla()
-        plt.xlabel(self.xlabel)
-        plt.ylabel(self.ylabel)
-        plt.plot(keys, values)
-        if self.filter_size > 0:
-            plt.plot(keys, self._filter_values(values))
-        plt.pause(0.001)
-
-    def _filter_values(self, values):
-        padded_values = np.concatenate([
-            np.full(self.filter_size // 2, values[0]),
-            np.array(values),
-            np.full(self.filter_size // 2 - 1, values[-1])
-        ])
-        filter_kernel = np.ones((self.filter_size, )) / self.filter_size
-        return np.convolve(padded_values, filter_kernel, mode='valid')
 
 
 if __name__ == '__main__':
