@@ -1,3 +1,5 @@
+import pytest
+
 import matplotlib
 from alpha_viergewinnt.logging import ValueLogger, set_logger, log
 
@@ -15,6 +17,8 @@ def test_set_logger_and_log():
     assert dummy_logger.value == 42
 
 
+@pytest.mark.filterwarnings(
+    'ignore:Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure')
 def test_smoketest_value_plotter():
     # use backend which does not require a display for CI
     matplotlib.use('Agg')

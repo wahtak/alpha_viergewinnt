@@ -82,6 +82,8 @@ def test_get_mean_node_depth(graph):
     assert graph.get_mean_node_depth() == pytest.approx((0 + 1 + 1 + 2 + 3) / 5)
 
 
+@pytest.mark.filterwarnings(
+    'ignore:Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure')
 def test_smoketest_draw(graph):
     # use backend which does not require a display for CI
     matplotlib.use('Agg')
