@@ -1,7 +1,7 @@
 import pytest
 
 import matplotlib
-from alpha_viergewinnt.logging import ValueLogger, set_logger, log
+from alpha_viergewinnt.inspector import ValueLogger, set_logger, log
 
 
 class DummyLogger():
