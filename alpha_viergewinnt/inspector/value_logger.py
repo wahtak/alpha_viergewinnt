@@ -3,10 +3,10 @@ import matplotlib.pyplot as plt
 
 
 class ValueLogger(object):
-    def __init__(self, show=True):
+    def __init__(self, show_plot=True):
         self.plotter = {}
-        if show:
-            ValuePlotter.init_plotting()
+        if show_plot:
+            ValuePlotter.show_plot()
 
     def add_plot(self, name, xlabel, filter_size=None):
         self.plotter[name] = ValuePlotter(xlabel=xlabel, ylabel=name, filter_size=filter_size)
@@ -30,7 +30,7 @@ class ValuePlotter(object):
         self.values = []
 
     @classmethod
-    def init_plotting(cls):
+    def show_plot(cls):
         plt.ion()
         plt.show()
 

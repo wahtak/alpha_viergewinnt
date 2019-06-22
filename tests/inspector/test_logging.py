@@ -24,7 +24,7 @@ def test_smoketest_value_plotter():
     matplotlib.use('Agg')
 
     # hide view for non blocking on CI
-    value_logger = ValueLogger(show=False)
+    value_logger = ValueLogger(show_plot=False)
 
     value_logger.add_plot(name='value1', xlabel='t', filter_size=32)
     value_logger.add_plot(name='value2', xlabel='t', filter_size=64)
