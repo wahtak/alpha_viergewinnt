@@ -11,7 +11,7 @@ from alpha_viergewinnt.game.viergewinnt import Viergewinnt
 from alpha_viergewinnt.agent.alpha.factory import \
     create_generic_estimator, create_mlp_estimator, create_alpha_agent, create_alpha_trainer
 from alpha_viergewinnt.match import CompetitionMatch, TrainingMatch
-from alpha_viergewinnt.logging import ValueLogger, set_logger, log
+from alpha_viergewinnt.inspector import ValueLogger, set_logger, log
 
 logger = logging.getLogger(__name__)
 
@@ -30,10 +30,12 @@ ESTIMATOR_FACTORIES = {'generic': create_generic_estimator, 'mlp': create_mlp_es
 @click.option(
     '--reload-last-epoch', type=bool, default=True, help='Reload parameters from last epoch if score gets worse')
 @click.option('--num-epochs', type=int, default=-1, help='Number of epochs to train, default=unlimited, 0=only compare')
+@click.option('--pretrain', type=bool, default=False, help='Pretrain against generic estimator')
 def cmd(game, estimator, mcts_steps, num_training_games, num_comparison_games, disable_plotting, reload_last_epoch,
-        num_epochs):
+        num_epochs, pretrain):
     create_game = GAME_FACTORIES[game]
     create_estimator = ESTIMATOR_FACTORIES[estimator]
+    create_opponent_estimator = create_generic_estimator if pretrain else create_estimator
 
     game = create_game()
 
@@ -47,7 +49,7 @@ def cmd(game, estimator, mcts_steps, num_training_games, num_comparison_games, d
         return
 
     # start with same parameters as trainer
-    opponent_estimator = create_estimator(game=game)
+    opponent_estimator = create_opponent_estimator(game=game)
     opponent_estimator.load(params_filename)
 
     value_logger = ValueLogger()
@@ -95,7 +97,7 @@ def train_epoch(game, trainer_estimator, opponent_estimator, mcts_steps, num_gam
 
 
 def compare(game, trainer_estimator, mcts_steps, num_games):
-    if num_games == 0:
+    if num_games // 2 == 0:
         return -1
 
     logger.info('Starting comparison')
@@ -121,7 +123,7 @@ def compare(game, trainer_estimator, mcts_steps, num_games):
     score = (num_wins - num_losses) / num_games
     logger.info('Comparison score: %.4f%% ' % score)
     result_percentages = tuple(100 * np.array([num_wins, num_losses, num_draws]) / num_games)
-    logger.info('Comparison percentages: %.2f%% player X wins, %.2f%% player O wins, %.2f%% draws' % result_percentages)
+    logger.info('Comparison percentages: %.2f%% wins, %.2f%% losses, %.2f%% draws' % result_percentages)
     log(score=score)
 
     return score
