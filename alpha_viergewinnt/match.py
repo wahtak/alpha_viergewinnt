@@ -66,8 +66,13 @@ class TrainingMatch(Match):
     def _train(self, game):
         losses = []
         for agent in self.agents.values():
-            loss = agent.train(game)
-            losses.append(loss)
+            # hackity hack
+            try:
+                loss = agent.train(game)
+                losses.append(loss)
+            except AttributeError:
+                pass
+
         mean_loss = np.mean(losses)
         self.logger.info('Training loss %.4f' % mean_loss)
         return mean_loss

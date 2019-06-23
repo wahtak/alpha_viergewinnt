@@ -1,7 +1,7 @@
 #!/bin/env python
-import click
 import logging
 
+import click
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -33,16 +33,22 @@ ESTIMATOR_FACTORIES = {'generic': create_generic_estimator, 'mlp': create_mlp_es
 def cmd(game, estimator, mcts_steps, num_training_games, num_comparison_games, disable_plotting, reload_last_epoch,
         num_epochs):
     create_game = GAME_FACTORIES[game]
-    create_training_estimator = ESTIMATOR_FACTORIES[estimator]
+    create_estimator = ESTIMATOR_FACTORIES[estimator]
 
     game = create_game()
-    training_estimator = create_training_estimator(game=game)
-    params_filename = '{}_{}.params'.format(training_estimator.__class__.__name__, game.__class__.__name__)
-    training_estimator.load(params_filename)
+
+    # load possibly pre-existing parameters
+    trainer_estimator = create_estimator(game=game)
+    params_filename = '{}_{}.params'.format(trainer_estimator.__class__.__name__, game.__class__.__name__)
+    trainer_estimator.load(params_filename)
 
     if num_epochs == 0:
-        compare(game, training_estimator, mcts_steps, num_comparison_games)
+        compare(game, trainer_estimator, mcts_steps, num_comparison_games)
         return
+
+    # start with same parameters as trainer
+    opponent_estimator = create_estimator(game=game)
+    opponent_estimator.load(params_filename)
 
     value_logger = ValueLogger()
     value_logger.add_plot(name='loss', xlabel='game', filter_size=128)
@@ -53,52 +59,65 @@ def cmd(game, estimator, mcts_steps, num_training_games, num_comparison_games, d
     best_score = -1
     while num_epochs < 0 or epoch < num_epochs:
         logger.info('Epoch %d' % epoch)
-        train_epoch(game, training_estimator, mcts_steps, num_training_games)
+        train_epoch(game, trainer_estimator, opponent_estimator, mcts_steps, num_training_games)
 
-        score = compare(game, training_estimator, mcts_steps, num_comparison_games)
+        score = compare(game, trainer_estimator, mcts_steps, num_comparison_games)
 
         score_increase = score - best_score
         logger.info('Score increase since last epoch: %.4f%%.' % score_increase)
         if reload_last_epoch is True and score_increase < 0:
             logger.info('Loading last parameters.')
-            training_estimator.load(params_filename)
+            trainer_estimator.load(params_filename)
         else:
-            logger.info('Saving parameters.')
-            training_estimator.save(params_filename)
+            logger.info('Saving parameters and updating opponent parameters.')
+            trainer_estimator.save(params_filename)
+            opponent_estimator.load(params_filename)
             best_score = score
 
         epoch += 1
 
 
-def train_epoch(game, training_estimator, mcts_steps, num_games):
+def train_epoch(game, trainer_estimator, opponent_estimator, mcts_steps, num_games):
     logger.info('Starting training')
 
-    trainer_x = create_alpha_trainer(estimator=training_estimator, player=Player.X, mcts_steps=mcts_steps)
-    trainer_o = create_alpha_trainer(estimator=training_estimator, player=Player.O, mcts_steps=mcts_steps)
-    training_match = TrainingMatch(game=game, agents={Player.X: trainer_x, Player.O: trainer_o})
+    trainer_x = create_alpha_trainer(estimator=trainer_estimator, player=Player.X, mcts_steps=mcts_steps)
+    trainer_o = create_alpha_trainer(estimator=trainer_estimator, player=Player.O, mcts_steps=mcts_steps)
+    opponent_x = create_alpha_agent(estimator=opponent_estimator, player=Player.X, mcts_steps=mcts_steps)
+    opponent_o = create_alpha_agent(estimator=opponent_estimator, player=Player.O, mcts_steps=mcts_steps)
 
-    for i in range(num_games):
-        loss = training_match.train()
-        log(loss=loss)
+    for i in range(num_games // 2):
+        # train once each for different starting player
+        training_match = TrainingMatch(game=game, agents={Player.X: trainer_x, Player.O: opponent_x})
+        log(loss=training_match.train())
+
+        training_match = TrainingMatch(game=game, agents={Player.O: trainer_o, Player.X: opponent_o})
+        log(loss=training_match.train())
 
 
-def compare(game, training_estimator, mcts_steps, num_games):
+def compare(game, trainer_estimator, mcts_steps, num_games):
     if num_games == 0:
         return -1
 
     logger.info('Starting comparison')
 
-    agent_x = create_alpha_agent(estimator=training_estimator, player=Player.X, mcts_steps=mcts_steps)
-    comparison_estimator = create_generic_estimator(game)
-    agent_o = create_alpha_agent(estimator=comparison_estimator, player=Player.O, mcts_steps=mcts_steps)
+    trainer_x = create_alpha_agent(estimator=trainer_estimator, player=Player.X, mcts_steps=mcts_steps)
+    trainer_o = create_alpha_agent(estimator=trainer_estimator, player=Player.O, mcts_steps=mcts_steps)
+    comparison_x = create_alpha_agent(estimator=create_generic_estimator(game), player=Player.X, mcts_steps=mcts_steps)
+    comparison_o = create_alpha_agent(estimator=create_generic_estimator(game), player=Player.O, mcts_steps=mcts_steps)
 
-    comparison_match = CompetitionMatch(game=game, agents={Player.X: agent_x, Player.O: agent_o})
-
-    results = comparison_match.compare(num_games)
-
+    # compare for different starting player
+    match = CompetitionMatch(game=game, agents={Player.X: trainer_x, Player.O: comparison_o})
+    results = match.compare(num_games // 2)
     num_wins = results[Player.X]
     num_losses = results[Player.O]
     num_draws = results[None]
+
+    match = CompetitionMatch(game=game, agents={Player.O: trainer_o, Player.X: comparison_x})
+    results = match.compare(num_games // 2)
+    num_wins += results[Player.O]
+    num_losses += results[Player.X]
+    num_draws += results[None]
+
     score = (num_wins - num_losses) / num_games
     logger.info('Comparison score: %.4f%% ' % score)
     result_percentages = tuple(100 * np.array([num_wins, num_losses, num_draws]) / num_games)
