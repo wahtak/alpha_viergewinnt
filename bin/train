@@ -14,6 +14,13 @@ from alpha_viergewinnt.match import CompetitionMatch, TrainingMatch
 from alpha_viergewinnt.inspector import ValueLogger, set_logger, log
 
 logger = logging.getLogger(__name__)
+loglevels = [
+    logging.getLevelName(logging.DEBUG),
+    logging.getLevelName(logging.INFO),
+    logging.getLevelName(logging.WARNING),
+    logging.getLevelName(logging.ERROR),
+    logging.getLevelName(logging.CRITICAL)
+]
 
 GAME_FACTORIES = {'tictactoe': Tictactoe, 'viergewinnt': Viergewinnt}
 ESTIMATOR_FACTORIES = {'generic': create_generic_estimator, 'mlp': create_mlp_estimator}
@@ -31,8 +38,11 @@ ESTIMATOR_FACTORIES = {'generic': create_generic_estimator, 'mlp': create_mlp_es
     '--reload-last-epoch', type=bool, default=True, help='Reload parameters from last epoch if score gets worse')
 @click.option('--num-epochs', type=int, default=-1, help='Number of epochs to train, default=unlimited, 0=only compare')
 @click.option('--pretrain', type=bool, default=False, help='Pretrain against generic estimator')
+@click.option('--loglevel', type=click.Choice(loglevels), default=logging.getLevelName(logging.INFO), help='Log level')
 def cmd(game, estimator, mcts_steps, num_training_games, num_comparison_games, disable_plotting, reload_last_epoch,
-        num_epochs, pretrain):
+        num_epochs, pretrain, loglevel):
+    logging.basicConfig(level=loglevel)
+
     create_game = GAME_FACTORIES[game]
     create_estimator = ESTIMATOR_FACTORIES[estimator]
     create_opponent_estimator = create_generic_estimator if pretrain else create_estimator
@@ -130,5 +140,4 @@ def compare(game, trainer_estimator, mcts_steps, num_games):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
     cmd()
