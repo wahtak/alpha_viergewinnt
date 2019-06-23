@@ -33,14 +33,14 @@ ESTIMATOR_FACTORIES = {'generic': create_generic_estimator, 'mlp': create_mlp_es
 @click.option('--mcts-steps', required=True, type=int, help='Number of MCTS steps per move')
 @click.option('--num-training-games', type=int, default=0, help='Number of training games per epoch')
 @click.option('--num-comparison-games', type=int, default=0, help='Number of comparison games per epoch')
-@click.option('--disable-plotting', type=bool, default=False, help='Disable plotting loss and score')
+@click.option('--plotting', type=bool, default=True, help='Enable plotting of loss and score')
 @click.option(
     '--reload-last-epoch', type=bool, default=True, help='Reload parameters from last epoch if score gets worse')
 @click.option('--num-epochs', type=int, default=-1, help='Number of epochs to train, default=unlimited, 0=only compare')
 @click.option('--pretrain', type=bool, default=False, help='Pretrain against generic estimator')
 @click.option('--loglevel', type=click.Choice(loglevels), default=logging.getLevelName(logging.INFO), help='Log level')
-def cmd(game, estimator, mcts_steps, num_training_games, num_comparison_games, disable_plotting, reload_last_epoch,
-        num_epochs, pretrain, loglevel):
+def cmd(game, estimator, mcts_steps, num_training_games, num_comparison_games, plotting, reload_last_epoch, num_epochs,
+        pretrain, loglevel):
     logging.basicConfig(level=loglevel)
 
     create_game = GAME_FACTORIES[game]
@@ -62,10 +62,11 @@ def cmd(game, estimator, mcts_steps, num_training_games, num_comparison_games, d
     opponent_estimator = create_opponent_estimator(game=game)
     opponent_estimator.load(params_filename)
 
-    value_logger = ValueLogger()
-    value_logger.add_plot(name='loss', xlabel='game', filter_size=128)
-    value_logger.add_plot(name='score', xlabel='epoch')
-    set_logger(value_logger)
+    if plotting:
+        value_logger = ValueLogger()
+        value_logger.add_plot(name='loss', xlabel='game', filter_size=128)
+        value_logger.add_plot(name='score', xlabel='epoch')
+        set_logger(value_logger)
 
     epoch = 1
     best_score = -1
