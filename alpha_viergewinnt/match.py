@@ -6,7 +6,7 @@ import numpy as np
 
 class Match(object):
     def __init__(self, game, agents):
-        self.logger = logging.getLogger(self.__class__.__module__ + '.' + self.__class__.__name__)
+        self.logger = logging.getLogger(self.__class__.__module__ + "." + self.__class__.__name__)
         self.game = game
         self.agents = agents
 
@@ -23,7 +23,7 @@ class Match(object):
         current_player = game.active_player
         next_move = self.agents[current_player].get_next_move(game)
         game.play_move(player=current_player, move=next_move)
-        self.logger.debug('Player %s plays %s' % (current_player.name, next_move))
+        self.logger.debug("Player %s plays %s" % (current_player.name, next_move))
         return next_move
 
 
@@ -48,10 +48,10 @@ class CompetitionMatch(Match):
         self.logger.debug(game)
         for player in self.agents:
             if game.is_winner(player):
-                self.logger.debug('Player %s wins!' % player.name)
+                self.logger.debug("Player %s wins!" % player.name)
                 return player
 
-        self.logger.debug('Draw!')
+        self.logger.debug("Draw!")
         return None
 
 
@@ -74,5 +74,5 @@ class TrainingMatch(Match):
                 pass
 
         mean_loss = np.mean(losses)
-        self.logger.info('Training loss %.4f' % mean_loss)
+        self.logger.info("Training loss %.4f" % mean_loss)
         return mean_loss

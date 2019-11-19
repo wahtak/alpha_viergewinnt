@@ -9,7 +9,7 @@ from alpha_viergewinnt.agent.alpha.factory import create_mlp_estimator, create_a
 from alpha_viergewinnt.match import CompetitionMatch
 
 GAME_FACTORIES = [Tictactoe, Viergewinnt]
-GAME_FACTORIES_IDS = ['tictactoe', 'viergewinnt']
+GAME_FACTORIES_IDS = ["tictactoe", "viergewinnt"]
 
 
 @pytest.fixture(params=GAME_FACTORIES, ids=GAME_FACTORIES_IDS)

@@ -12,7 +12,7 @@ class Attributes(object):
         self.weight = weight
 
     def __str__(self):
-        return 'visit_count=%d\nweight=%.02f' % (self.visit_count, self.weight)
+        return "visit_count=%d\nweight=%.02f" % (self.visit_count, self.weight)
 
 
 class Tree(nx.DiGraph):
@@ -24,10 +24,10 @@ class Tree(nx.DiGraph):
         self.attributes[root] = Attributes(visit_count=0, weight=0)
 
     def get_transitions(self, source):
-        return {self.get_edge_data(*edge)['transition'] for edge in self.edges(source)}
+        return {self.get_edge_data(*edge)["transition"] for edge in self.edges(source)}
 
     def get_successor(self, source, transition):
-        successor, = [edge[1] for edge in self.edges(source) if self.get_edge_data(*edge)['transition'] == transition]
+        (successor,) = [edge[1] for edge in self.edges(source) if self.get_edge_data(*edge)["transition"] == transition]
         return successor
 
     def add_successor(self, source, transition, successor):
@@ -47,11 +47,11 @@ class Tree(nx.DiGraph):
         return transition_successor_pairs[max_weight_index][0]
 
     def _get_transition_successor_pairs(self, source):
-        return [(self.get_edge_data(*edge)['transition'], edge[1]) for edge in self.edges(source)]
+        return [(self.get_edge_data(*edge)["transition"], edge[1]) for edge in self.edges(source)]
 
     def draw(self):
-        node_labels = {node: str(self.attributes[node]) + '\n\n' + str(node) for node in self.nodes()}
-        edge_labels = {edge: self.get_edge_data(*edge)['transition'] for edge in self.edges()}
-        pos = nx.nx_pydot.graphviz_layout(self, prog='dot')
-        nx.draw_networkx(self, pos=pos, labels=node_labels, arrows=False, font_family='monospace', font_size=8)
-        nx.draw_networkx_edge_labels(self, pos=pos, edge_labels=edge_labels, font_family='monospace', font_size=8)
+        node_labels = {node: str(self.attributes[node]) + "\n\n" + str(node) for node in self.nodes()}
+        edge_labels = {edge: self.get_edge_data(*edge)["transition"] for edge in self.edges()}
+        pos = nx.nx_pydot.graphviz_layout(self, prog="dot")
+        nx.draw_networkx(self, pos=pos, labels=node_labels, arrows=False, font_family="monospace", font_size=8)
+        nx.draw_networkx_edge_labels(self, pos=pos, edge_labels=edge_labels, font_family="monospace", font_size=8)

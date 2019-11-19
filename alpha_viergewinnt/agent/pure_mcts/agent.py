@@ -15,8 +15,9 @@ def create_random_choice_strategy(random_seed):
 
 
 class PureMctsAgent(object):
-    def __init__(self, player, selection_strategy, expansion_strategy, simulation_strategy, mcts_steps, mcts_rollouts,
-                 **kwargs):
+    def __init__(
+        self, player, selection_strategy, expansion_strategy, simulation_strategy, mcts_steps, mcts_rollouts, **kwargs
+    ):
 
         self.player = player
         self.selection_strategy = selection_strategy
@@ -32,7 +33,8 @@ class PureMctsAgent(object):
         initial_state = state
         tree = Tree(initial_state)
         tree_search = TreeSearch(
-            tree, selection_strategy=self.selection_strategy, expansion_strategy=self.expansion_strategy)
+            tree, selection_strategy=self.selection_strategy, expansion_strategy=self.expansion_strategy
+        )
 
         self._explore_tree_and_update_weights(tree_search, initial_state)
         self._last_tree = tree

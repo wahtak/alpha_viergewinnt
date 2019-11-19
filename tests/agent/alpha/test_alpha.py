@@ -13,10 +13,11 @@ def max_first_evaluator():
 
 
 @pytest.mark.filterwarnings(
-    'ignore:Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure')
+    "ignore:Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure"
+)
 def test_get_next_move(max_first_evaluator):
     # use backend which does not require a display for CI
-    matplotlib.use('Agg')
+    matplotlib.use("Agg")
 
     agent = AlphaAgent(max_first_evaluator, mcts_steps=10, exploration_factor=0.1, random_seed=0, draw_graph=True)
     root = DummyState()

@@ -43,8 +43,12 @@ class Mcts(object):
         attributes = self.graph.get_attributes(state)
         # no better idea for this factor
         confidence_factor = 1.0
-        upper_confidence_bound = confidence_factor * attributes.prior_distribution * np.sqrt(
-            np.sum(attributes.visit_count)) / (1 + attributes.visit_count)
+        upper_confidence_bound = (
+            confidence_factor
+            * attributes.prior_distribution
+            * np.sqrt(np.sum(attributes.visit_count))
+            / (1 + attributes.visit_count)
+        )
         return attributes.action_value + upper_confidence_bound
 
     def _mask_invalid_actions(self, values, state, fill_value):

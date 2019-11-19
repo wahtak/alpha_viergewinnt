@@ -9,7 +9,7 @@ from .mcts import Mcts
 
 class Alpha(object):
     def __init__(self, evaluator, mcts_steps, exploration_factor, random_seed, draw_graph):
-        self.logger = logging.getLogger(self.__class__.__module__ + '.' + self.__class__.__name__)
+        self.logger = logging.getLogger(self.__class__.__module__ + "." + self.__class__.__name__)
         self.evaluator = evaluator
         self.mcts_steps = mcts_steps
         self.exploration_factor = exploration_factor
@@ -30,8 +30,8 @@ class Alpha(object):
 
         search_distribution = mcts.get_search_distribution(state, self.exploration_factor)
 
-        self.logger.debug('mean node depth: %.2f' % self.graph.get_mean_node_depth())
-        self.logger.debug('search distribution: %s' % search_distribution)
+        self.logger.debug("mean node depth: %.2f" % self.graph.get_mean_node_depth())
+        self.logger.debug("search distribution: %s" % search_distribution)
         if self.draw_graph:
             self.graph.draw()
 

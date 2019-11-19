@@ -3,7 +3,7 @@ from scipy.signal import convolve2d
 
 
 class ConditionChecker(object):
-    '''Functionality for checking board conditions.'''
+    """Functionality for checking board conditions."""
 
     def __init__(self, win_conditions, draw_condition):
         self.win_conditions = win_conditions
@@ -17,7 +17,7 @@ class ConditionChecker(object):
 
 
 class NStonessInRowCondition(object):
-    '''Condition checker for n stones in a row'''
+    """Condition checker for n stones in a row"""
 
     def __init__(self, num_stones_in_row, player):
         self.player = player
@@ -31,7 +31,7 @@ class NStonessInRowCondition(object):
     def check(self, board):
         player_state = board.get_array_view(player=self.player, player_value=1)
         for layout in self.winning_layouts:
-            convolution = convolve2d(player_state, layout, mode='valid')
+            convolution = convolve2d(player_state, layout, mode="valid")
             if (convolution == self.num_stones_in_row).any():
                 return True
         return False

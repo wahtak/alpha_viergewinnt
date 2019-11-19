@@ -21,7 +21,7 @@ def test_successor_and_ancestors():
 def test_draw():
     tree = Tree(0)
     # use backend which does not require a display for CI
-    matplotlib.use('Agg')
+    matplotlib.use("Agg")
     tree.add_successor(source=0, transition=1, successor=1)
     tree.draw()
 
@@ -59,6 +59,8 @@ def test_hash_equality_is_identity():
     assert len(tree.attributes) == 4
 
     assert tree.get_path_to_root(source=HashableState(3)) == {
-        HashableState(0), HashableState(1), HashableState(2),
-        HashableState(3)
+        HashableState(0),
+        HashableState(1),
+        HashableState(2),
+        HashableState(3),
     }

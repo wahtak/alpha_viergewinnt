@@ -8,8 +8,12 @@ import matplotlib.pyplot as plt
 from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game.tictactoe import Tictactoe
 from alpha_viergewinnt.game.viergewinnt import Viergewinnt
-from alpha_viergewinnt.agent.alpha.factory import \
-    create_generic_estimator, create_mlp_estimator, create_alpha_agent, create_alpha_trainer
+from alpha_viergewinnt.agent.alpha.factory import (
+    create_generic_estimator,
+    create_mlp_estimator,
+    create_alpha_agent,
+    create_alpha_trainer,
+)
 from alpha_viergewinnt.match import CompetitionMatch, TrainingMatch
 from alpha_viergewinnt.inspector import ValueLogger, set_logger, log
 
@@ -19,28 +23,40 @@ loglevels = [
     logging.getLevelName(logging.INFO),
     logging.getLevelName(logging.WARNING),
     logging.getLevelName(logging.ERROR),
-    logging.getLevelName(logging.CRITICAL)
+    logging.getLevelName(logging.CRITICAL),
 ]
 
-GAME_FACTORIES = {'tictactoe': Tictactoe, 'viergewinnt': Viergewinnt}
-ESTIMATOR_FACTORIES = {'generic': create_generic_estimator, 'mlp': create_mlp_estimator}
+GAME_FACTORIES = {"tictactoe": Tictactoe, "viergewinnt": Viergewinnt}
+ESTIMATOR_FACTORIES = {"generic": create_generic_estimator, "mlp": create_mlp_estimator}
 
 
 @click.command()
-@click.option('--game', required=True, type=click.Choice(GAME_FACTORIES.keys()), help='Game to be trained')
+@click.option("--game", required=True, type=click.Choice(GAME_FACTORIES.keys()), help="Game to be trained")
 @click.option(
-    '--estimator', required=True, type=click.Choice(ESTIMATOR_FACTORIES.keys()), help='Estimator to be trained')
-@click.option('--mcts-steps', required=True, type=int, help='Number of MCTS steps per move')
-@click.option('--num-training-games', type=int, default=0, help='Number of training games per epoch')
-@click.option('--num-comparison-games', type=int, default=0, help='Number of comparison games per epoch')
-@click.option('--plotting', type=bool, default=True, help='Enable plotting of loss and score')
+    "--estimator", required=True, type=click.Choice(ESTIMATOR_FACTORIES.keys()), help="Estimator to be trained"
+)
+@click.option("--mcts-steps", required=True, type=int, help="Number of MCTS steps per move")
+@click.option("--num-training-games", type=int, default=0, help="Number of training games per epoch")
+@click.option("--num-comparison-games", type=int, default=0, help="Number of comparison games per epoch")
+@click.option("--plotting", type=bool, default=True, help="Enable plotting of loss and score")
 @click.option(
-    '--reload-last-epoch', type=bool, default=True, help='Reload parameters from last epoch if score gets worse')
-@click.option('--num-epochs', type=int, default=-1, help='Number of epochs to train, default=unlimited, 0=only compare')
-@click.option('--pretrain', type=bool, default=False, help='Pretrain against generic estimator')
-@click.option('--loglevel', type=click.Choice(loglevels), default=logging.getLevelName(logging.INFO), help='Log level')
-def cmd(game, estimator, mcts_steps, num_training_games, num_comparison_games, plotting, reload_last_epoch, num_epochs,
-        pretrain, loglevel):
+    "--reload-last-epoch", type=bool, default=True, help="Reload parameters from last epoch if score gets worse"
+)
+@click.option("--num-epochs", type=int, default=-1, help="Number of epochs to train, default=unlimited, 0=only compare")
+@click.option("--pretrain", type=bool, default=False, help="Pretrain against generic estimator")
+@click.option("--loglevel", type=click.Choice(loglevels), default=logging.getLevelName(logging.INFO), help="Log level")
+def cmd(
+    game,
+    estimator,
+    mcts_steps,
+    num_training_games,
+    num_comparison_games,
+    plotting,
+    reload_last_epoch,
+    num_epochs,
+    pretrain,
+    loglevel,
+):
     logging.basicConfig(level=loglevel)
 
     create_game = GAME_FACTORIES[game]
@@ -51,7 +67,7 @@ def cmd(game, estimator, mcts_steps, num_training_games, num_comparison_games, p
 
     # load possibly pre-existing parameters
     trainer_estimator = create_estimator(game=game)
-    params_filename = '{}_{}.params'.format(trainer_estimator.__class__.__name__, game.__class__.__name__)
+    params_filename = "{}_{}.params".format(trainer_estimator.__class__.__name__, game.__class__.__name__)
     trainer_estimator.load(params_filename)
 
     if num_epochs == 0:
@@ -64,25 +80,25 @@ def cmd(game, estimator, mcts_steps, num_training_games, num_comparison_games, p
 
     if plotting:
         value_logger = ValueLogger()
-        value_logger.add_plot(name='loss', xlabel='game', filter_size=128)
-        value_logger.add_plot(name='score', xlabel='epoch')
+        value_logger.add_plot(name="loss", xlabel="game", filter_size=128)
+        value_logger.add_plot(name="score", xlabel="epoch")
         set_logger(value_logger)
 
     epoch = 1
     best_score = -1
     while num_epochs < 0 or epoch < num_epochs:
-        logger.info('Epoch %d' % epoch)
+        logger.info("Epoch %d" % epoch)
         train_epoch(game, trainer_estimator, opponent_estimator, mcts_steps, num_training_games)
 
         score = compare(game, trainer_estimator, mcts_steps, num_comparison_games)
 
         score_increase = score - best_score
-        logger.info('Score increase since last epoch: %.4f%%.' % score_increase)
+        logger.info("Score increase since last epoch: %.4f%%." % score_increase)
         if reload_last_epoch is True and score_increase < 0:
-            logger.info('Loading last parameters.')
+            logger.info("Loading last parameters.")
             trainer_estimator.load(params_filename)
         else:
-            logger.info('Saving parameters and updating opponent parameters.')
+            logger.info("Saving parameters and updating opponent parameters.")
             trainer_estimator.save(params_filename)
             opponent_estimator.load(params_filename)
             best_score = score
@@ -91,7 +107,7 @@ def cmd(game, estimator, mcts_steps, num_training_games, num_comparison_games, p
 
 
 def train_epoch(game, trainer_estimator, opponent_estimator, mcts_steps, num_games):
-    logger.info('Starting training')
+    logger.info("Starting training")
 
     trainer_x = create_alpha_trainer(estimator=trainer_estimator, player=Player.X, mcts_steps=mcts_steps)
     trainer_o = create_alpha_trainer(estimator=trainer_estimator, player=Player.O, mcts_steps=mcts_steps)
@@ -111,7 +127,7 @@ def compare(game, trainer_estimator, mcts_steps, num_games):
     if num_games // 2 == 0:
         return -1
 
-    logger.info('Starting comparison')
+    logger.info("Starting comparison")
 
     trainer_x = create_alpha_agent(estimator=trainer_estimator, player=Player.X, mcts_steps=mcts_steps)
     trainer_o = create_alpha_agent(estimator=trainer_estimator, player=Player.O, mcts_steps=mcts_steps)
@@ -132,13 +148,13 @@ def compare(game, trainer_estimator, mcts_steps, num_games):
     num_draws += results[None]
 
     score = (num_wins - num_losses) / num_games
-    logger.info('Comparison score: %.4f%% ' % score)
+    logger.info("Comparison score: %.4f%% " % score)
     result_percentages = tuple(100 * np.array([num_wins, num_losses, num_draws]) / num_games)
-    logger.info('Comparison percentages: %.2f%% wins, %.2f%% losses, %.2f%% draws' % result_percentages)
+    logger.info("Comparison percentages: %.2f%% wins, %.2f%% losses, %.2f%% draws" % result_percentages)
     log(score=score)
 
     return score
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cmd()

@@ -15,17 +15,17 @@ class FieldOccupiedException(Exception):
 
 
 class FreeplayBoard(object):
-    '''Functionality for placing stones.'''
+    """Functionality for placing stones."""
 
     def play_move(self, player, move):
         state_index = (move // self.state.shape[1], move % self.state.shape[1])
         try:
             field = self.state[state_index]
         except IndexError:
-            raise IllegalMoveException('field %s does not exist.' % (move, ))
+            raise IllegalMoveException("field %s does not exist." % (move,))
 
         if field != 0:
-            raise FieldOccupiedException('field %s is occupied' % (move, ))
+            raise FieldOccupiedException("field %s is occupied" % (move,))
 
         self.state[state_index] = player.value
 
@@ -37,10 +37,10 @@ class FreeplayBoard(object):
 
 
 class Tictactoe(Board, FreeplayBoard, AlternatingPlayer, ConditionChecker, MoveRecorder):
-    '''
+    """
     Combination of board, condition checker, alternating player and move recorder
     with parameters of the game Tictactoe.
-    '''
+    """
 
     def __init__(self):
         self.board_size = (3, 3)
@@ -51,9 +51,10 @@ class Tictactoe(Board, FreeplayBoard, AlternatingPlayer, ConditionChecker, MoveR
             self,
             win_conditions={
                 Player.X: NStonessInRowCondition(num_stones_in_row=3, player=Player.X),
-                Player.O: NStonessInRowCondition(num_stones_in_row=3, player=Player.O)
+                Player.O: NStonessInRowCondition(num_stones_in_row=3, player=Player.O),
             },
-            draw_condition=NoMovesPossibleCondition())
+            draw_condition=NoMovesPossibleCondition(),
+        )
 
     def __hash__(self):
         return Board.__hash__(self) ^ MoveRecorder.__hash__(self)

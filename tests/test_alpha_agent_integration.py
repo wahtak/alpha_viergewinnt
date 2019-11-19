@@ -2,8 +2,7 @@ import pytest
 
 from alpha_viergewinnt.game.board import Player
 from alpha_viergewinnt.game.tictactoe import Tictactoe
-from alpha_viergewinnt.agent.alpha.factory import \
-    create_generic_estimator, create_alpha_agent, create_alpha_trainer
+from alpha_viergewinnt.agent.alpha.factory import create_generic_estimator, create_alpha_agent, create_alpha_trainer
 
 
 @pytest.fixture

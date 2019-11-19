@@ -16,18 +16,18 @@ class RowOrder(enum.Enum):
     REVERSED = 2
 
 
-CORNER = ' '
-LINE_TERMINATE = '\n'
-SEPERATOR = ''
-CHARACTER_MAPPING = {0: '.', Player.X.value: Player.X.name, Player.O.value: Player.O.name}
+CORNER = " "
+LINE_TERMINATE = "\n"
+SEPERATOR = ""
+CHARACTER_MAPPING = {0: ".", Player.X.value: Player.X.name, Player.O.value: Player.O.name}
 
 
 class Board(object):
-    '''
+    """
     Generic playing board with string representation and hash (of current state).
 
     Use numpy arrays for speed during state transitions and condition checking.
-    '''
+    """
 
     def __init__(self, size, output_row_order):
         self.state = np.zeros(size, dtype=np.int16)

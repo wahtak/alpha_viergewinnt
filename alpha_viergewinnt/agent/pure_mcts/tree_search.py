@@ -1,8 +1,8 @@
-'''Functions for running MCTS on a GameTree.
+"""Functions for running MCTS on a GameTree.
 
 Chaslot, Guillaume & Winands, Mark & Herik, H & Uiterwijk, Jos & Bouzy, Bruno. (2008).
 Progressive Strategies for Monte-Carlo Tree Search. New Mathematics and Natural Computation.
-04. 343-357. 10.1142/S1793005708001094.'''
+04. 343-357. 10.1142/S1793005708001094."""
 
 from copy import deepcopy
 

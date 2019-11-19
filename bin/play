@@ -15,7 +15,7 @@ from alpha_viergewinnt.match import CompetitionMatch
 
 def create_competition_alpha_agent(game, player, mcts_steps, *args, **kwargs):
     estimator = create_mlp_estimator(game)
-    filename = '{}_{}.params'.format(estimator.__class__.__name__, game.__class__.__name__)
+    filename = "{}_{}.params".format(estimator.__class__.__name__, game.__class__.__name__)
     estimator.load(filename)
     return create_alpha_agent(estimator, player, mcts_steps)
 
@@ -24,21 +24,21 @@ def create_competition_pure_mcts_agent(game, player, mcts_steps, mcts_rollouts, 
     return create_pure_mcts_agent(player, mcts_steps, mcts_rollouts)
 
 
-GAME_FACTORIES = {'tictactoe': Tictactoe, 'viergewinnt': Viergewinnt}
+GAME_FACTORIES = {"tictactoe": Tictactoe, "viergewinnt": Viergewinnt}
 AGENT_FACTORIES = {
-    'random': RandomAgent,
-    'human': HumanAgent,
-    'pure_mcts': create_competition_pure_mcts_agent,
-    'alpha': create_competition_alpha_agent
+    "random": RandomAgent,
+    "human": HumanAgent,
+    "pure_mcts": create_competition_pure_mcts_agent,
+    "alpha": create_competition_alpha_agent,
 }
 
 
 @click.command()
-@click.option('--game', required=True, type=click.Choice(GAME_FACTORIES.keys()), help='Game to be played')
-@click.option('-x', required=True, type=click.Choice(AGENT_FACTORIES.keys()), help='Strategy for player X')
-@click.option('-o', required=True, type=click.Choice(AGENT_FACTORIES.keys()), help='Strategy for player O')
-@click.option('--mcts-steps', type=int, default=100, help='Number of MCTS steps per move (alpha & pure mcts)')
-@click.option('--mcts-rollouts', type=int, default=30, help='Number of MCTS rollouts per iteration (pure mcts)')
+@click.option("--game", required=True, type=click.Choice(GAME_FACTORIES.keys()), help="Game to be played")
+@click.option("-x", required=True, type=click.Choice(AGENT_FACTORIES.keys()), help="Strategy for player X")
+@click.option("-o", required=True, type=click.Choice(AGENT_FACTORIES.keys()), help="Strategy for player O")
+@click.option("--mcts-steps", type=int, default=100, help="Number of MCTS steps per move (alpha & pure mcts)")
+@click.option("--mcts-rollouts", type=int, default=30, help="Number of MCTS rollouts per iteration (pure mcts)")
 def cmd(game, x, o, mcts_steps, mcts_rollouts):
     create_game = GAME_FACTORIES[game]
     create_agent_x = AGENT_FACTORIES[x]
@@ -52,7 +52,7 @@ def cmd(game, x, o, mcts_steps, mcts_rollouts):
     match.play()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format=None)
-    board.SEPERATOR = ' '
+    board.SEPERATOR = " "
     cmd()

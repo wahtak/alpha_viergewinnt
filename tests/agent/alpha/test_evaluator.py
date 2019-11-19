@@ -30,7 +30,7 @@ class DummyState(object):
 
 
 class DummyEstimator(object):
-    KnowledgeEntry = namedtuple('KnowledgeEntry', ['state_array', 'target_distribution', 'target_state_value'])
+    KnowledgeEntry = namedtuple("KnowledgeEntry", ["state_array", "target_distribution", "target_state_value"])
 
     def __init__(self, actions):
         self.actions = actions

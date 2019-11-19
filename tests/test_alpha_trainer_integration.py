@@ -15,7 +15,7 @@ def game():
 
 
 class DummyEstimator(object):
-    KnowledgeEntry = namedtuple('KnowledgeEntry', ['state_array', 'target_distribution', 'target_state_value'])
+    KnowledgeEntry = namedtuple("KnowledgeEntry", ["state_array", "target_distribution", "target_state_value"])
 
     def __init__(self):
         self.knowledge = []
@@ -32,7 +32,7 @@ def test_correct_training_inputs(game):
     estimator_o = DummyEstimator()
     trainers = {
         Player.X: create_alpha_trainer(estimator=estimator_x, player=Player.X, mcts_steps=None),
-        Player.O: create_alpha_trainer(estimator=estimator_o, player=Player.O, mcts_steps=None)
+        Player.O: create_alpha_trainer(estimator=estimator_o, player=Player.O, mcts_steps=None),
     }
 
     def record_and_play(player, move):

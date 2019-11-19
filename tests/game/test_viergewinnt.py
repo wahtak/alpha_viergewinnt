@@ -116,6 +116,7 @@ def test_move_history_inequality(game):
     game2.play_move(player=Player.O, move=1)
 
     from alpha_viergewinnt.game.move_recorder import MoveRecorder
+
     print(MoveRecorder.__hash__(game1))
     print(MoveRecorder.__hash__(game2))
     assert game1 != game2

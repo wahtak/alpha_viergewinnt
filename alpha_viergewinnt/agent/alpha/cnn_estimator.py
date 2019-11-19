@@ -8,15 +8,17 @@ from torch.optim import Adam
 
 
 class CnnEstimator(Module):
-    def __init__(self,
-                 board_size,
-                 actions,
-                 hidden_layer_scale=10,
-                 num_common_hidden_layers=3,
-                 num_action_hidden_layers=2,
-                 num_value_hidden_layers=2):
+    def __init__(
+        self,
+        board_size,
+        actions,
+        hidden_layer_scale=10,
+        num_common_hidden_layers=3,
+        num_action_hidden_layers=2,
+        num_value_hidden_layers=2,
+    ):
         super().__init__()
-        self.logger = logging.getLogger(self.__class__.__module__ + '.' + self.__class__.__name__)
+        self.logger = logging.getLogger(self.__class__.__module__ + "." + self.__class__.__name__)
 
         self.actions = actions
         self.board_size = board_size
@@ -26,8 +28,9 @@ class CnnEstimator(Module):
 
         conv_kernel_size = 4
         conv_num_channels = 64
-        self.conv_output_size = conv_num_channels * (board_width - conv_kernel_size + 1) * (
-            board_height - conv_kernel_size + 1)
+        self.conv_output_size = (
+            conv_num_channels * (board_width - conv_kernel_size + 1) * (board_height - conv_kernel_size + 1)
+        )
         self.hidden_size = self.input_size * 10
 
         self.action_size = len(actions)
@@ -96,12 +99,12 @@ class CnnEstimator(Module):
     def save(self, filename):
         state_dict = self.state_dict()
         torch.save(state_dict, filename)
-        self.logger.info('Saved parameters to %s' % filename)
+        self.logger.info("Saved parameters to %s" % filename)
 
     def load(self, filename):
         try:
             state_dict = torch.load(filename)
             self.load_state_dict(state_dict)
-            self.logger.info('Loaded parameters from %s' % filename)
+            self.logger.info("Loaded parameters from %s" % filename)
         except FileNotFoundError:
-            self.logger.warning('Could not load parameters from %s' % filename)
+            self.logger.warning("Could not load parameters from %s" % filename)

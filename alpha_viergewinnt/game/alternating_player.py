@@ -6,7 +6,7 @@ class NotPlayersTurnException(Exception):
 
 
 class AlternatingPlayer(object):
-    '''Functionality for checking alternating player turns'''
+    """Functionality for checking alternating player turns"""
 
     def __init__(self, starting_player):
         self.active_player = starting_player
@@ -14,7 +14,7 @@ class AlternatingPlayer(object):
 
     def register_player_turn(self, player):
         if player != self.active_player:
-            raise NotPlayersTurnException('not player %s\'s turn' % player)
+            raise NotPlayersTurnException("not player %s's turn" % player)
         self.idle_player = self.active_player
         self.active_player = Player.opponent(self.active_player)
 
@@ -27,7 +27,7 @@ class MoveRecorder(object):
         self.recorded_moves = tuple()
 
     def record_move(self, move):
-        self.recorded_moves += (move, )
+        self.recorded_moves += (move,)
 
     def __hash__(self):
         return hash(self.recorded_moves)

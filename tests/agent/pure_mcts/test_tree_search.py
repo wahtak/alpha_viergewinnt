@@ -93,9 +93,9 @@ def test_calculate_rollout_value(simulator):
 
 @pytest.fixture
 def filled_simple_state_tree_search(dummy_strategy):
-    tree = Tree((0, ))
-    tree.add_successor(source=(0, ), transition=0, successor=(0, 0))
-    tree.add_successor(source=(0, ), transition=1, successor=(0, 1))
+    tree = Tree((0,))
+    tree.add_successor(source=(0,), transition=0, successor=(0, 0))
+    tree.add_successor(source=(0,), transition=1, successor=(0, 1))
     tree.add_successor(source=(0, 1), transition=0, successor=(0, 1, 0))
     tree.add_successor(source=(0, 1, 0), transition=0, successor=(0, 1, 0, 0))
     tree_search = TreeSearch(tree, selection_strategy=dummy_strategy, expansion_strategy=dummy_strategy)

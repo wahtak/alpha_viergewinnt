@@ -46,7 +46,8 @@ class Evaluator(object):
             player=self.player,
             player_value=self.STATE_ARRAY_PLAYER,
             opponent=self.player.opponent(),
-            opponent_value=self.STATE_ARRAY_OPPONENT)
+            opponent_value=self.STATE_ARRAY_OPPONENT,
+        )
 
     def train(self, states_and_search_distributions, final_state):
         target_state_value = self._get_final_state_value(final_state)

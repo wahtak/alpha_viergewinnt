@@ -83,10 +83,11 @@ def test_get_mean_node_depth(graph):
 
 
 @pytest.mark.filterwarnings(
-    'ignore:Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure')
+    "ignore:Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure"
+)
 def test_smoketest_draw(graph):
     # use backend which does not require a display for CI
-    matplotlib.use('Agg')
+    matplotlib.use("Agg")
     graph.add_successor(1, source=0, action=10)
     graph.draw()
 

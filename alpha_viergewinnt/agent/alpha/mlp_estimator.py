@@ -8,15 +8,17 @@ from torch.optim import Adam
 
 
 class MlpEstimator(Module):
-    def __init__(self,
-                 board_size,
-                 actions,
-                 hidden_layer_scale=10,
-                 num_common_hidden_layers=3,
-                 num_action_hidden_layers=2,
-                 num_value_hidden_layers=2):
+    def __init__(
+        self,
+        board_size,
+        actions,
+        hidden_layer_scale=10,
+        num_common_hidden_layers=3,
+        num_action_hidden_layers=2,
+        num_value_hidden_layers=2,
+    ):
         super().__init__()
-        self.logger = logging.getLogger(self.__class__.__module__ + '.' + self.__class__.__name__)
+        self.logger = logging.getLogger(self.__class__.__module__ + "." + self.__class__.__name__)
 
         self.actions = actions
         board_width, board_height = board_size
@@ -89,12 +91,12 @@ class MlpEstimator(Module):
     def save(self, filename):
         state_dict = self.state_dict()
         torch.save(state_dict, filename)
-        self.logger.info('Saved parameters to %s' % filename)
+        self.logger.info("Saved parameters to %s" % filename)
 
     def load(self, filename):
         try:
             state_dict = torch.load(filename)
             self.load_state_dict(state_dict)
-            self.logger.info('Loaded parameters from %s' % filename)
+            self.logger.info("Loaded parameters from %s" % filename)
         except FileNotFoundError:
-            self.logger.warning('Could not load parameters from %s' % filename)
+            self.logger.warning("Could not load parameters from %s" % filename)
