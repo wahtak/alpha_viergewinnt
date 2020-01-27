@@ -41,12 +41,17 @@ class Mcts(object):
 
     def _get_potential_value(self, state):
         attributes = self.graph.get_attributes(state)
+
+        noise = np.random.dirichlet(alpha=[0.5] * attributes.prior_distribution.size)
+        noise_weight = 0.25
+        noisy_prior_distribution = (1 - noise_weight) * attributes.prior_distribution + noise_weight * noise
+
         # no better idea for this factor
-        confidence_factor = 1.0
+        confidence_factor = 4.0
         upper_confidence_bound = (
             confidence_factor
-            * attributes.prior_distribution
-            * np.sqrt(np.sum(attributes.visit_count))
+            * noisy_prior_distribution
+            * np.sqrt(np.sum(attributes.visit_count) + 1)
             / (1 + attributes.visit_count)
         )
         return attributes.action_value + upper_confidence_bound
