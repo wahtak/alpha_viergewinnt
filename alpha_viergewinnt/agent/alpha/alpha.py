@@ -16,9 +16,6 @@ class Alpha(object):
         self.graph = None
         self.draw_graph = draw_graph
 
-    def _sample_action(self, search_distribution):
-        return self.random_state.choice(len(search_distribution), p=search_distribution)
-
     def _get_search_distribution(self, state, exploration_factor=1.0):
         # TODO: only reset root and keep rest of graph
         self.graph = GameStateGraph(state)
@@ -42,7 +39,7 @@ class AlphaAgent(Alpha):
         super().__init__(*args, **kwargs)
 
     def get_next_move(self, state):
-        return self._sample_action(self._get_search_distribution(state))
+        return np.argmax(self._get_search_distribution(state))
 
 
 class AlphaTrainer(Alpha):
@@ -61,6 +58,9 @@ class AlphaTrainer(Alpha):
 
     def _record(self, state, search_distribution):
         self.states_and_search_distributions.append((deepcopy(state), search_distribution))
+
+    def _sample_action(self, search_distribution):
+        return self.random_state.choice(len(search_distribution), p=search_distribution)
 
     def train(self, final_state):
         loss = self.evaluator.train(self.states_and_search_distributions, final_state)
